@@ -56,10 +56,13 @@ function moveUnlockedMovies(){
       if(grid.querySelector('[data-online-moved="'+m.title.replace(/"/g,"")+'"]'))return;
       const card=d.createElement("div");card.className="card";card.dataset.onlineMoved=m.title;
       card.innerHTML='<div class="poster" style="background-image:url(&quot;'+m.cover.replace(/"/g,"&quot;")+'&quot;)">▶</div><div class="info"><div class="title">'+m.title+'</div><div class="meta">GOOGLE DRIVE</div><div class="row"><button class="mini p">Play</button></div></div>';
-      card.querySelector(".poster").onclick=card.querySelector(".p").onclick=()=>window.open(m.link,"_blank");
+      const openDrive=(e)=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();window.open(m.link,"_blank","noopener,noreferrer");};
+      card.querySelector(".poster").addEventListener("click",openDrive,true);
+      card.querySelector(".p").addEventListener("click",openDrive,true);
+      card.addEventListener("click",(e)=>{if(e.target.closest(".poster,.p"))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();window.open(m.link,"_blank","noopener,noreferrer");},true);
       grid.appendChild(card);
     });
-    d.querySelectorAll("#extraGrid .card").forEach(card=>{const t=(card.querySelector(".title")?.textContent||"").toLowerCase();if(t==="happy gilmore"||t==="white chicks")card.style.display="none";});
+    d.querySelectorAll("#extraGrid .card").forEach(card=>{const t=(card.querySelector(".title")?.textContent||"").toLowerCase();if((t==="happy gilmore"||t==="white chicks")&&card.style.display!=="none")card.style.display="none";});
     const ec=d.getElementById("extraCount");if(ec&&extra.length)ec.textContent="• "+(extra.length-2);
     const count=d.getElementById("count");if(count)count.textContent="• 12";
   }catch(e){}
@@ -68,7 +71,8 @@ function watchMoviePage(){
   applyMoviePermissions();moveUnlockedMovies();
   try{
     const d=movies.contentDocument;if(!d||d.__bcaObserver)return;
-    d.__bcaObserver=new MutationObserver(()=>{applyMoviePermissions();moveUnlockedMovies();});
+    let repairTimer=null;
+    d.__bcaObserver=new MutationObserver(()=>{clearTimeout(repairTimer);repairTimer=setTimeout(()=>{applyMoviePermissions();moveUnlockedMovies();},50);});
     d.__bcaObserver.observe(d.body,{childList:true,subtree:true});
   }catch(e){}
 }
