@@ -9,7 +9,7 @@
 .post{background:#151518;border:1px solid #2c2c32;border-radius:18px;padding:20px;margin:14px 0;box-shadow:0 10px 30px #0003}.post p{font-size:17px;line-height:1.55;white-space:pre-wrap;margin:0 0 14px}.date{font-size:12px;color:#888}.empty{padding:35px;text-align:center;color:#888;background:#131315;border-radius:18px}.manage{display:inline-block;margin-top:12px;color:#fff}
 @media(max-width:600px){.top{padding:0 9px;gap:6px}.logo{font-size:17px}.tab{padding:9px 10px}.ownerlink{display:none}.hero h1{font-size:29px}}
 .communityBox{background:#151518;border:1px solid #2c2c32;border-radius:18px;padding:18px;margin:14px 0}.communityBox input,.communityBox textarea,.communityBox button,.communityBox select{width:100%;box-sizing:border-box;padding:11px;margin:5px 0;border-radius:10px;border:1px solid #38383f;background:#0e0e11;color:white}.communityBox button{background:#f43f5e;border:0;font-weight:700;cursor:pointer}.msg{padding:13px 0;border-bottom:1px solid #29292e}.msg b{color:#fff}.msg small{color:#888}.pill{font-size:11px;background:#34343a;padding:3px 7px;border-radius:20px;margin-left:5px}.pollopt{display:flex;gap:8px;align-items:center;margin:7px 0}.pollopt button{width:auto;padding:8px 12px}.hidden{display:none!important}</style></head><body>
-<nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="moviesTab" class="tab active">Movies</button><button id="communityTab" class="tab">💬 Community</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
+<nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="moviesTab" class="tab active">Movies</button><button id="communityTab" class="tab">💬 Community</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><span id="viewMode" style="font-size:12px;font-weight:800;padding:7px 9px;border-radius:9px;background:#29292f;color:#bbb">CHECKING…</span><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
 <iframe id="movies" src="BCAMOVIES_FINAL_POLISHED.html" title="BCAMOVIES+"></iframe>
 <section id="community"><div class="wrap"><div class="hero"><h1>💬 BCAMOVIES Community</h1><p>Chat, request movies, and vote in owner polls.</p></div>
 <div class="communityBox" id="communityAuth"><h2>Join the Community</h2><input id="cEmail" type="email" placeholder="Email"><input id="cPass" type="password" placeholder="Password"><input id="cName" placeholder="Display name"><button id="cSignup">Create Account</button><button id="cLogin">Log In</button><p class="small" id="cAuthMsg"></p></div>
@@ -27,15 +27,33 @@ mt.onclick=()=>show("movies");ct.onclick=()=>show("community");ot.onclick=()=>sh
 async function applyMoviePermissions(){
   const {data}=await sb.auth.getSession();
   const isOwner=(data.session?.user?.email||"").toLowerCase()==="jonathanspollard11@gmail.com";
+  const vm=document.getElementById("viewMode");if(vm){vm.textContent=isOwner?"OWNER MODE":"VIEWER MODE";vm.style.color=isOwner?"#86efac":"#fda4af";}
   try{
     const d=movies.contentDocument;if(!d)return;
     let style=d.getElementById("onlinePermissions");
     if(!style){style=d.createElement("style");style.id="onlinePermissions";d.head.appendChild(style);}
+    d.documentElement.dataset.bcaOwner=isOwner?"1":"0";
     style.textContent=isOwner?"":`
       #add,#add2,#save,#merge,#clear,#extraAdd,label[for="merge"]{display:none!important}
       .card button.e,.card button.d,.card button.editx,.card button.delx{display:none!important}
     `;
-    let banner=d.getElementById("ownerMessagesBanner");
+    if(!d.__bcaPermissionGuard){
+      d.__bcaPermissionGuard=true;
+      d.addEventListener("click",e=>{
+        if(d.documentElement.dataset.bcaOwner==="1")return;
+        const btn=e.target.closest("button,a");
+        if(!btn)return;
+        const txt=(btn.textContent||"").trim().toLowerCase();
+        const cls=(btn.className||"").toString().toLowerCase();
+        const action=(btn.dataset?.action||"").toLowerCase();
+        const isEditDelete=txt==="edit"||txt==="delete"||txt==="remove"||/\\b(edit|delete|delx|editx)\\b/.test(cls)||action==="edit"||action==="delete";
+        if(isEditDelete){
+          e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+          alert("Only the BCAMOVIES+ owner can edit or delete movies.");
+        }
+      },true);
+    }
+        let banner=d.getElementById("ownerMessagesBanner");
     if(!banner){
       banner=d.createElement("button");banner.id="ownerMessagesBanner";
       banner.innerHTML="📣 <b>OWNER MESSAGES</b> — Click here for announcements";
