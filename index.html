@@ -21,29 +21,34 @@ mt.onclick=()=>show("movies");ot.onclick=()=>show("owner");loadPosts();
 async function applyMoviePermissions(){
   const {data}=await sb.auth.getSession();
   const isOwner=(data.session?.user?.email||"").toLowerCase()==="jonathanspollard11@gmail.com";
-  const frame=movies;
   try{
-    const d=frame.contentDocument;
-    if(!d)return;
-    const ownerOnlyIds=["add","add2","save","merge"];
-    ownerOnlyIds.forEach(id=>{const el=d.getElementById(id);if(el)el.style.display=isOwner?"":"none";});
-    const mergeInput=d.getElementById("merge"); if(mergeInput)mergeInput.style.display="none";
-    const localInput=d.getElementById("locals"); if(localInput)localInput.style.display="none";
-    d.querySelectorAll("button").forEach(btn=>{
-      const t=(btn.textContent||"").trim().toLowerCase();
-      if(t.includes("edit")||t.includes("delete")||t.includes("remove")){
-        btn.style.display=isOwner?"":"none";
-      }
-    });
-    d.querySelectorAll("label").forEach(l=>{
-      const t=(l.textContent||"").toLowerCase();
-      if(t.includes("merge"))l.style.display=isOwner?"":"none";
-      if(t.includes("local"))l.style.display="";
-    });
+    const d=movies.contentDocument;if(!d)return;
+    let style=d.getElementById("onlinePermissions");
+    if(!style){style=d.createElement("style");style.id="onlinePermissions";d.head.appendChild(style);}
+    style.textContent=isOwner?"":`
+      #add,#add2,#save,#merge,#clear,#extraAdd,label[for="merge"]{display:none!important}
+      .card button.e,.card button.d,.card button.editx,.card button.delx{display:none!important}
+    `;
+    let banner=d.getElementById("ownerMessagesBanner");
+    if(!banner){
+      banner=d.createElement("button");banner.id="ownerMessagesBanner";
+      banner.innerHTML="📣 <b>OWNER MESSAGES</b> — Click here for announcements";
+      banner.style.cssText="display:block;width:calc(100% - 32px);max-width:1100px;margin:16px auto;padding:15px 18px;border:1px solid #f43f5e;border-radius:14px;background:#251116;color:white;font-size:16px;font-weight:700;cursor:pointer;text-align:left;box-shadow:0 8px 25px #0005";
+      banner.onclick=()=>show("owner");
+      const target=d.querySelector("main")||d.body;target.insertBefore(banner,target.firstChild);
+    }
   }catch(e){}
 }
-movies.addEventListener("load",()=>{applyMoviePermissions();setTimeout(applyMoviePermissions,700);});
-sb.auth.onAuthStateChange(()=>setTimeout(applyMoviePermissions,0));
+function watchMoviePage(){
+  applyMoviePermissions();
+  try{
+    const d=movies.contentDocument;if(!d||d.__bcaObserver)return;
+    d.__bcaObserver=new MutationObserver(()=>applyMoviePermissions());
+    d.__bcaObserver.observe(d.body,{childList:true,subtree:true});
+  }catch(e){}
+}
+movies.addEventListener("load",()=>{watchMoviePage();setTimeout(watchMoviePage,500);setTimeout(watchMoviePage,1500);});
+sb.auth.onAuthStateChange(()=>setTimeout(watchMoviePage,0));
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 async function loadPosts(){const box=document.getElementById("posts");const {data,error}=await sb.from("owner_posts").select("*").order("created_at",{ascending:false});if(error){box.innerHTML='<div class="empty">Could not load Owner Chat.</div>';return}document.getElementById("msgCount").textContent=data?.length?"("+data.length+")":"";if(!data?.length){box.innerHTML='<div class="empty">No owner messages yet.</div>';return}box.innerHTML=data.map(p=>'<article class="post"><p>'+esc(p.message)+'</p><div class="date">BCAMOVIES owner • '+new Date(p.created_at).toLocaleString()+'</div></article>').join("");}
 </script></body></html>
