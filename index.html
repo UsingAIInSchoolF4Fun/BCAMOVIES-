@@ -72,7 +72,11 @@ function watchMoviePage(){
   try{
     const d=movies.contentDocument;if(!d||d.__bcaObserver)return;
     let repairTimer=null;
-    d.__bcaObserver=new MutationObserver(()=>{clearTimeout(repairTimer);repairTimer=setTimeout(()=>{applyMoviePermissions();moveUnlockedMovies();},50);});
+    d.__bcaObserver=new MutationObserver((mutations)=>{
+      const needsRepair=mutations.some(m=>Array.from(m.addedNodes||[]).some(n=>n.nodeType===1&&(n.id==="extraGrid"||n.querySelector?.("#extraGrid"))));
+      if(!needsRepair)return;
+      clearTimeout(repairTimer);repairTimer=setTimeout(()=>{applyMoviePermissions();moveUnlockedMovies();},50);
+    });
     d.__bcaObserver.observe(d.body,{childList:true,subtree:true});
   }catch(e){}
 }
