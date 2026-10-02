@@ -5,18 +5,24 @@
 .top{height:58px;display:flex;align-items:center;gap:12px;padding:0 18px;background:#101012;border-bottom:1px solid #29292e;position:relative;z-index:5}
 .logo{font-size:21px;font-weight:900;margin-right:auto}.logo b{color:#f43f5e}.tab{border:0;border-radius:10px;padding:10px 16px;background:#29292f;color:#fff;font-weight:700;cursor:pointer}.tab.active{background:#f43f5e}.ownerlink{color:#aaa;text-decoration:none;font-size:13px}
 #movies{width:100%;height:calc(100% - 58px);border:0;display:block;background:#09090b}
-#owner{display:none;min-height:calc(100% - 58px);padding:34px 18px}.wrap{max-width:850px;margin:auto}.hero{padding:24px 0}.hero h1{font-size:36px;margin:0 0 8px}.hero p{color:#aaa;margin:0}
+#community,#owner{display:none;min-height:calc(100% - 58px);padding:34px 18px}.wrap{max-width:850px;margin:auto}.hero{padding:24px 0}.hero h1{font-size:36px;margin:0 0 8px}.hero p{color:#aaa;margin:0}
 .post{background:#151518;border:1px solid #2c2c32;border-radius:18px;padding:20px;margin:14px 0;box-shadow:0 10px 30px #0003}.post p{font-size:17px;line-height:1.55;white-space:pre-wrap;margin:0 0 14px}.date{font-size:12px;color:#888}.empty{padding:35px;text-align:center;color:#888;background:#131315;border-radius:18px}.manage{display:inline-block;margin-top:12px;color:#fff}
 @media(max-width:600px){.top{padding:0 9px;gap:6px}.logo{font-size:17px}.tab{padding:9px 10px}.ownerlink{display:none}.hero h1{font-size:29px}}
-</style></head><body>
-<nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="moviesTab" class="tab active">Movies</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
+.communityBox{background:#151518;border:1px solid #2c2c32;border-radius:18px;padding:18px;margin:14px 0}.communityBox input,.communityBox textarea,.communityBox button,.communityBox select{width:100%;box-sizing:border-box;padding:11px;margin:5px 0;border-radius:10px;border:1px solid #38383f;background:#0e0e11;color:white}.communityBox button{background:#f43f5e;border:0;font-weight:700;cursor:pointer}.msg{padding:13px 0;border-bottom:1px solid #29292e}.msg b{color:#fff}.msg small{color:#888}.pill{font-size:11px;background:#34343a;padding:3px 7px;border-radius:20px;margin-left:5px}.pollopt{display:flex;gap:8px;align-items:center;margin:7px 0}.pollopt button{width:auto;padding:8px 12px}.hidden{display:none!important}</style></head><body>
+<nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="moviesTab" class="tab active">Movies</button><button id="communityTab" class="tab">💬 Community</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
 <iframe id="movies" src="BCAMOVIES_FINAL_POLISHED.html" title="BCAMOVIES+"></iframe>
+<section id="community"><div class="wrap"><div class="hero"><h1>💬 BCAMOVIES Community</h1><p>Chat, request movies, and vote in owner polls.</p></div>
+<div class="communityBox" id="communityAuth"><h2>Join the Community</h2><input id="cEmail" type="email" placeholder="Email"><input id="cPass" type="password" placeholder="Password"><input id="cName" placeholder="Display name"><button id="cSignup">Create Account</button><button id="cLogin">Log In</button><p class="small" id="cAuthMsg"></p></div>
+<div id="communityUser" class="hidden"><div class="communityBox"><b id="cWho"></b><button id="cLogout">Log Out</button></div>
+<div class="communityBox"><h2>Chat / Movie Request</h2><select id="cType"><option value="chat">Chat</option><option value="request">🎬 Movie Request</option></select><textarea id="cMessage" rows="3" placeholder="Say something…"></textarea><button id="cSend">Post</button><p class="small" id="cSendMsg"></p></div></div>
+<div class="communityBox"><h2>Community Chat</h2><div id="communityMessages">Loading…</div></div>
+<div class="communityBox"><h2>📊 Polls</h2><div id="polls">Loading…</div></div></div></section>
 <section id="owner"><div class="wrap"><div class="hero"><h1>📣 Owner Messages</h1><p><b>Announcements from the BCAMOVIES owner.</b> Check here for new movies, updates, and other messages.</p><a class="manage" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">🔐 Owner Login / Manage</a></div><div id="posts"><div class="empty">Loading owner messages…</div></div></div></section>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 const sb=supabase.createClient("https://hzydgsxjamynfabonszg.supabase.co","sb_publishable_yUMhCuP8O-4XJM7sTivo3w_AsEcYsqR");
-const movies=document.getElementById("movies"),owner=document.getElementById("owner"),mt=document.getElementById("moviesTab"),ot=document.getElementById("ownerTab");
-function show(which){const isOwner=which==="owner";movies.style.display=isOwner?"none":"block";owner.style.display=isOwner?"block":"none";mt.classList.toggle("active",!isOwner);ot.classList.toggle("active",isOwner);if(isOwner)loadPosts();}
-mt.onclick=()=>show("movies");ot.onclick=()=>show("owner");loadPosts();
+const movies=document.getElementById("movies"),owner=document.getElementById("owner"),community=document.getElementById("community"),mt=document.getElementById("moviesTab"),ot=document.getElementById("ownerTab"),ct=document.getElementById("communityTab");
+function show(which){const isOwner=which==="owner",isCommunity=which==="community";movies.style.display=(!isOwner&&!isCommunity)?"block":"none";owner.style.display=isOwner?"block":"none";community.style.display=isCommunity?"block":"none";mt.classList.toggle("active",!isOwner&&!isCommunity);ot.classList.toggle("active",isOwner);ct.classList.toggle("active",isCommunity);if(isOwner)loadPosts();if(isCommunity){loadCommunity();loadPolls();refreshCommunityAuth();}}
+mt.onclick=()=>show("movies");ct.onclick=()=>show("community");ot.onclick=()=>show("owner");loadPosts();
 
 async function applyMoviePermissions(){
   const {data}=await sb.auth.getSession();
@@ -39,16 +45,43 @@ async function applyMoviePermissions(){
     }
   }catch(e){}
 }
+function moveUnlockedMovies(){
+  try{
+    const d=movies.contentDocument;if(!d)return;
+    const meta=d.querySelector('meta[name="bca-extra-library"]');if(!meta)return;
+    const extra=JSON.parse(decodeURIComponent(escape(atob(meta.content))));
+    const moved=extra.filter(m=>["happy gilmore","white chicks"].includes((m.title||"").toLowerCase()));
+    const grid=d.getElementById("grid");if(!grid)return;
+    moved.forEach(m=>{
+      if(grid.querySelector('[data-online-moved="'+m.title.replace(/"/g,"")+'"]'))return;
+      const card=d.createElement("div");card.className="card";card.dataset.onlineMoved=m.title;
+      card.innerHTML='<div class="poster" style="background-image:url(&quot;'+m.cover.replace(/"/g,"&quot;")+'&quot;)">▶</div><div class="info"><div class="title">'+m.title+'</div><div class="meta">GOOGLE DRIVE</div><div class="row"><button class="mini p">Play</button></div></div>';
+      card.querySelector(".poster").onclick=card.querySelector(".p").onclick=()=>window.open(m.link,"_blank");
+      grid.appendChild(card);
+    });
+    d.querySelectorAll("#extraGrid .card").forEach(card=>{const t=(card.querySelector(".title")?.textContent||"").toLowerCase();if(t==="happy gilmore"||t==="white chicks")card.style.display="none";});
+    const ec=d.getElementById("extraCount");if(ec&&extra.length)ec.textContent="• "+(extra.length-2);
+    const count=d.getElementById("count");if(count)count.textContent="• 12";
+  }catch(e){}
+}
 function watchMoviePage(){
-  applyMoviePermissions();
+  applyMoviePermissions();moveUnlockedMovies();
   try{
     const d=movies.contentDocument;if(!d||d.__bcaObserver)return;
-    d.__bcaObserver=new MutationObserver(()=>applyMoviePermissions());
+    d.__bcaObserver=new MutationObserver(()=>{applyMoviePermissions();moveUnlockedMovies();});
     d.__bcaObserver.observe(d.body,{childList:true,subtree:true});
   }catch(e){}
 }
 movies.addEventListener("load",()=>{watchMoviePage();setTimeout(watchMoviePage,500);setTimeout(watchMoviePage,1500);});
 sb.auth.onAuthStateChange(()=>setTimeout(watchMoviePage,0));
+async function refreshCommunityAuth(){const {data}=await sb.auth.getSession();const u=data.session?.user;document.getElementById("communityAuth").classList.toggle("hidden",!!u);document.getElementById("communityUser").classList.toggle("hidden",!u);if(u)document.getElementById("cWho").textContent="Signed in as "+(u.user_metadata?.display_name||u.email);}
+document.getElementById("cSignup").onclick=async()=>{const email=document.getElementById("cEmail").value.trim(),password=document.getElementById("cPass").value,name=document.getElementById("cName").value.trim();const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:name||"Movie Fan"}}});document.getElementById("cAuthMsg").textContent=error?error.message:"Account created. If asked, check your email to confirm it.";if(data.user&&!error)refreshCommunityAuth();};
+document.getElementById("cLogin").onclick=async()=>{const {error}=await sb.auth.signInWithPassword({email:document.getElementById("cEmail").value.trim(),password:document.getElementById("cPass").value});document.getElementById("cAuthMsg").textContent=error?error.message:"Logged in.";refreshCommunityAuth();};
+document.getElementById("cLogout").onclick=async()=>{await sb.auth.signOut();refreshCommunityAuth();};
+document.getElementById("cSend").onclick=async()=>{const {data:s}=await sb.auth.getSession(),u=s.session?.user;if(!u)return;const message=document.getElementById("cMessage").value.trim();if(!message)return;const row={user_id:u.id,display_name:u.user_metadata?.display_name||"Movie Fan",message,type:document.getElementById("cType").value};const {error}=await sb.from("community_messages").insert(row);document.getElementById("cSendMsg").textContent=error?error.message:"Posted!";if(!error){document.getElementById("cMessage").value="";loadCommunity();}};
+async function loadCommunity(){const box=document.getElementById("communityMessages");const {data,error}=await sb.from("community_messages").select("*").order("created_at",{ascending:false}).limit(100);if(error){box.innerHTML='<div class="empty">Community setup is not finished yet.</div>';return}box.innerHTML=(data||[]).map(m=>'<div class="msg"><b>'+esc(m.display_name)+'</b>'+(m.type==="request"?'<span class="pill">MOVIE REQUEST</span>':'')+'<br>'+esc(m.message)+'<br><small>'+new Date(m.created_at).toLocaleString()+'</small></div>').join("")||'<div class="empty">No messages yet. Start the chat!</div>';}
+async function loadPolls(){const box=document.getElementById("polls");const {data,error}=await sb.from("polls").select("*").order("created_at",{ascending:false});if(error){box.innerHTML='<div class="empty">Polls will appear here after Community setup.</div>';return}box.innerHTML=(data||[]).map(p=>'<div class="msg"><b>'+esc(p.question)+'</b><div>'+(p.options||[]).map((o,i)=>'<div class="pollopt"><button onclick="votePoll('+p.id+','+i+')">Vote</button><span>'+esc(o)+'</span></div>').join("")+'</div></div>').join("")||'<div class="empty">No polls yet.</div>';}
+async function votePoll(poll_id,option_index){const {data:s}=await sb.auth.getSession();if(!s.session?.user)return alert("Log in to vote.");const {error}=await sb.from("poll_votes").upsert({poll_id,user_id:s.session.user.id,option_index},{onConflict:"poll_id,user_id"});alert(error?error.message:"Vote saved!");}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 async function loadPosts(){const box=document.getElementById("posts");const {data,error}=await sb.from("owner_posts").select("*").order("created_at",{ascending:false});if(error){box.innerHTML='<div class="empty">Could not load Owner Chat.</div>';return}document.getElementById("msgCount").textContent=data?.length?"("+data.length+")":"";if(!data?.length){box.innerHTML='<div class="empty">No owner messages yet.</div>';return}box.innerHTML=data.map(p=>'<article class="post"><p>'+esc(p.message)+'</p><div class="date">BCAMOVIES owner • '+new Date(p.created_at).toLocaleString()+'</div></article>').join("");}
 </script></body></html>
