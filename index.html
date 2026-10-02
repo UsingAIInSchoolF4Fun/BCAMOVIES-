@@ -63,40 +63,8 @@ async function applyMoviePermissions(){
     }
   }catch(e){}
 }
-function moveUnlockedMovies(){
-  try{
-    const d=movies.contentDocument;if(!d)return;
-    const meta=d.querySelector('meta[name="bca-extra-library"]');if(!meta)return;
-    const extra=JSON.parse(decodeURIComponent(escape(atob(meta.content))));
-    const moved=extra.filter(m=>["happy gilmore","white chicks"].includes((m.title||"").toLowerCase()));
-    const grid=d.getElementById("grid");if(!grid)return;
-    moved.forEach(m=>{
-      if(grid.querySelector('[data-online-moved="'+m.title.replace(/"/g,"")+'"]'))return;
-      const card=d.createElement("div");card.className="card";card.dataset.onlineMoved=m.title;
-      card.innerHTML='<div class="poster" style="background-image:url(&quot;'+m.cover.replace(/"/g,"&quot;")+'&quot;)">▶</div><div class="info"><div class="title">'+m.title+'</div><div class="meta">GOOGLE DRIVE</div><div class="row"><button class="mini p">Play</button></div></div>';
-      const openDrive=(e)=>{e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();window.open(m.link,"_blank","noopener,noreferrer");};
-      card.querySelector(".poster").addEventListener("click",openDrive,true);
-      card.querySelector(".p").addEventListener("click",openDrive,true);
-      card.addEventListener("click",(e)=>{if(e.target.closest(".poster,.p"))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();window.open(m.link,"_blank","noopener,noreferrer");},true);
-      grid.appendChild(card);
-    });
-    d.querySelectorAll("#extraGrid .card").forEach(card=>{const t=(card.querySelector(".title")?.textContent||"").toLowerCase();if((t==="happy gilmore"||t==="white chicks")&&card.style.display!=="none")card.style.display="none";});
-    const ec=d.getElementById("extraCount");if(ec&&extra.length)ec.textContent="• "+(extra.length-2);
-    const count=d.getElementById("count");if(count)count.textContent="• 12";
-  }catch(e){}
-}
 function watchMoviePage(){
-  applyMoviePermissions();moveUnlockedMovies();
-  try{
-    const d=movies.contentDocument;if(!d||d.__bcaObserver)return;
-    let repairTimer=null;
-    d.__bcaObserver=new MutationObserver((mutations)=>{
-      const needsRepair=mutations.some(m=>Array.from(m.addedNodes||[]).some(n=>n.nodeType===1&&(n.id==="extraGrid"||n.querySelector?.("#extraGrid"))));
-      if(!needsRepair)return;
-      clearTimeout(repairTimer);repairTimer=setTimeout(()=>{applyMoviePermissions();moveUnlockedMovies();},50);
-    });
-    d.__bcaObserver.observe(d.body,{childList:true,subtree:true});
-  }catch(e){}
+  applyMoviePermissions();
 }
 movies.addEventListener("load",()=>{watchMoviePage();setTimeout(watchMoviePage,500);setTimeout(watchMoviePage,1500);});
 sb.auth.onAuthStateChange(()=>setTimeout(watchMoviePage,0));
