@@ -63,56 +63,37 @@ async function applyMoviePermissions(){
     }
   }catch(e){}
 }
-function installDirectMovieClicks(){
-  try{
-    const d=movies.contentDocument;if(!d||d.__bcaDirectMovieClicks)return;
-    const links={
-      "kpop demon hunters":"https://drive.google.com/file/d/19etImk9BKT02n96xuDFOkx7Syz6WNVAH/view?usp=sharing",
-      "a minecraft movie":"https://drive.google.com/file/d/1tYR8OkAM4U6MOZ1Z7",
-      "avengers infinity war":"https://drive.google.com/file/d/1NQ0YihQ2Tub6rNDkN",
-      "captain underpants":"https://drive.google.com/file/d/1VmNYa4azLGKIGQgXN",
-      "how to train your dragon - live action":"https://drive.google.com/file/d/1lJEENHQcdmu32SskF",
-      "cars 2":"https://drive.google.com/file/d/1T5jIBhOjz_ubq_cjG",
-      "chicken little":"https://drive.google.com/file/d/13psdVIN91XEC0awKz",
-      "sonic the hedgehog 3":"https://drive.google.com/file/d/1TAYmnPezbHgOEGy_Q",
-      "good burger":"https://drive.google.com/file/d/1TeQw-1vXq1E-9JzTR",
-      "alvin and the chipmunks - chipwrecked":"https://drive.google.com/file/d/1ATrBW0sin81TbXpWN",
-      "happy gilmore":"https://drive.google.com/file/d/1O98L3xdT8pmFPKmY1",
-      "white chicks":"https://drive.google.com/file/d/1DO0T6kpqvW4glNCHP"
-    };
-    d.__bcaDirectMovieClicks=true;
-    d.addEventListener("click",e=>{
-      const card=e.target.closest("#grid .card");if(!card)return;
-      if(e.target.closest(".e,.d"))return;
-      if(!e.target.closest(".poster,.p"))return;
-      const title=(card.querySelector(".title")?.textContent||"").trim().toLowerCase();
-      const link=links[title];
-      if(link){
-        e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-        window.open(link,"_blank","noopener,noreferrer");
-      }
-    },true);
-  }catch(e){}
-}
 function fixMovieInputAutofill(){
   try{
     const d=movies.contentDocument;if(!d)return;
-    [...d.querySelectorAll("input")].forEach(inp=>{
-      const hint=((inp.id||"")+" "+(inp.name||"")+" "+(inp.placeholder||"")).toLowerCase();
-      if(/search|filter|find/.test(hint)){
-        inp.setAttribute("autocomplete","off"); inp.setAttribute("name","bca_movie_search");
-        if(/@/.test(inp.value||"")){inp.value="";inp.dispatchEvent(new Event("input",{bubbles:true}));}
-      }
-      if(/pass|code|lock|pin/.test(hint)){
-        inp.setAttribute("autocomplete","new-password"); inp.setAttribute("name","bca_locked_movies_code");
-        if(inp.value)inp.value="";
-      }
-    });
+    const search=d.getElementById("search");
+    if(search){
+      search.type="search";
+      search.name="movie_search_"+Date.now();
+      search.autocomplete="off";
+      search.setAttribute("data-form-type","other");
+      search.setAttribute("data-lpignore","true");
+      if(/@/.test(search.value||"")){search.value="";search.dispatchEvent(new Event("input",{bubbles:true}));}
+    }
+    const pass=d.getElementById("extraPassInput");
+    const show=d.getElementById("showExtraPass");
+    if(pass){
+      pass.type="text";
+      pass.name="locked_movie_code_"+Date.now();
+      pass.autocomplete="off";
+      pass.setAttribute("data-form-type","other");
+      pass.setAttribute("data-lpignore","true");
+      pass.style.webkitTextSecurity=show?.checked?"none":"disc";
+      pass.value="";
+    }
+    if(show&&!show.__bcaShowFix){
+      show.__bcaShowFix=true;
+      show.addEventListener("change",()=>{if(pass){pass.type="text";pass.style.webkitTextSecurity=show.checked?"none":"disc";}},true);
+    }
   }catch(e){}
 }
 function watchMoviePage(){
   applyMoviePermissions();
-  installDirectMovieClicks();
   fixMovieInputAutofill();
 }
 movies.addEventListener("load",()=>{watchMoviePage();setTimeout(watchMoviePage,500);setTimeout(watchMoviePage,1500);});
