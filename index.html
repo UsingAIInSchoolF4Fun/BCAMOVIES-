@@ -63,8 +63,31 @@ async function applyMoviePermissions(){
     }
   }catch(e){}
 }
+function installDirectMovieClicks(){
+  try{
+    const d=movies.contentDocument;if(!d||d.__bcaDirectMovieClicks)return;
+    const meta=d.querySelector('meta[name="bca-library"]');if(!meta)return;
+    let library=[];
+    try{library=JSON.parse(decodeURIComponent(escape(atob(meta.content))))}catch(e){return}
+    const byTitle=new Map(library.map(m=>[(m.title||"").trim().toLowerCase(),m]));
+    d.__bcaDirectMovieClicks=true;
+    d.addEventListener("click",e=>{
+      const card=e.target.closest("#grid .card");if(!card)return;
+      if(e.target.closest(".e,.d"))return;
+      const isPlay=e.target.closest(".poster,.p");
+      if(!isPlay)return;
+      const title=(card.querySelector(".title")?.textContent||"").trim().toLowerCase();
+      const m=byTitle.get(title);
+      if(m?.link){
+        e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+        window.open(m.link,"_blank","noopener,noreferrer");
+      }
+    },true);
+  }catch(e){}
+}
 function watchMoviePage(){
   applyMoviePermissions();
+  installDirectMovieClicks();
 }
 movies.addEventListener("load",()=>{watchMoviePage();setTimeout(watchMoviePage,500);setTimeout(watchMoviePage,1500);});
 sb.auth.onAuthStateChange(()=>setTimeout(watchMoviePage,0));
