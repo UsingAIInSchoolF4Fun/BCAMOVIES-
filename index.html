@@ -63,47 +63,84 @@ async function applyMoviePermissions(){
     }
   }catch(e){}
 }
+function installDirectMovieClicks(){
+  try{
+    const d=movies.contentDocument;if(!d||d.__bcaDirectClicks)return;
+    const links={
+      "kpop demon hunters":"https://drive.google.com/file/d/19etImk9BKT02n96xuDFOkx7Syz6WNVAH/view?usp=sharing",
+      "a minecraft movie":"https://drive.google.com/file/d/1tYR8OkAM4U6MOZ1Z7nqUGgd8A0IDBlk9/view?usp=sharing",
+      "avengers infinity war":"https://drive.google.com/file/d/1NQ0YihQ2Tub6rNDkNlJNKqLwRo1fNqhm/view?usp=sharing",
+      "captain underpants":"https://drive.google.com/file/d/1VmNYa4azLGKIGQgXNa8hSErwncCWQgrC/view?usp=sharing",
+      "how to train your dragon - live action":"https://drive.google.com/file/d/1lJEENHQcdmu32SskFGfhckmdHwIdkiTo/view?usp=sharing",
+      "cars 2":"https://drive.google.com/file/d/1T5jIBhOjz_ubq_cjG37lXUuvIpjETt3j/view?usp=sharing",
+      "chicken little":"https://drive.google.com/file/d/13psdVIN91XEC0awKzHaYrXNfliV85NDA/view?usp=sharing",
+      "sonic the hedgehog 3":"https://drive.google.com/file/d/1TAYmnPezbHgOEGy_Q3C636LalpthT9ck/view?usp=sharing",
+      "good burger":"https://drive.google.com/file/d/1TeQw-1vXq1E-9JzTRerQJqZAutUOT4KW/view?usp=sharing",
+      "alvin and the chipmunks - chipwrecked":"https://drive.google.com/file/d/1ATrBW0sin81TbXpWNDj3lOBlOsO0-Q7k/view?usp=sharing",
+      "happy gilmore":"https://drive.google.com/file/d/1O98L3xdT8pmFPKmY1I2JiT2Wjrq5voLF/view?usp=sharing"
+    };
+    d.__bcaDirectClicks=true;
+    d.addEventListener("click",e=>{
+      const card=e.target.closest("#grid .card");if(!card||!e.target.closest(".poster,.p"))return;
+      const title=(card.querySelector(".title")?.textContent||"").trim().toLowerCase();
+      const link=links[title];if(!link)return;
+      const s=d.getElementById("search");if(s&&s.value){s.value="";s.dispatchEvent(new Event("input",{bubbles:true}));}
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      window.open(link,"_blank","noopener,noreferrer");
+    },true);
+  }catch(e){}
+}
 function fixMovieInputAutofill(){
   try{
     const d=movies.contentDocument;if(!d)return;
     const search=d.getElementById("search");
     if(search){
-      search.type="search";
-      search.name="movie_search_"+Date.now();
-      search.autocomplete="off";
-      search.setAttribute("data-form-type","other");
-      search.setAttribute("data-lpignore","true");
-      if(/@/.test(search.value||"")){search.value="";search.dispatchEvent(new Event("input",{bubbles:true}));}
+      search.type="search";search.name="movie_title_query";search.autocomplete="off";
+      search.setAttribute("data-form-type","other");search.setAttribute("data-lpignore","true");search.setAttribute("data-1p-ignore","true");
+      const clearBad=()=>{if(/@/.test(search.value||"")){search.value="";search.dispatchEvent(new Event("input",{bubbles:true}));}};
+      clearBad();
+      if(!d.__bcaAutofillGuard){
+        d.__bcaAutofillGuard=true;
+        ["pointerdown","mousedown","click","focusin"].forEach(ev=>d.addEventListener(ev,clearBad,true));
+        setInterval(clearBad,350);
+      }
     }
-    const pass=d.getElementById("extraPassInput");
-    const show=d.getElementById("showExtraPass");
+    const pass=d.getElementById("extraPassInput"),show=d.getElementById("showExtraPass");
     if(pass){
-      pass.type="text";
-      pass.name="locked_movie_code_"+Date.now();
-      pass.autocomplete="off";
-      pass.setAttribute("data-form-type","other");
-      pass.setAttribute("data-lpignore","true");
+      pass.type="text";pass.name="locked_movie_access_code";pass.autocomplete="off";
+      pass.setAttribute("data-form-type","other");pass.setAttribute("data-lpignore","true");pass.setAttribute("data-1p-ignore","true");
       pass.style.webkitTextSecurity=show?.checked?"none":"disc";
-      pass.value="";
+      if(/@/.test(pass.value||""))pass.value="";
     }
-    if(show&&!show.__bcaShowFix){
-      show.__bcaShowFix=true;
-      show.addEventListener("change",()=>{if(pass){pass.type="text";pass.style.webkitTextSecurity=show.checked?"none":"disc";}},true);
-    }
+    if(show&&!show.__bcaShowFix){show.__bcaShowFix=true;show.onchange=()=>{if(pass)pass.style.webkitTextSecurity=show.checked?"none":"disc";};}
   }catch(e){}
 }
 function moveWhiteChicksBackToLocked(){
   try{
     const d=movies.contentDocument;if(!d)return;
+    let wc=null;
     d.querySelectorAll("#grid .card").forEach(card=>{
       const title=(card.querySelector(".title")?.textContent||"").trim().toLowerCase();
-      if(title==="white chicks")card.style.display="none";
+      if(title==="white chicks"){wc=card;card.style.display="none";}
     });
     const count=d.getElementById("count");if(count)count.textContent="• 11";
+    const add=()=>{
+      const grid=d.getElementById("extraGrid");if(!grid||grid.querySelector('[data-bca-wc="1"]'))return;
+      const q=(d.getElementById("extraSearch")?.value||"").toLowerCase();if(q&&!"white chicks".includes(q))return;
+      const card=d.createElement("div");card.className="card";card.dataset.bcaWc="1";
+      card.innerHTML='<div class="poster">▶</div><div class="info"><div class="title">White Chicks</div><div class="meta">EXTRA MOVIE</div><div class="row"><button class="mini playx">Play</button></div></div>';
+      const bg=wc?.querySelector(".poster")?.style.backgroundImage;if(bg)card.querySelector(".poster").style.backgroundImage=bg;
+      const open=()=>window.open("https://drive.google.com/file/d/1DO0T6kpqvW4glNCHP8_3q5ZAC75PDVVx/view?usp=sharing","_blank","noopener,noreferrer");
+      card.querySelector(".poster").onclick=open;card.querySelector(".playx").onclick=open;grid.appendChild(card);
+      const ec=d.getElementById("extraCount");if(ec)ec.textContent="• 7";
+    };
+    if(!d.__bcaWcHooks){d.__bcaWcHooks=true;d.addEventListener("click",()=>setTimeout(add,25),true);d.addEventListener("input",()=>setTimeout(add,25),true);}
+    add();
   }catch(e){}
 }
 function watchMoviePage(){
   applyMoviePermissions();
+  installDirectMovieClicks();
   fixMovieInputAutofill();
   moveWhiteChicksBackToLocked();
 }
