@@ -94,9 +94,26 @@ function installDirectMovieClicks(){
     },true);
   }catch(e){}
 }
+function fixMovieInputAutofill(){
+  try{
+    const d=movies.contentDocument;if(!d)return;
+    [...d.querySelectorAll("input")].forEach(inp=>{
+      const hint=((inp.id||"")+" "+(inp.name||"")+" "+(inp.placeholder||"")).toLowerCase();
+      if(/search|filter|find/.test(hint)){
+        inp.setAttribute("autocomplete","off"); inp.setAttribute("name","bca_movie_search");
+        if(/@/.test(inp.value||"")){inp.value="";inp.dispatchEvent(new Event("input",{bubbles:true}));}
+      }
+      if(/pass|code|lock|pin/.test(hint)){
+        inp.setAttribute("autocomplete","new-password"); inp.setAttribute("name","bca_locked_movies_code");
+        if(inp.value)inp.value="";
+      }
+    });
+  }catch(e){}
+}
 function watchMoviePage(){
   applyMoviePermissions();
   installDirectMovieClicks();
+  fixMovieInputAutofill();
 }
 movies.addEventListener("load",()=>{watchMoviePage();setTimeout(watchMoviePage,500);setTimeout(watchMoviePage,1500);});
 sb.auth.onAuthStateChange(()=>setTimeout(watchMoviePage,0));
