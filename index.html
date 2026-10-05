@@ -92,9 +92,20 @@ function fixMovieInputAutofill(){
     }
   }catch(e){}
 }
+function moveWhiteChicksBackToLocked(){
+  try{
+    const d=movies.contentDocument;if(!d)return;
+    d.querySelectorAll("#grid .card").forEach(card=>{
+      const title=(card.querySelector(".title")?.textContent||"").trim().toLowerCase();
+      if(title==="white chicks")card.style.display="none";
+    });
+    const count=d.getElementById("count");if(count)count.textContent="• 11";
+  }catch(e){}
+}
 function watchMoviePage(){
   applyMoviePermissions();
   fixMovieInputAutofill();
+  moveWhiteChicksBackToLocked();
 }
 movies.addEventListener("load",()=>{watchMoviePage();setTimeout(watchMoviePage,500);setTimeout(watchMoviePage,1500);});
 sb.auth.onAuthStateChange(()=>setTimeout(watchMoviePage,0));
