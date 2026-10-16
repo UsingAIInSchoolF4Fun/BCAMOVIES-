@@ -169,7 +169,7 @@ toolsPanel.style.cssText =
 
 toolsPanel.innerHTML = `
 <h2>HTML Testing Lab</h2>
-<p>Preview HTML layouts in a sandbox.</p>
+<p>Preview interactive, self-contained HTML projects in an isolated sandbox.</p>
 <input type="file" id="htmlUpload" accept=".html,.htm">
 <p>Or paste HTML code:</p>
 <textarea id="htmlEditor" spellcheck="false"
@@ -180,7 +180,7 @@ color:white;border:1px solid #444;padding:12px"></textarea>
 <button id="htmlFullBtn" class="tab">Fullscreen</button>
 <button id="htmlWindowBtn" class="tab">Open in New Window</button>
 </p>
-<iframe id="htmlPreview" sandbox=""
+<iframe id="htmlPreview" sandbox="allow-scripts"
 style="width:100%;height:450px;background:white;
 border:1px solid #444;border-radius:12px"></iframe>
 <p id="htmlStatus">Ready.</p>`;
@@ -236,7 +236,7 @@ document.getElementById("htmlWindowBtn").onclick = () => {
   popup.document.title = "HTML Testing Lab Preview";
   popup.document.body.style.margin = "0";
   const frame = popup.document.createElement("iframe");
-  frame.setAttribute("sandbox", "");
+  frame.setAttribute("sandbox", "allow-scripts");
   frame.style.cssText = "display:block;width:100%;height:100vh;border:0;background:white";
   frame.srcdoc = html;
   popup.document.body.appendChild(frame);
