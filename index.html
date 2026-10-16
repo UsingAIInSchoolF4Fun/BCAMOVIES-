@@ -157,7 +157,6 @@ async function votePoll(poll_id,option_index){const {data:s}=await sb.auth.getSe
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 async function loadPosts(){const box=document.getElementById("posts");const {data,error}=await sb.from("owner_posts").select("*").order("created_at",{ascending:false});if(error){box.innerHTML='<div class="empty">Could not load Owner Chat.</div>';return}document.getElementById("msgCount").textContent=data?.length?"("+data.length+")":"";if(!data?.length){box.innerHTML='<div class="empty">No owner messages yet.</div>';return}box.innerHTML=data.map(p=>'<article class="post"><p>'+esc(p.message)+'</p><div class="date">BCAMOVIES owner • '+new Date(p.created_at).toLocaleString()+'</div></article>').join("");}
   
-<script>
 const toolsButton = document.createElement("button");
 toolsButton.className = "tab";
 toolsButton.textContent = "Tools";
@@ -229,5 +228,4 @@ document.getElementById("htmlFullBtn").onclick = () => {
   document.getElementById("htmlPreview")
     .requestFullscreen?.();
 };
-</script>
 </script></body></html>
