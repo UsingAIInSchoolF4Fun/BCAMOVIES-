@@ -230,7 +230,7 @@ async function loadPosts(){const box=document.getElementById("posts");const {dat
   
 const toolsButton = document.createElement("button");
 toolsButton.className = "tab";
-toolsButton.textContent = "Tools";
+toolsButton.textContent = "🎮 Games";
 document.querySelector(".top").insertBefore(toolsButton,document.getElementById("ownerTab"));
 
 const toolsPanel = document.createElement("section");
@@ -239,7 +239,7 @@ toolsPanel.style.cssText =
   "display:none;padding:25px;max-width:1000px;margin:auto";
 
 toolsPanel.innerHTML = `
-<h2>HTML Testing Lab</h2>
+<div style="background:linear-gradient(135deg,#20251e,#111817);border:1px solid #435443;border-radius:18px;padding:24px;margin-bottom:24px"><div style="font-size:12px;color:#f6cc79;font-weight:800;letter-spacing:1px">TEST BUILD · V11.5</div><h2 style="margin:8px 0">🏚️ Bunker Survival</h2><p style="color:#bec8c0">Manage survivors, explore the bunker, scavenge supplies, and defend against zombie hordes. This build is available for testing while gameplay QA continues.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="tab" style="text-decoration:none;background:#31573b" href="games/bunker-survival-v11-5.html" target="_blank" rel="noopener">▶ Play test build</a><a class="tab" style="text-decoration:none" href="games/bunker-survival-v11-5.html" download="Bunker_Survival_V11_5.html">↓ Download HTML</a></div><p style="color:#a5aea7;font-size:12px;margin-bottom:0">Download the HTML file to play offline in a compatible browser. Not yet certified bug-free.</p></div><h2>HTML Testing Lab</h2>
 <p>Preview interactive, self-contained HTML projects in an isolated sandbox.</p>
 <input type="file" id="htmlUpload" accept=".html,.htm">
 <p>Or paste HTML code:</p>
