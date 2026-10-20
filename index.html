@@ -277,7 +277,7 @@ body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
  </div>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const sb=supabase.createClient("https://hzydgsxjamynfabonszg.supabase.co","sb_publishable_yUMhCuP8O-4XJM7sTivo3w_AsEcYsqR");
+const sb=supabase.createClient("https://hzydgsxjamynfabonszg.supabase.co","sb_publishable_yUMhCuP8O-4XJM7sTivo3w_AsEcYsqR",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}});
 const movies=document.getElementById("movies"),owner=document.getElementById("owner"),community=document.getElementById("community"),mt=document.getElementById("moviesTab"),ot=document.getElementById("ownerTab"),ct=null;
 function show(which){const isOwner=which==="owner",isCommunity=which==="community";movies.style.display=(!isOwner&&!isCommunity)?"block":"none";owner.style.display=isOwner?"block":"none";community.style.display=isCommunity?"block":"none";mt.classList.toggle("active",!isOwner&&!isCommunity);ot.classList.toggle("active",isOwner);if(isOwner)loadPosts();if(isCommunity){loadCommunity();loadPolls();refreshCommunityAuth();}}
 mt.onclick=()=>show("movies");ot.onclick=()=>show("owner");loadPosts();
@@ -766,7 +766,24 @@ setWelcomeMode=function(mode){
  });
 })();
 /* Returning signed-in members go straight to the site after refreshing. */
-sb.auth.getSession().then(({data})=>{if(data.session?.user&&!bcaGuestMode){closeLanding();syncProfile();}}).catch(()=>{});
+(async function restoreLoginAfterRefresh(){
+ try{
+  const {data,error}=await sb.auth.getSession();
+  if(error)throw error;
+  if(data.session?.user){
+   bcaGuestMode=false;
+   sessionStorage.removeItem("bcaGuestMode");
+   closeLanding();
+   await syncProfile();
+   refreshCommunityAuth();
+  }
+ }catch(e){console.warn("Could not restore saved login:",e);}
+})();
+sb.auth.onAuthStateChange((event,session)=>{
+ if((event==="SIGNED_IN"||event==="TOKEN_REFRESHED")&&session?.user){
+  bcaGuestMode=false;sessionStorage.removeItem("bcaGuestMode");closeLanding();
+ }
+});
 /* Bunker Survival-inspired ash particles: real frame-by-frame drifting sparks. */
 (function(){
  const canvas=document.getElementById("auroraParticleCanvas");
