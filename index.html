@@ -249,7 +249,7 @@ body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
 
 /* Always-visible moving particles: CSS works even if the page's JavaScript is interrupted. */
 #landing .aurora-moving-dots{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
-#landing .aurora-dot{position:absolute;display:block;border-radius:50%;background:#f5e9ff;box-shadow:0 0 8px 3px #c084fcbb,0 0 18px 5px #8b5cf766;animation:auroraDotMove 4s linear infinite!important;will-change:transform,opacity}
+#landing .aurora-dot{position:absolute;display:block;border-radius:50%;background:#f5e9ff;box-shadow:0 0 8px 3px #c084fcbb,0 0 18px 5px #8b5cf766;animation:auroraDotMove 1.8s linear infinite!important;will-change:transform,opacity}
 #landing .aurora-dot:nth-child(3n){background:#a5f3fc;box-shadow:0 0 9px 3px #38bdf8bb}
 #landing .aurora-dot:nth-child(5n){background:#e9d5ff;box-shadow:0 0 10px 3px #d946efbb}
 @keyframes auroraDotMove{0%{transform:translate3d(0,75px,0) scale(.45);opacity:0}12%{opacity:.9}80%{opacity:.95}100%{transform:translate3d(var(--dx),var(--dy),0) scale(1.15);opacity:0}}
@@ -767,7 +767,7 @@ setWelcomeMode=function(mode){
  dots.forEach((dot,i)=>{
   const x=((i*31)%220)-110;
   const y=-(180+(i*29)%310);
-  const duration=2700+(i*223)%3800;
+  const duration=1100+(i*137)%1600;
   if(typeof dot.animate==="function"){
    dot.style.animation="none";
    dot.animate([
