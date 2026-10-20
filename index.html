@@ -645,9 +645,6 @@ setWelcomeMode("choices");
   const chat=document.getElementById("community");if(chat){chat.classList.remove("chat-drawer");chat.style.display="none";}
   const fab=document.getElementById("chatFab");if(fab){fab.textContent="💬 Community Chat";fab.setAttribute("aria-expanded","false");}
  });
- if(profile)profile.addEventListener("click",function(){
-  /* Existing profile handler toggles the panel. If it did not run, show it. */
-  if(!profile.dataset.bcaProfileClick){profile.dataset.bcaProfileClick="1";setTimeout(()=>{profile.dataset.bcaProfileClick="";},0);}
- });
+ if(profile)profile.onclick=function(){panel.hidden=!panel.hidden;if(!panel.hidden&&typeof syncProfile==="function")syncProfile().catch(()=>{});};
 })();
 </body></html>
