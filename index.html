@@ -105,11 +105,32 @@ body:not(.schoolwork-open){background:radial-gradient(circle at 15% 0%,#311027,#
 @keyframes unlockFade{0%,70%{opacity:1}100%{opacity:0}}
 @media(max-width:600px){.landing-card{padding:28px 22px}#chatFab{right:12px;bottom:12px}#community.chat-drawer{right:10px;bottom:74px}}
 @media(prefers-reduced-motion:reduce){#landing:before,.landing-card,#chatFab,.unlock-content,.unlock-shackle,#unlockAnimation.active{animation:none!important}}
+
+/* Neon arcade profile refresh */
+:root{--neon-purple:#a855f7;--neon-pink:#ff3d8b}
+body:not(.schoolwork-open) .top{border-bottom:1px solid #b84cff55;box-shadow:0 4px 40px #a855f71f}
+body:not(.schoolwork-open) .tab.active{background:linear-gradient(135deg,#7c3aed,#fb3f85);box-shadow:0 0 22px #a855f75c}
+#chatFab{background:linear-gradient(135deg,#7c3aed,#f43f8e)}
+#profileBtn{border:1px solid #a855f777;background:#20152d;color:#fff;border-radius:12px;padding:9px 13px;font-weight:800;cursor:pointer;white-space:nowrap}
+#profileBtn:hover{box-shadow:0 0 20px #a855f766}
+#profilePanel{position:fixed;z-index:75;right:18px;top:70px;width:min(350px,calc(100vw - 36px));padding:22px;border-radius:22px;border:1px solid #ad5cff88;background:#11111bf5;backdrop-filter:blur(20px);box-shadow:0 25px 90px #000d,0 0 35px #a855f72a;color:#fff;animation:rise .25s both}
+#profilePanel[hidden]{display:none!important}
+.profile-head{display:flex;gap:14px;align-items:center;margin-bottom:18px}
+#profileAvatar{width:76px;height:76px;border-radius:20px;object-fit:cover;background:linear-gradient(135deg,#7c3aed,#fb3f85);border:2px solid #a855f7;box-shadow:0 0 25px #a855f755}
+#profilePanel h2{margin:0;font-size:22px}
+#profilePanel .profile-muted{color:#aaaac3;font-size:12px;overflow-wrap:anywhere}
+.profile-stat{background:#21182e;border:1px solid #9d4edd55;padding:15px;border-radius:14px;margin:12px 0}
+.profile-stat strong{font-size:26px;color:#f7c4ff}
+#profilePanel button,#profilePanel label{display:inline-block;border:1px solid #a855f777;background:#332044;color:white;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700;margin:5px 4px 5px 0}
+#profilePanel input[type=file]{display:none}
+#profileClose{float:right}
+#guestChatNotice{color:#ffbdd5;background:#5c194333;border:1px solid #ff71aa44;padding:12px;border-radius:12px;font-size:13px;margin:12px 0}
+@media(max-width:650px){#profileBtn{padding:8px;font-size:12px}.top{gap:5px}}
 </style></head><body>
-<div id="landing"><div class="landing-card"><div class="landing-kicker">YOUR MOVIE NIGHT STARTS HERE</div><div class="landing-brand">BCA<b>MOVIES+</b></div><p>Stream your favorites, discover extra movies, and hang out with the community.</p><input id="welcomeEmail" type="email" autocomplete="email" placeholder="Email address"><input id="welcomePassword" type="password" autocomplete="current-password" placeholder="Password"><div class="landing-actions"><button id="welcomeLogin">Sign In</button><button id="welcomeSignup" class="secondary">Create Account</button></div><div class="landing-actions"><button id="welcomeGuest" class="secondary">Continue as Guest →</button></div><p id="landingStatus" role="status"></p></div></div><button id="chatFab" type="button" aria-expanded="false" aria-controls="community">💬 Community Chat</button><div id="unlockAnimation" aria-hidden="true"><div class="unlock-content"><svg viewBox="0 0 140 160" fill="none"><g class="unlock-shackle"><path d="M37 76V49C37 4 103 4 103 49V76" stroke="#ff82ad" stroke-width="15" stroke-linecap="round"/></g><rect x="19" y="69" width="102" height="82" rx="17" fill="#fb426e"/><circle cx="70" cy="104" r="10" fill="#fff"/><path d="M70 108v18" stroke="#fff" stroke-width="9" stroke-linecap="round"/></svg><h2>UNLOCKED</h2></div></div><nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="moviesTab" class="tab active">Movies</button><button id="communityTab" class="tab">💬 Community</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><span id="viewMode" style="font-size:12px;font-weight:800;padding:7px 9px;border-radius:9px;background:#29292f;color:#bbb">CHECKING…</span><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
+<div id="landing"><div class="landing-card"><div class="landing-kicker">YOUR MOVIE NIGHT STARTS HERE</div><div class="landing-brand">BCA<b>MOVIES+</b></div><p>Stream your favorites, discover extra movies, and hang out with the community.</p><input id="welcomeEmail" type="email" autocomplete="email" placeholder="Email address"><input id="welcomePassword" type="password" autocomplete="current-password" placeholder="Password"><div class="landing-actions"><button id="welcomeLogin">Sign In</button><button id="welcomeSignup" class="secondary">Create Account</button></div><div class="landing-actions"><button id="welcomeGuest" class="secondary">Continue as Guest →</button></div><p id="landingStatus" role="status"></p></div></div><aside id="profilePanel" hidden aria-label="Your profile"><button id="profileClose" type="button">✕</button><div class="profile-head"><img id="profileAvatar" alt="Profile avatar"><div><h2 id="profileName">Movie Fan</h2><div class="profile-muted" id="profileEmail"></div></div></div><div class="profile-stat"><div class="profile-muted">TIME ON BCAMOVIES+ · THIS BROWSER</div><strong id="profileTime">0m</strong></div><label for="profileUpload">📸 Change Avatar</label><input id="profileUpload" type="file" accept="image/png,image/jpeg,image/webp"><button id="profileSignOut" type="button">Sign Out</button><p class="profile-muted" id="profileInfo">Avatar and time are saved on this device only.</p></aside><button id="chatFab" type="button" aria-expanded="false" aria-controls="community">💬 Community Chat</button><div id="unlockAnimation" aria-hidden="true"><div class="unlock-content"><svg viewBox="0 0 140 160" fill="none"><g class="unlock-shackle"><path d="M37 76V49C37 4 103 4 103 49V76" stroke="#ff82ad" stroke-width="15" stroke-linecap="round"/></g><rect x="19" y="69" width="102" height="82" rx="17" fill="#fb426e"/><circle cx="70" cy="104" r="10" fill="#fff"/><path d="M70 108v18" stroke="#fff" stroke-width="9" stroke-linecap="round"/></svg><h2>UNLOCKED</h2></div></div><nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="profileBtn" type="button">👤 Profile</button><button id="moviesTab" class="tab active">Movies</button><button id="communityTab" class="tab">💬 Community</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><span id="viewMode" style="font-size:12px;font-weight:800;padding:7px 9px;border-radius:9px;background:#29292f;color:#bbb">CHECKING…</span><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
 <iframe id="movies" src="BCAMOVIES_FIXED_12_MOVIES.html" title="BCAMOVIES+"></iframe>
 <section id="community"><div class="wrap"><div class="hero"><h1>💬 BCAMOVIES Community</h1><p>Chat, request movies, and vote in owner polls.</p></div>
-<div class="communityBox" id="communityAuth"><h2>Join the Community</h2><input id="cEmail" type="email" placeholder="Email"><input id="cPass" type="password" placeholder="Password"><input id="cName" placeholder="Display name"><button id="cSignup">Create Account</button><button id="cLogin">Log In</button><p class="small" id="cAuthMsg"></p></div>
+<div id="guestChatNotice">👀 Guests can read chat, but you need an account to send messages or request movies. Sign in or create an account below.</div><div class="communityBox" id="communityAuth"><h2>Join the Community</h2><input id="cEmail" type="email" placeholder="Email"><input id="cPass" type="password" placeholder="Password"><input id="cName" placeholder="Display name"><button id="cSignup">Create Account</button><button id="cLogin">Log In</button><p class="small" id="cAuthMsg"></p></div>
 <div id="communityUser" class="hidden"><div class="communityBox"><b id="cWho"></b><button id="cLogout">Log Out</button></div>
 <div class="communityBox"><h2>Chat / Movie Request</h2><select id="cType"><option value="chat">Chat</option><option value="request">🎬 Movie Request</option></select><textarea id="cMessage" rows="3" placeholder="Say something…"></textarea><button id="cSend">Post</button><p class="small" id="cSendMsg"></p></div></div>
 <div class="communityBox"><h2>Community Chat</h2><div id="communityMessages">Loading…</div></div>
@@ -478,4 +499,60 @@ function checkExtraUnlock(){
  }catch(e){}
 }
 setInterval(checkExtraUnlock,400);
+
+/* Account-aware community and browser-local player profile. */
+let bcaGuestMode=sessionStorage.getItem("bcaGuestMode")==="1";
+const profilePanel=document.getElementById("profilePanel"),profileBtn=document.getElementById("profileBtn");
+const defaultAvatar="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g"><stop stop-color="#a855f7"/><stop offset="1" stop-color="#f43f8e"/></linearGradient></defs><rect width="100" height="100" rx="20" fill="url(#g)"/><circle cx="50" cy="37" r="17" fill="white"/><path d="M18 89q0-33 32-33t32 33" fill="white"/></svg>');
+let bcaProfileKey=null;
+function timeLabel(seconds){const m=Math.floor(seconds/60);return m>=60?Math.floor(m/60)+"h "+m%60+"m":m+"m"}
+async function syncProfile(){
+ const {data}=await sb.auth.getSession(),u=bcaGuestMode?null:data.session?.user;
+ bcaProfileKey=u?"bca-player-"+u.id:null;
+ document.getElementById("profileName").textContent=u?(u.user_metadata?.display_name||u.email?.split("@")[0]||"Movie Fan"):"Guest Player";
+ document.getElementById("profileEmail").textContent=u?u.email:"Sign in to unlock chat and your profile";
+ document.getElementById("profileAvatar").src=(bcaProfileKey&&localStorage.getItem(bcaProfileKey+"-avatar"))||defaultAvatar;
+ document.getElementById("profileUpload").parentElement.querySelector('label[for="profileUpload"]').style.display=u?"inline-block":"none";
+ document.getElementById("profileSignOut").textContent=u?"Sign Out":"Sign In";
+ document.getElementById("profileTime").textContent=timeLabel(Number(localStorage.getItem((bcaProfileKey||"bca-guest")+"-seconds")||0));
+ const guestNotice=document.getElementById("guestChatNotice");
+ guestNotice.style.display=u?"none":"block";
+ document.getElementById("communityAuth").classList.toggle("hidden",!!u);
+ document.getElementById("communityUser").classList.toggle("hidden",!u);
+ if(u)document.getElementById("cWho").textContent="Signed in as "+(u.user_metadata?.display_name||u.email);
+}
+profileBtn.onclick=()=>{profilePanel.hidden=!profilePanel.hidden;if(!profilePanel.hidden)syncProfile()};
+document.getElementById("profileClose").onclick=()=>profilePanel.hidden=true;
+document.getElementById("profileSignOut").onclick=async()=>{
+ if(bcaProfileKey){await sb.auth.signOut();bcaGuestMode=true;sessionStorage.setItem("bcaGuestMode","1");syncProfile();}
+ else{profilePanel.hidden=true;landing.style.display="flex";sessionStorage.removeItem("bcaWelcomeSeen");}
+};
+document.getElementById("profileUpload").onchange=async e=>{
+ const file=e.target.files?.[0];if(!file||!bcaProfileKey)return;
+ if(file.size>1500000){document.getElementById("profileInfo").textContent="Please choose an image under 1.5 MB.";return;}
+ const reader=new FileReader();reader.onload=()=>{
+  try{localStorage.setItem(bcaProfileKey+"-avatar",reader.result);document.getElementById("profileAvatar").src=reader.result;document.getElementById("profileInfo").textContent="Avatar saved on this device."}
+  catch(e){document.getElementById("profileInfo").textContent="Couldn't save this image. Try a smaller picture."}
+ };reader.readAsDataURL(file);
+};
+setInterval(()=>{
+ if(document.hidden||landing.style.display!=="none")return;
+ const key=(bcaProfileKey||"bca-guest")+"-seconds";
+ const seconds=Number(localStorage.getItem(key)||0)+10;
+ try{localStorage.setItem(key,String(seconds))}catch(e){}
+ if(!profilePanel.hidden)document.getElementById("profileTime").textContent=timeLabel(seconds);
+},10000);
+const oldGuestClick=document.getElementById("welcomeGuest").onclick;
+document.getElementById("welcomeGuest").onclick=async()=>{bcaGuestMode=true;sessionStorage.setItem("bcaGuestMode","1");await sb.auth.signOut();oldGuestClick();syncProfile()};
+["welcomeLogin","welcomeSignup"].forEach(id=>{
+ document.getElementById(id).addEventListener("click",()=>setTimeout(async()=>{const {data}=await sb.auth.getSession();if(data.session){bcaGuestMode=false;sessionStorage.removeItem("bcaGuestMode");syncProfile()}},900));
+});
+sb.auth.onAuthStateChange(()=>setTimeout(syncProfile,150));
+const originalSend=document.getElementById("cSend").onclick;
+document.getElementById("cSend").onclick=async()=>{
+ if(bcaGuestMode){document.getElementById("cSendMsg").textContent="Sign in to chat.";return;}
+ const {data}=await sb.auth.getSession();if(!data.session?.user){document.getElementById("cSendMsg").textContent="Sign in to chat.";return;}
+ return originalSend();
+};
+syncProfile();
 </script></body></html>
