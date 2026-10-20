@@ -259,9 +259,9 @@ body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
 /* Cinematic purple orb login transition */
 #bcaLoginTransition{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;overflow:hidden;pointer-events:all;isolation:isolate}
 #bcaLoginTransition.playing{display:flex}
-#bcaLoginTransition::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,#e879f9 0%,#a855f7 18%,#7c3aed 42%,#32116d 72%,#090416 100%);clip-path:circle(0% at 50% 50%);animation:bcaOrbExpand 5.8s cubic-bezier(.4,0,.2,1) forwards;filter:saturate(1.3)}
-#bcaLoginTransition::after{content:"";position:absolute;width:90px;height:90px;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#fff 0%,#f0abfc 18%,#a855f7 42%,#7c3aed99 68%,transparent 75%);box-shadow:0 0 45px #c084fc,0 0 110px #a855f7;animation:bcaOrbCore 5.8s ease-in-out forwards}
-#bcaLoginTransition .bca-transition-brand{position:relative;z-index:2;text-align:center;font-size:clamp(38px,8vw,100px);font-weight:1000;letter-spacing:.06em;color:white;text-shadow:0 0 20px #fff9,0 0 65px #d8b4fe,0 0 100px #a855f7;opacity:0;animation:bcaBrandReveal 5.8s ease-in-out forwards}
+#bcaLoginTransition::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,#e879f9 0%,#a855f7 18%,#7c3aed 42%,#32116d 72%,#090416 100%);clip-path:circle(0% at 50% 50%);animation:bcaOrbExpand 8s cubic-bezier(.4,0,.2,1) forwards;filter:saturate(1.3)}
+#bcaLoginTransition::after{content:"";position:absolute;width:90px;height:90px;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#fff 0%,#f0abfc 18%,#a855f7 42%,#7c3aed99 68%,transparent 75%);box-shadow:0 0 45px #c084fc,0 0 110px #a855f7;animation:bcaOrbCore 8s ease-in-out forwards}
+#bcaLoginTransition .bca-transition-brand{position:relative;z-index:2;text-align:center;font-size:clamp(38px,8vw,100px);font-weight:1000;letter-spacing:.06em;color:white;text-shadow:0 0 20px #fff9,0 0 65px #d8b4fe,0 0 100px #a855f7;opacity:0;animation:bcaBrandReveal 8s ease-in-out forwards}
 #bcaLoginTransition .bca-transition-brand span{color:#f5d0fe}
 @keyframes bcaOrbExpand{0%{clip-path:circle(0% at 50% 50%)}12%{clip-path:circle(2% at 50% 50%)}40%,78%{clip-path:circle(150vmax at 50% 50%)}100%{clip-path:circle(0% at 50% 50%)}}
 @keyframes bcaOrbCore{0%{opacity:1;transform:translate(-50%,-50%) scale(.3);filter:hue-rotate(0deg)}35%{opacity:.9;transform:translate(-50%,-50%) scale(2);filter:hue-rotate(65deg)}55%{opacity:0;transform:translate(-50%,-50%) scale(3);filter:hue-rotate(130deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(.1)}}
@@ -440,7 +440,7 @@ async function loadCommunity(){
   const header=document.createElement("div");header.className="msg-header";
   const avatar=document.createElement("img");avatar.className="msg-avatar";avatar.alt="";
   avatar.src=bcaAvatarForUser(m.user_id);
-  const name=document.createElement("b");name.textContent=m.display_name||"Movie Fan";
+  const name=document.createElement("b");name.textContent=bcaProfileCache.get(m.user_id)?.name||bcaPresenceUsers.get(m.user_id)?.name||m.display_name||"Movie Fan";
   header.append(avatar,name);
   if(m.type==="request"){const pill=document.createElement("span");pill.className="pill";pill.textContent="MOVIE REQUEST";header.append(pill)}
   const message=document.createElement("div");message.textContent=m.message||"";
@@ -644,8 +644,8 @@ function playLoginTransition(){
  overlay.classList.remove("playing");void overlay.offsetWidth;
  overlay.classList.add("playing");
  /* Reveal the site beneath the orb while the orb is still covering the screen. */
- window.setTimeout(closeLanding,2500);
- const duration=window.matchMedia("(prefers-reduced-motion: reduce)").matches?500:5800;
+ window.setTimeout(closeLanding,3400);
+ const duration=window.matchMedia("(prefers-reduced-motion: reduce)").matches?500:8000;
  window.setTimeout(()=>overlay.classList.remove("playing"),duration+100);
 }
 /* The welcome screen appears only when signed out or choosing guest mode. */
@@ -670,7 +670,7 @@ document.getElementById("welcomeSignup").onclick=()=>welcomeAuth(true);
 
 function toggleChat(force){
  const open=typeof force==="boolean"?force:!community.classList.contains("chat-drawer");
- if(open){show("movies");community.classList.add("chat-drawer");community.style.display="block";loadCommunity();loadPolls();refreshCommunityAuth();}
+ if(open){closeOnlinePanel();show("movies");community.classList.add("chat-drawer");community.style.display="block";loadCommunity();loadPolls();refreshCommunityAuth();}
  else{community.classList.remove("chat-drawer");community.style.display="none";}
  chatFab.textContent=open?"✕ Close Chat":"💬 Community Chat";chatFab.setAttribute("aria-expanded",String(open));
 }
@@ -704,8 +704,10 @@ const defaultAvatar="data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http:/
 let bcaProfileKey=null;
 let bcaPresenceChannel=null;
 let bcaPresenceUsers=new Map();
+const bcaProfileCache=new Map();
 const bcaPresenceTabId=crypto.randomUUID?crypto.randomUUID():String(Math.random());
 function bcaAvatarForUser(id){
+ if(bcaProfileCache.get(id)?.avatar)return bcaProfileCache.get(id).avatar;
  const entry=bcaPresenceUsers.get(id);
  if(entry?.avatar)return entry.avatar;
  const local=id&&localStorage.getItem("bca-player-"+id+"-avatar");
@@ -723,11 +725,13 @@ function renderOnlinePeople(){
  }
  if(!bcaPresenceUsers.size)panel.textContent="No one online yet (or live presence is connecting).";
 }
+function closeOnlinePanel(){document.getElementById("onlinePanel").hidden=true;document.getElementById("onlineBtn").setAttribute("aria-expanded","false")}
 document.getElementById("onlineBtn").onclick=()=>{
+ if(community.classList.contains("chat-drawer"))toggleChat(false);
  const panel=document.getElementById("onlinePanel");panel.hidden=!panel.hidden;
  document.getElementById("onlineBtn").setAttribute("aria-expanded",String(!panel.hidden));
 };
-document.getElementById("onlineClose").onclick=()=>{document.getElementById("onlinePanel").hidden=true;document.getElementById("onlineBtn").setAttribute("aria-expanded","false")};
+document.getElementById("onlineClose").onclick=closeOnlinePanel;
 async function bcaPublishPresence(){
  if(!bcaPresenceChannel)return;
  const {data}=await sb.auth.getSession();
@@ -746,11 +750,15 @@ function bcaStartPresence(){
    const prev=users.get(p.id);
    if(!prev||Number(p.updated)>Number(prev.updated))users.set(p.id,p);
   }
-  bcaPresenceUsers=users;renderOnlinePeople();
+  bcaPresenceUsers=users;
+  for(const p of users.values())if(!String(p.id).startsWith("guest-"))bcaProfileCache.set(p.id,{name:p.name,avatar:p.avatar});
+  renderOnlinePeople();
   if(document.getElementById("communityMessages")?.children.length)loadCommunity();
  }).subscribe(status=>{if(status==="SUBSCRIBED")bcaPublishPresence().catch(()=>{});});
 }
 bcaStartPresence();
+/* Keep the online roster fresh without manually refreshing the page. */
+setInterval(()=>{if(bcaPresenceChannel)bcaPublishPresence().catch(()=>{})},15000);
 window.addEventListener("pagehide",()=>{if(bcaPresenceChannel)bcaPresenceChannel.untrack().catch(()=>{})});
 sb.auth.onAuthStateChange(()=>setTimeout(()=>bcaPublishPresence().catch(()=>{}),300));
 
@@ -827,6 +835,7 @@ document.getElementById("profileSaveName").onclick=async()=>{
  const {data,error}=await sb.auth.updateUser({data:{display_name:name}});
  if(error){info.textContent=error.message;return;}
  info.textContent="Username updated!";document.getElementById("profileName").textContent=name;
+ bcaPublishPresence().catch(()=>{});
  document.getElementById("cWho").textContent="Signed in as "+name;
 };
 
