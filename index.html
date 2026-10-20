@@ -732,7 +732,7 @@ async function bcaPublishPresence(){
  if(!bcaPresenceChannel)return;
  const {data}=await sb.auth.getSession();
  const user=!bcaGuestMode?data.session?.user:null;
- const avatar=user?(localStorage.getItem("bca-player-"+user.id+"-avatar")||user.user_metadata?.avatar_url||defaultAvatar):defaultAvatar;
+ const avatar=user?(localStorage.getItem("bca-player-"+user.id+"-avatar")||defaultAvatar):defaultAvatar;
  const name=user?(user.user_metadata?.display_name||user.email?.split("@")[0]||"Movie Fan"):"Guest";
  await bcaPresenceChannel.track({id:user?.id||"guest-"+bcaPresenceTabId,name,avatar,tab:bcaPresenceTabId,updated:Date.now()});
 }
@@ -783,8 +783,20 @@ document.getElementById("profileUpload").onchange=async e=>{
  const file=e.target.files?.[0];if(!file||!bcaProfileKey)return;
  if(file.size>1500000){document.getElementById("profileInfo").textContent="Please choose an image under 1.5 MB.";return;}
  const reader=new FileReader();reader.onload=()=>{
-  try{localStorage.setItem(bcaProfileKey+"-avatar",reader.result);document.getElementById("profileAvatar").src=reader.result;document.getElementById("navProfileAvatar").src=reader.result;document.getElementById("profileInfo").textContent="Avatar saved. Other online users can now see it.";bcaPublishPresence().catch(()=>{});}
-  catch(e){document.getElementById("profileInfo").textContent="Couldn't save this image. Try a smaller picture."}
+  const img=new Image();
+  img.onload=()=>{
+   try{
+    const canvas=document.createElement("canvas");canvas.width=128;canvas.height=128;
+    const ctx=canvas.getContext("2d");const side=Math.min(img.width,img.height);
+    ctx.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,128,128);
+    const avatar=canvas.toDataURL("image/jpeg",.72);
+    localStorage.setItem(bcaProfileKey+"-avatar",avatar);
+    document.getElementById("profileAvatar").src=avatar;
+    document.getElementById("navProfileAvatar").src=avatar;
+    document.getElementById("profileInfo").textContent="Avatar saved. Other online users can now see it.";
+    bcaPublishPresence().catch(()=>{});
+   }catch(e){document.getElementById("profileInfo").textContent="Couldn't save this image. Try another picture."}
+  };img.src=reader.result;
  };reader.readAsDataURL(file);
 };
 setInterval(()=>{
