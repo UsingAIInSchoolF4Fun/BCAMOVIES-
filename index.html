@@ -635,7 +635,7 @@ sb.auth.onAuthStateChange((event,session)=>{
  if((event==="INITIAL_SESSION"||event==="SIGNED_IN"||event==="TOKEN_REFRESHED")&&session?.user){
   bcaGuestMode=false;
   sessionStorage.removeItem("bcaGuestMode");
-  if(event==="INITIAL_SESSION")closeLanding();
+  if(event==="INITIAL_SESSION"&&!bcaLoginPending&&!document.getElementById("bcaLoginTransition").classList.contains("playing"))closeLanding();
  }
 });
 function playLoginTransition(){
@@ -650,7 +650,12 @@ function playLoginTransition(){
 }
 /* The welcome screen appears only when signed out or choosing guest mode. */
 document.getElementById("welcomeGuest").onclick=closeLanding;
+let bcaLoginPending=false;
 async function welcomeAuth(create){
+ if(bcaLoginPending)return;
+ bcaLoginPending=true;
+ const loginButton=document.getElementById("welcomeLogin"),signupButton=document.getElementById("welcomeSignup");
+ loginButton.disabled=true;signupButton.disabled=true;
  const email=document.getElementById("welcomeEmail").value.trim(),password=document.getElementById("welcomePassword").value,username=document.getElementById("welcomeUsername").value.trim();
  const status=document.getElementById("landingStatus");
  if(!email||!password){status.textContent="Enter your email and password.";return;}
@@ -662,8 +667,11 @@ async function welcomeAuth(create){
   const result=create?await sb.auth.signUp({email,password,options:{data:{display_name:username}}}):await sb.auth.signInWithPassword({email,password});
   if(result.error){const already=create&&/already registered|already exists|user already/i.test(result.error.message);status.textContent=already?"An account already exists with this email. Choose Sign In instead.":result.error.message;return;}
   if(create&&!result.data.session){status.textContent="Check your email for a confirmation link if required. If you already have an account with this Gmail, choose Sign In—do not create another profile. The Owner Dashboard uses the same account.";return;}
-  bcaGuestMode=false;sessionStorage.removeItem("bcaGuestMode");playLoginTransition();refreshCommunityAuth();syncProfile();watchMoviePage();
+  if(!result.data?.session?.user){status.textContent="Sign-in was not completed. Check your email confirmation or password.";return;}
+  bcaGuestMode=false;sessionStorage.removeItem("bcaGuestMode");
+  playLoginTransition();refreshCommunityAuth().catch(()=>{});syncProfile().catch(()=>{});watchMoviePage();
  }catch(e){status.textContent="Could not connect. Please try again."}
+ finally{bcaLoginPending=false;loginButton.disabled=false;signupButton.disabled=false;}
 }
 document.getElementById("welcomeLogin").onclick=()=>welcomeAuth(false);
 document.getElementById("welcomeSignup").onclick=()=>welcomeAuth(true);
@@ -705,6 +713,10 @@ let bcaProfileKey=null;
 let bcaPresenceChannel=null;
 let bcaPresenceUsers=new Map();
 const bcaProfileCache=new Map();
+function rememberBcaVisitor(p){
+ if(!p?.id||String(p.id).startsWith("guest-"))return;
+ try{const key="bca-known-visitors-v1",all=JSON.parse(localStorage.getItem(key)||"{}");all[p.id]={id:p.id,name:p.name||"Movie Fan",avatar:p.avatar||"",last_seen:new Date().toISOString()};localStorage.setItem(key,JSON.stringify(all));}catch(e){}
+}
 const bcaPresenceTabId=crypto.randomUUID?crypto.randomUUID():String(Math.random());
 function bcaAvatarForUser(id){
  if(bcaProfileCache.get(id)?.avatar)return bcaProfileCache.get(id).avatar;
@@ -751,7 +763,7 @@ function bcaStartPresence(){
    if(!prev||Number(p.updated)>Number(prev.updated))users.set(p.id,p);
   }
   bcaPresenceUsers=users;
-  for(const p of users.values())if(!String(p.id).startsWith("guest-"))bcaProfileCache.set(p.id,{name:p.name,avatar:p.avatar});
+  for(const p of users.values())if(!String(p.id).startsWith("guest-")){bcaProfileCache.set(p.id,{name:p.name,avatar:p.avatar});rememberBcaVisitor(p);}
   renderOnlinePeople();
   if(document.getElementById("communityMessages")?.children.length)loadCommunity();
  }).subscribe(status=>{if(status==="SUBSCRIBED")bcaPublishPresence().catch(()=>{});});
