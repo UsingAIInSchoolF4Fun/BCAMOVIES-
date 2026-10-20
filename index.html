@@ -595,7 +595,7 @@ async function welcomeAuth(create){
  try{
   const result=create?await sb.auth.signUp({email,password,options:{data:{display_name:username}}}):await sb.auth.signInWithPassword({email,password});
   if(result.error){const already=create&&/already registered|already exists|user already/i.test(result.error.message);status.textContent=already?"An account already exists with this email. Choose Sign In instead.":result.error.message;return;}
-  if(create&&!result.data.session){status.textContent="Thanks for creating your BCAMOVIES+ account! Check your inbox for your welcome/confirmation email. If you already registered with this email, choose Sign In instead.";return;}
+  if(create&&!result.data.session){status.textContent="Thanks for creating your BCAMOVIES+ account! Check your inbox for a confirmation email if email confirmation is enabled. If you already registered with this email, choose Sign In instead.";return;}
   bcaGuestMode=false;sessionStorage.removeItem("bcaGuestMode");closeLanding();refreshCommunityAuth();syncProfile();watchMoviePage();
  }catch(e){status.textContent="Could not connect. Please try again."}
 }
