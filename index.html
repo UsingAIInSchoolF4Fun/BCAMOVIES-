@@ -631,8 +631,8 @@ function bcaWelcomeLocal(){
 function bcaEnterLocal(){
  if(!bcaLocalProfile())return;
  bcaGuestMode=true;sessionStorage.setItem("bcaGuestMode","1");
- sb.auth.signOut().catch(()=>{});
- playLoginTransition();syncProfile().catch(()=>{});bcaPublishPresence().catch(()=>{});
+ closeLanding();
+ syncProfile().catch(()=>{});bcaPublishPresence().catch(()=>{});
 }
 document.getElementById("chooseLocal").onclick=()=>{document.getElementById("welcomeChoices").hidden=true;document.getElementById("localProfileCreate").hidden=false;document.getElementById("welcomeGuest").hidden=true;document.getElementById("localProfileName").focus()};
 document.getElementById("localProfileCancel").onclick=bcaWelcomeLocal;
@@ -666,7 +666,7 @@ function closeLanding(){landing.style.display="none";}
  }catch(e){console.warn("Saved login could not be restored:",e);}
 })();
 sb.auth.onAuthStateChange((event,session)=>{
- if((event==="INITIAL_SESSION"||event==="SIGNED_IN"||event==="TOKEN_REFRESHED")&&session?.user){
+ if((event==="INITIAL_SESSION"||event==="SIGNED_IN"||event==="TOKEN_REFRESHED")&&session?.user&&!bcaLocalProfile()){
   bcaGuestMode=false;
   sessionStorage.removeItem("bcaGuestMode");
   if(event==="INITIAL_SESSION"&&!bcaLocalProfile()&&!bcaLoginPending&&!document.getElementById("bcaLoginTransition").classList.contains("playing"))closeLanding();
