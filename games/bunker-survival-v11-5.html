@@ -1353,6 +1353,22 @@ function strikeMotionFrame(now){
    if(!Number.isFinite(y)){y=parseFloat(d.style.top)||45+(i%2)*5;d.dataset.y=y}
 
    let z=null,tx=parseFloat(d.dataset.tx),ty=parseFloat(d.dataset.ty);
+   // Automatically acquire an active threat even when the spawn event was missed.
+   // Prefer the nearest zombie to this defender, then lock on until it dies.
+   if(d.dataset.response!=="1"||!liveZombieById(d.dataset.targetZombie)){
+     let available=[...document.querySelectorAll("#battlefield .zombieDot")]
+       .filter(q=>q.isConnected&&q.dataset.dead!=="1"&&q.dataset.side);
+     if(available.length){
+       available.sort((a,b)=>{
+         let ax=parseFloat(a.style.left),ay=parseFloat(a.style.top);
+         let bx=parseFloat(b.style.left),by=parseFloat(b.style.top);
+         return Math.hypot(ax-x,ay-y)-Math.hypot(bx-x,by-y);
+       });
+       d.dataset.response="1";
+       d.dataset.responseSide=available[0].dataset.side;
+       d.dataset.targetZombie=available[0].dataset.zid;
+     }
+   }
    if(d.dataset.response==="1"&&d.dataset.responseSide){
      z=chooseZombieForDefender(d.dataset.responseSide,d);
      if(z){
@@ -1401,7 +1417,7 @@ function updateStrikeMovement(forceSide=null){
  if(forceSide){
    dots.forEach((d,i)=>{
      let p=strikeTargetForSide(forceSide,i,dots.length);
-     d.dataset.response="1";d.dataset.responseUntil=performance.now()+2400;
+     d.dataset.response="1";d.dataset.responseSide=forceSide;d.dataset.responseUntil=performance.now()+2400;
      d.dataset.tx=p[0];d.dataset.ty=p[1];
    });
    return;
