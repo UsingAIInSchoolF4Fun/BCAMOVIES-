@@ -8,7 +8,42 @@
 #community,#owner{display:none;min-height:calc(100% - 58px);padding:34px 18px}.wrap{max-width:850px;margin:auto}.hero{padding:24px 0}.hero h1{font-size:36px;margin:0 0 8px}.hero p{color:#aaa;margin:0}
 .post{background:#151518;border:1px solid #2c2c32;border-radius:18px;padding:20px;margin:14px 0;box-shadow:0 10px 30px #0003}.post p{font-size:17px;line-height:1.55;white-space:pre-wrap;margin:0 0 14px}.date{font-size:12px;color:#888}.empty{padding:35px;text-align:center;color:#888;background:#131315;border-radius:18px}.manage{display:inline-block;margin-top:12px;color:#fff}
 @media(max-width:600px){.top{padding:0 9px;gap:6px}.logo{font-size:17px}.tab{padding:9px 10px}.ownerlink{display:none}.hero h1{font-size:29px}}
-.communityBox{background:#151518;border:1px solid #2c2c32;border-radius:18px;padding:18px;margin:14px 0}.communityBox input,.communityBox textarea,.communityBox button,.communityBox select{width:100%;box-sizing:border-box;padding:11px;margin:5px 0;border-radius:10px;border:1px solid #38383f;background:#0e0e11;color:white}.communityBox button{background:#f43f5e;border:0;font-weight:700;cursor:pointer}.msg{padding:13px 0;border-bottom:1px solid #29292e}.msg b{color:#fff}.msg small{color:#888}.pill{font-size:11px;background:#34343a;padding:3px 7px;border-radius:20px;margin-left:5px}.pollopt{display:flex;gap:8px;align-items:center;margin:7px 0}.pollopt button{width:auto;padding:8px 12px}.hidden{display:none!important}</style></head><body>
+.communityBox{background:#151518;border:1px solid #2c2c32;border-radius:18px;padding:18px;margin:14px 0}.communityBox input,.communityBox textarea,.communityBox button,.communityBox select{width:100%;box-sizing:border-box;padding:11px;margin:5px 0;border-radius:10px;border:1px solid #38383f;background:#0e0e11;color:white}.communityBox button{background:#f43f5e;border:0;font-weight:700;cursor:pointer}.msg{padding:13px 0;border-bottom:1px solid #29292e}.msg b{color:#fff}.msg small{color:#888}.pill{font-size:11px;background:#34343a;padding:3px 7px;border-radius:20px;margin-left:5px}.pollopt{display:flex;gap:8px;align-items:center;margin:7px 0}.pollopt button{width:auto;padding:8px 12px}.hidden{display:none!important}
+/* Refined navigation and study workspace */
+.top{gap:8px;box-shadow:0 8px 35px #0004;overflow-x:auto;scrollbar-width:none}
+.top::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;transition:background .22s,transform .22s,box-shadow .22s}
+.tab:hover{background:#42424b;transform:translateY(-1px)}
+.tab.active{box-shadow:0 5px 22px #f43f5e35}
+#schoolwork{display:none;min-height:calc(100vh - 58px);padding:35px 22px 65px;background:radial-gradient(ellipse at 90% 0%,#261927 0%,transparent 44%),#0b0b10}
+.study-wrap{max-width:1100px;margin:auto}
+.study-eyebrow{color:#fda4af;font-size:12px;letter-spacing:.18em;font-weight:800}
+.study-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:25px}
+.study-head h1{font-size:clamp(30px,5vw,48px);margin:8px 0}
+.study-head p{color:#a1a1aa;margin:0}
+.study-date{border:1px solid #34343e;background:#1a1a22;padding:12px 17px;border-radius:15px;color:#ddd}
+.study-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}
+.study-card{background:#17171f;border:1px solid #30303c;border-radius:20px;padding:23px;box-shadow:0 14px 35px #0003}
+.study-card h2{margin:0 0 6px;font-size:21px}.study-card p{color:#a1a1aa;font-size:14px}
+.study-card input,.study-card textarea{background:#0e0e14;border:1px solid #3c3c48;border-radius:11px;color:#fff;padding:12px;font:inherit;width:100%;outline:none}
+.study-card input:focus,.study-card textarea:focus{border-color:#f43f5e}
+.study-card textarea{min-height:205px;resize:vertical;line-height:1.6}
+.study-btn{border:0;border-radius:11px;background:#f43f5e;color:#fff;padding:12px 16px;font-weight:800;cursor:pointer}
+.study-btn.secondary{background:#32323d}.study-btn:hover{filter:brightness(1.13)}
+.study-add{display:flex;gap:9px;margin:16px 0}
+.study-task{display:flex;align-items:center;gap:12px;padding:13px 4px;border-bottom:1px solid #2c2c35}
+.study-task input{width:19px;height:19px;accent-color:#f43f5e;flex-shrink:0}
+.study-task span{flex:1;overflow-wrap:anywhere}.study-task.done span{text-decoration:line-through;color:#777}
+.study-task button{background:transparent;border:0;color:#a1a1aa;font-size:20px;cursor:pointer}
+.study-empty{color:#9292a0;padding:16px 0}
+.study-timer{font-size:clamp(48px,7vw,76px);font-weight:900;letter-spacing:.03em;text-align:center;margin:22px 0;font-variant-numeric:tabular-nums}
+.study-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}
+.study-foot{color:#7d7d89;font-size:12px;margin-top:18px}
+.page-enter{animation:studySweep .34s cubic-bezier(.2,.7,.2,1) both}
+@keyframes studySweep{from{opacity:.35;transform:translateX(18px);filter:blur(3px)}to{opacity:1;transform:translateX(0);filter:blur(0)}}
+@media(max-width:750px){.study-grid{grid-template-columns:1fr}.study-add{flex-wrap:wrap}.study-add input{min-width:100%}.top{padding:0 10px}.logo{font-size:15px}}
+@media(prefers-reduced-motion:reduce){.page-enter{animation:none}.tab{transition:none}}
+</style></head><body>
 <nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="moviesTab" class="tab active">Movies</button><button id="communityTab" class="tab">💬 Community</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><span id="viewMode" style="font-size:12px;font-weight:800;padding:7px 9px;border-radius:9px;background:#29292f;color:#bbb">CHECKING…</span><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
 <iframe id="movies" src="BCAMOVIES_FIXED_12_MOVIES.html" title="BCAMOVIES+"></iframe>
 <section id="community"><div class="wrap"><div class="hero"><h1>💬 BCAMOVIES Community</h1><p>Chat, request movies, and vote in owner polls.</p></div>
@@ -18,6 +53,17 @@
 <div class="communityBox"><h2>Community Chat</h2><div id="communityMessages">Loading…</div></div>
 <div class="communityBox"><h2>📊 Polls</h2><div id="polls">Loading…</div></div></div></section>
 <section id="owner"><div class="wrap"><div class="hero"><h1>📣 Owner Messages</h1><p><b>Announcements from the BCAMOVIES owner.</b> Check here for new movies, updates, and other messages.</p><a class="manage" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">🔐 Owner Login / Manage</a></div><div id="posts"><div class="empty">Loading owner messages…</div></div></div></section>
+
+<section id="schoolwork" aria-label="Schoolwork dashboard">
+ <div class="study-wrap">
+  <div class="study-head"><div><div class="study-eyebrow">YOUR PRODUCTIVITY SPACE</div><h1>Schoolwork <span style="color:#f43f5e">Studio.</span></h1><p>Stay focused, organize assignments, and make progress.</p></div><div class="study-date" id="studyDate"></div></div>
+  <div class="study-grid">
+   <div class="study-card"><h2>✓ Assignment checklist</h2><p>Keep track of what you need to finish.</p><div class="study-add"><input id="studyNewTask" maxlength="180" placeholder="Add an assignment..." aria-label="New assignment"><button class="study-btn" id="studyAddTask">Add task</button></div><div id="studyTasks"></div><div class="study-foot" id="studyProgress">0 tasks completed</div></div>
+   <div class="study-card"><h2>◷ Focus timer</h2><p>Work in short, focused sessions.</p><div class="study-timer" id="studyClock">25:00</div><div class="study-actions"><button class="study-btn" id="studyStart">Start</button><button class="study-btn secondary" id="studyPause">Pause</button><button class="study-btn secondary" id="studyReset">Reset</button></div><div class="study-foot" style="text-align:center">25-minute focus session</div></div>
+   <div class="study-card" style="grid-column:1/-1"><h2>✎ Quick notes</h2><p>Draft ideas, keep reminders, or outline your next assignment. Notes save automatically on this browser.</p><textarea id="studyNotes" placeholder="What's on your mind?"></textarea><div class="study-foot" id="studySaved">Saved locally on this device</div></div>
+  </div>
+ </div>
+</section>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 const sb=supabase.createClient("https://hzydgsxjamynfabonszg.supabase.co","sb_publishable_yUMhCuP8O-4XJM7sTivo3w_AsEcYsqR");
 const movies=document.getElementById("movies"),owner=document.getElementById("owner"),community=document.getElementById("community"),mt=document.getElementById("moviesTab"),ot=document.getElementById("ownerTab"),ct=document.getElementById("communityTab");
@@ -247,4 +293,54 @@ document.getElementById("htmlFullBtn").onclick = () => {
   document.getElementById("htmlPreview")
     .requestFullscreen?.();
 };
+
+/* Schoolwork Studio: visible, functional productivity dashboard */
+const schoolwork=document.getElementById("schoolwork");
+const schoolTab=document.createElement("button");
+schoolTab.id="schoolworkTab";schoolTab.className="tab";schoolTab.textContent="📚 Schoolwork";
+document.querySelector(".top").insertBefore(schoolTab,document.getElementById("viewMode"));
+function animatePage(el){el.classList.remove("page-enter");void el.offsetWidth;el.classList.add("page-enter");}
+const oldShow=show;
+show=function(which){
+ schoolwork.style.display="none";schoolTab.classList.remove("active");
+ toolsPanel.style.display="none";toolsButton.classList.remove("active");
+ oldShow(which);
+ animatePage(which==="movies"?movies:which==="community"?community:owner);
+};
+schoolTab.onclick=()=>{
+ movies.style.display="none";community.style.display="none";owner.style.display="none";toolsPanel.style.display="none";
+ document.querySelectorAll(".top .tab").forEach(b=>b.classList.remove("active"));
+ schoolwork.style.display="block";schoolTab.classList.add("active");animatePage(schoolwork);
+};
+toolsButton.addEventListener("click",()=>{schoolwork.style.display="none";schoolTab.classList.remove("active");animatePage(toolsPanel);});
+document.getElementById("studyDate").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"});
+const studyKey="bcamovies-study-v1";
+function studyGet(key,fallback){try{return JSON.parse(localStorage.getItem(studyKey+key))??fallback}catch{return fallback}}
+function studySet(key,value){try{localStorage.setItem(studyKey+key,JSON.stringify(value))}catch{}}
+let tasks=studyGet("-tasks",[]);
+function renderStudyTasks(){
+ const box=document.getElementById("studyTasks");box.replaceChildren();
+ if(!tasks.length){const empty=document.createElement("div");empty.className="study-empty";empty.textContent="No assignments yet. Add your first one!";box.appendChild(empty)}
+ tasks.forEach((task,i)=>{
+  const row=document.createElement("div");row.className="study-task"+(task.done?" done":"");
+  const check=document.createElement("input");check.type="checkbox";check.checked=!!task.done;check.setAttribute("aria-label","Complete "+task.text);
+  check.onchange=()=>{tasks[i].done=check.checked;studySet("-tasks",tasks);renderStudyTasks()};
+  const name=document.createElement("span");name.textContent=task.text;
+  const remove=document.createElement("button");remove.textContent="×";remove.setAttribute("aria-label","Remove "+task.text);
+  remove.onclick=()=>{tasks.splice(i,1);studySet("-tasks",tasks);renderStudyTasks()};
+  row.append(check,name,remove);box.appendChild(row);
+ });
+ document.getElementById("studyProgress").textContent=tasks.filter(t=>t.done).length+" of "+tasks.length+" tasks completed";
+}
+function addStudyTask(){const input=document.getElementById("studyNewTask"),value=input.value.trim();if(!value)return;tasks.push({text:value,done:false});input.value="";studySet("-tasks",tasks);renderStudyTasks()}
+document.getElementById("studyAddTask").onclick=addStudyTask;
+document.getElementById("studyNewTask").addEventListener("keydown",e=>{if(e.key==="Enter")addStudyTask()});
+renderStudyTasks();
+const notes=document.getElementById("studyNotes");notes.value=studyGet("-notes","");
+notes.addEventListener("input",()=>{studySet("-notes",notes.value);document.getElementById("studySaved").textContent="Saved locally"});
+let studySeconds=1500,studyInterval=null;
+function drawStudyClock(){const m=Math.floor(studySeconds/60),s=studySeconds%60;document.getElementById("studyClock").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")}
+document.getElementById("studyStart").onclick=()=>{if(studyInterval)return;studyInterval=setInterval(()=>{studySeconds=Math.max(0,studySeconds-1);drawStudyClock();if(!studySeconds){clearInterval(studyInterval);studyInterval=null}},1000)};
+document.getElementById("studyPause").onclick=()=>{clearInterval(studyInterval);studyInterval=null};
+document.getElementById("studyReset").onclick=()=>{clearInterval(studyInterval);studyInterval=null;studySeconds=1500;drawStudyClock()};
 </script></body></html>
