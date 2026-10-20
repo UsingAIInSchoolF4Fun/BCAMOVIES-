@@ -259,13 +259,13 @@ body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
 /* Cinematic purple orb login transition */
 #bcaLoginTransition{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;overflow:hidden;pointer-events:all;isolation:isolate}
 #bcaLoginTransition.playing{display:flex}
-#bcaLoginTransition::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,#e879f9 0%,#a855f7 18%,#7c3aed 42%,#32116d 72%,#090416 100%);clip-path:circle(0% at 50% 50%);animation:bcaOrbExpand 3.6s cubic-bezier(.4,0,.2,1) forwards;filter:saturate(1.3)}
-#bcaLoginTransition::after{content:"";position:absolute;width:90px;height:90px;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#fff 0%,#f0abfc 18%,#a855f7 42%,#7c3aed99 68%,transparent 75%);box-shadow:0 0 45px #c084fc,0 0 110px #a855f7;animation:bcaOrbCore 3.6s ease-in-out forwards}
-#bcaLoginTransition .bca-transition-brand{position:relative;z-index:2;text-align:center;font-size:clamp(38px,8vw,100px);font-weight:1000;letter-spacing:.06em;color:white;text-shadow:0 0 20px #fff9,0 0 65px #d8b4fe,0 0 100px #a855f7;opacity:0;animation:bcaBrandReveal 3.6s ease-in-out forwards}
+#bcaLoginTransition::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,#e879f9 0%,#a855f7 18%,#7c3aed 42%,#32116d 72%,#090416 100%);clip-path:circle(0% at 50% 50%);animation:bcaOrbExpand 5.8s cubic-bezier(.4,0,.2,1) forwards;filter:saturate(1.3)}
+#bcaLoginTransition::after{content:"";position:absolute;width:90px;height:90px;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#fff 0%,#f0abfc 18%,#a855f7 42%,#7c3aed99 68%,transparent 75%);box-shadow:0 0 45px #c084fc,0 0 110px #a855f7;animation:bcaOrbCore 5.8s ease-in-out forwards}
+#bcaLoginTransition .bca-transition-brand{position:relative;z-index:2;text-align:center;font-size:clamp(38px,8vw,100px);font-weight:1000;letter-spacing:.06em;color:white;text-shadow:0 0 20px #fff9,0 0 65px #d8b4fe,0 0 100px #a855f7;opacity:0;animation:bcaBrandReveal 5.8s ease-in-out forwards}
 #bcaLoginTransition .bca-transition-brand span{color:#f5d0fe}
-@keyframes bcaOrbExpand{0%{clip-path:circle(0% at 50% 50%)}12%{clip-path:circle(2% at 50% 50%)}42%,72%{clip-path:circle(78% at 50% 50%)}100%{clip-path:circle(0% at 50% 50%)}}
+@keyframes bcaOrbExpand{0%{clip-path:circle(0% at 50% 50%)}12%{clip-path:circle(2% at 50% 50%)}40%,78%{clip-path:circle(150vmax at 50% 50%)}100%{clip-path:circle(0% at 50% 50%)}}
 @keyframes bcaOrbCore{0%{opacity:1;transform:translate(-50%,-50%) scale(.3);filter:hue-rotate(0deg)}35%{opacity:.9;transform:translate(-50%,-50%) scale(2);filter:hue-rotate(65deg)}55%{opacity:0;transform:translate(-50%,-50%) scale(3);filter:hue-rotate(130deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(.1)}}
-@keyframes bcaBrandReveal{0%,31%{opacity:0;transform:scale(.86)}43%,64%{opacity:1;transform:scale(1)}78%,100%{opacity:0;transform:scale(1.08)}}
+@keyframes bcaBrandReveal{0%,31%{opacity:0;transform:scale(.86)}46%,70%{opacity:1;transform:scale(1)}85%,100%{opacity:0;transform:scale(1.08)}}
 @media(prefers-reduced-motion:reduce){#bcaLoginTransition::before,#bcaLoginTransition::after,#bcaLoginTransition .bca-transition-brand{animation-duration:.5s!important}}
 
 #onlineBtn{white-space:nowrap;border:1px solid #22c55e66;background:#143024;color:#dcfce7;border-radius:13px;padding:10px 13px;font-weight:800;cursor:pointer}#onlineBtn:hover{background:#20513a}#onlinePanel{position:fixed;right:15px;top:70px;z-index:90;width:min(350px,calc(100vw - 30px));max-height:75vh;overflow:auto;border:1px solid #a855f7;border-radius:18px;background:#170f2d;padding:20px;box-shadow:0 15px 60px #000b}#onlinePanel[hidden]{display:none!important}#onlineClose{float:right;border:0;background:#42216c;color:white;border-radius:9px;padding:7px 11px;cursor:pointer}.online-person{display:flex;align-items:center;gap:11px;margin:12px 0;padding:8px;border-radius:12px;background:#ffffff0a}.online-person img,.msg-avatar{width:37px;height:37px;border-radius:50%;object-fit:cover;border:2px solid #a855f7;flex-shrink:0}.msg-header{display:flex;align-items:center;gap:9px;margin-bottom:6px}.online-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;margin-left:auto;box-shadow:0 0 10px #4ade80}@media(max-width:650px){#onlineBtn{padding:7px 9px;font-size:12px}}
@@ -644,8 +644,8 @@ function playLoginTransition(){
  overlay.classList.remove("playing");void overlay.offsetWidth;
  overlay.classList.add("playing");
  /* Reveal the site beneath the orb while the orb is still covering the screen. */
- window.setTimeout(closeLanding,1350);
- const duration=window.matchMedia("(prefers-reduced-motion: reduce)").matches?500:3600;
+ window.setTimeout(closeLanding,2500);
+ const duration=window.matchMedia("(prefers-reduced-motion: reduce)").matches?500:5800;
  window.setTimeout(()=>overlay.classList.remove("playing"),duration+100);
 }
 /* The welcome screen appears only when signed out or choosing guest mode. */
