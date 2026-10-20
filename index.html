@@ -304,7 +304,7 @@ setInterval(()=>{
 
 async function applyMoviePermissions(){
   const {data}=await sb.auth.getSession();
-  const isOwner=(data.session?.user?.email||"").toLowerCase()==="jonathanspollard11@gmail.com";
+  const isOwner=["jonathan.pollard@bcaroyals.com","jonathanspollard11@gmail.com"].includes((data.session?.user?.email||"").toLowerCase());
   const vm=document.getElementById("viewMode");if(vm){vm.textContent=isOwner?"OWNER MODE":"VIEWER MODE";vm.style.color=isOwner?"#86efac":"#fda4af";}
   try{
     const d=movies.contentDocument;if(!d)return;
