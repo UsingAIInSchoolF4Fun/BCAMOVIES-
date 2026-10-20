@@ -489,9 +489,8 @@ document.getElementById("movies").addEventListener("load",function(){
 
 /* Welcome experience + collapsible chat: existing Supabase accounts stay intact. */
 const landing=document.getElementById("landing"),chatFab=document.getElementById("chatFab");
-function closeLanding(){landing.style.display="none";sessionStorage.setItem("bcaWelcomeSeen","1");}
-if(sessionStorage.getItem("bcaWelcomeSeen")==="1")closeLanding();
-sb.auth.getSession().then(({data})=>{if(data.session)closeLanding()});
+function closeLanding(){landing.style.display="none";}
+/* Always show the menu after a page refresh, even for signed-in members. */
 document.getElementById("welcomeGuest").onclick=closeLanding;
 async function welcomeAuth(create){
  const email=document.getElementById("welcomeEmail").value.trim(),password=document.getElementById("welcomePassword").value,username=document.getElementById("welcomeUsername").value.trim();
@@ -565,7 +564,7 @@ profileBtn.onclick=()=>{profilePanel.hidden=!profilePanel.hidden;if(!profilePane
 document.getElementById("profileClose").onclick=()=>profilePanel.hidden=true;
 document.getElementById("profileSignOut").onclick=async()=>{
  if(bcaProfileKey){await sb.auth.signOut();bcaGuestMode=true;sessionStorage.setItem("bcaGuestMode","1");syncProfile();}
- else{profilePanel.hidden=true;landing.style.display="flex";sessionStorage.removeItem("bcaWelcomeSeen");}
+ else{profilePanel.hidden=true;landing.style.display="flex";}
 };
 document.getElementById("profileUpload").onchange=async e=>{
  const file=e.target.files?.[0];if(!file||!bcaProfileKey)return;
@@ -637,4 +636,18 @@ document.getElementById("welcomePassword").addEventListener("keydown",e=>{
  if(e.key==="Enter"){e.preventDefault();if(welcomeMode==="create")welcomeAuth(true);else if(welcomeMode==="login")welcomeAuth(false)}
 },true);
 setWelcomeMode("choices");
-</script></body></html>
+</script>
+/* Independent navigation controls: keep them responsive even if other widgets fail. */
+(function(){
+ const menu=document.getElementById("menuBtn"),profile=document.getElementById("profileBtn"),panel=document.getElementById("profilePanel"),welcome=document.getElementById("landing");
+ if(menu)menu.addEventListener("click",function(){
+  welcome.style.display="flex";panel.hidden=true;
+  const chat=document.getElementById("community");if(chat){chat.classList.remove("chat-drawer");chat.style.display="none";}
+  const fab=document.getElementById("chatFab");if(fab){fab.textContent="💬 Community Chat";fab.setAttribute("aria-expanded","false");}
+ });
+ if(profile)profile.addEventListener("click",function(){
+  /* Existing profile handler toggles the panel. If it did not run, show it. */
+  if(!profile.dataset.bcaProfileClick){profile.dataset.bcaProfileClick="1";setTimeout(()=>{profile.dataset.bcaProfileClick="";},0);}
+ });
+})();
+</body></html>
