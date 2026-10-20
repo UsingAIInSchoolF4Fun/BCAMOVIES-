@@ -43,6 +43,31 @@
 @keyframes studySweep{from{opacity:.35;transform:translateX(18px);filter:blur(3px)}to{opacity:1;transform:translateX(0);filter:blur(0)}}
 @media(max-width:750px){.study-grid{grid-template-columns:1fr}.study-add{flex-wrap:wrap}.study-add input{min-width:100%}.top{padding:0 10px}.logo{font-size:15px}}
 @media(prefers-reduced-motion:reduce){.page-enter{animation:none}.tab{transition:none}}
+
+/* Plain schoolwork view: a real assignment workspace */
+body.schoolwork-open{background:#fff;color:#222}
+body.schoolwork-open .top{display:none}
+#schoolwork{background:#fff!important;color:#242424!important;padding:24px 28px 70px!important;font-family:Arial,sans-serif}
+#schoolwork .study-wrap{max-width:850px}
+#schoolwork .study-head{border-bottom:1px solid #ddd;padding-bottom:18px}
+#schoolwork .study-head h1{font-size:29px;font-weight:600;margin:7px 0;color:#222}
+#schoolwork .study-head p,#schoolwork .study-card p{color:#666}
+#schoolwork .study-eyebrow{color:#777;letter-spacing:0;font-size:13px}
+#schoolwork .study-date{background:#f7f7f7;color:#555;border:1px solid #ddd;border-radius:4px}
+#schoolwork .study-grid{grid-template-columns:1fr 1fr;gap:14px}
+#schoolwork .study-card{background:white;color:#222;border:1px solid #ddd;box-shadow:none;border-radius:5px;padding:20px}
+#schoolwork .study-card h2{font-size:18px;font-weight:600}
+#schoolwork .study-card input,#schoolwork .study-card textarea{background:white;color:#222;border:1px solid #bbb;border-radius:4px}
+#schoolwork .study-card input:focus,#schoolwork .study-card textarea:focus{border-color:#4b73b8}
+#schoolwork .study-btn{background:#3c6eb4;color:white;border-radius:4px}
+#schoolwork .study-btn.secondary{background:#eee;color:#333;border:1px solid #ccc}
+#schoolwork .study-task{border-color:#e5e5e5}
+#schoolwork .study-task.done span{color:#888}
+#schoolwork .study-task input{accent-color:#3c6eb4}
+#schoolwork .study-task button{color:#666}
+#schoolwork .study-foot,#schoolwork .study-empty{color:#777}
+#studyReturn{border:1px solid #ccc;background:#f7f7f7;color:#333;border-radius:4px;padding:8px 12px;cursor:pointer;font-size:13px}
+@media(max-width:700px){#schoolwork .study-grid{grid-template-columns:1fr}#schoolwork{padding:18px!important}}
 </style></head><body>
 <nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="moviesTab" class="tab active">Movies</button><button id="communityTab" class="tab">💬 Community</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><span id="viewMode" style="font-size:12px;font-weight:800;padding:7px 9px;border-radius:9px;background:#29292f;color:#bbb">CHECKING…</span><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
 <iframe id="movies" src="BCAMOVIES_FIXED_12_MOVIES.html" title="BCAMOVIES+"></iframe>
@@ -56,7 +81,7 @@
 
 <section id="schoolwork" aria-label="Schoolwork dashboard">
  <div class="study-wrap">
-  <div class="study-head"><div><div class="study-eyebrow">YOUR PRODUCTIVITY SPACE</div><h1>Schoolwork <span style="color:#f43f5e">Studio.</span></h1><p>Stay focused, organize assignments, and make progress.</p></div><div class="study-date" id="studyDate"></div></div>
+  <div class="study-head"><div><div class="study-eyebrow">Assignments and notes</div><h1>Schoolwork</h1><p>Organize your assignments and study notes.</p></div><div><button id="studyReturn" type="button">Back to main site</button><div class="study-date" id="studyDate" style="margin-top:10px"></div></div></div>
   <div class="study-grid">
    <div class="study-card"><h2>✓ Assignment checklist</h2><p>Keep track of what you need to finish.</p><div class="study-add"><input id="studyNewTask" maxlength="180" placeholder="Add an assignment..." aria-label="New assignment"><button class="study-btn" id="studyAddTask">Add task</button></div><div id="studyTasks"></div><div class="study-foot" id="studyProgress">0 tasks completed</div></div>
    <div class="study-card"><h2>◷ Focus timer</h2><p>Work in short, focused sessions.</p><div class="study-timer" id="studyClock">25:00</div><div class="study-actions"><button class="study-btn" id="studyStart">Start</button><button class="study-btn secondary" id="studyPause">Pause</button><button class="study-btn secondary" id="studyReset">Reset</button></div><div class="study-foot" style="text-align:center">25-minute focus session</div></div>
@@ -302,7 +327,7 @@ document.querySelector(".top").insertBefore(schoolTab,document.getElementById("v
 function animatePage(el){el.classList.remove("page-enter");void el.offsetWidth;el.classList.add("page-enter");}
 const oldShow=show;
 show=function(which){
- schoolwork.style.display="none";schoolTab.classList.remove("active");
+ document.body.classList.remove("schoolwork-open");schoolwork.style.display="none";schoolTab.classList.remove("active");
  toolsPanel.style.display="none";toolsButton.classList.remove("active");
  oldShow(which);
  animatePage(which==="movies"?movies:which==="community"?community:owner);
@@ -310,9 +335,10 @@ show=function(which){
 schoolTab.onclick=()=>{
  movies.style.display="none";community.style.display="none";owner.style.display="none";toolsPanel.style.display="none";
  document.querySelectorAll(".top .tab").forEach(b=>b.classList.remove("active"));
- schoolwork.style.display="block";schoolTab.classList.add("active");animatePage(schoolwork);
+ document.body.classList.add("schoolwork-open");schoolwork.style.display="block";schoolTab.classList.add("active");animatePage(schoolwork);
 };
-toolsButton.addEventListener("click",()=>{schoolwork.style.display="none";schoolTab.classList.remove("active");animatePage(toolsPanel);});
+toolsButton.addEventListener("click",()=>{document.body.classList.remove("schoolwork-open");schoolwork.style.display="none";schoolTab.classList.remove("active");animatePage(toolsPanel);});
+document.getElementById("studyReturn").onclick=()=>show("movies");
 document.getElementById("studyDate").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"});
 const studyKey="bcamovies-study-v1";
 function studyGet(key,fallback){try{return JSON.parse(localStorage.getItem(studyKey+key))??fallback}catch{return fallback}}
