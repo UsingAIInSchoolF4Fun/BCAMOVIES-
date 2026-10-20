@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache">
 <title>BCAMOVIES+</title><style>
 *{box-sizing:border-box}html,body{margin:0;height:100%;background:#09090b;color:#fff;font-family:Arial,sans-serif}
 .top{height:58px;display:flex;align-items:center;gap:12px;padding:0 18px;background:#101012;border-bottom:1px solid #29292e;position:relative;z-index:5}
@@ -132,8 +132,8 @@ body:not(.schoolwork-open) .tab.active{background:linear-gradient(135deg,#7c3aed
 .logo{font-size:19px;letter-spacing:-.04em}
 .top .tab{font-size:12px;padding:9px 12px;border-radius:9px}
 #profileBtn{font-size:12px;padding:9px 11px}
-#menuBtn{background:#ffffff12}
-#menuBtn:hover{background:#a855f733}
+
+
 #landing .landing-card{padding:34px;max-width:470px}
 #landing .landing-brand{font-size:clamp(32px,6vw,48px)}
 #landing .landing-card p{font-size:13px}
@@ -595,6 +595,28 @@ document.getElementById("movies").addEventListener("load",function(){
 /* Welcome experience + collapsible chat: existing Supabase accounts stay intact. */
 const landing=document.getElementById("landing"),chatFab=document.getElementById("chatFab");
 function closeLanding(){landing.style.display="none";}
+/* Restore existing Supabase session on every page load, including a refresh.
+   Only explicit Sign Out clears the persisted login. */
+(async function restoreLoginAfterRefresh(){
+ try{
+  const {data,error}=await sb.auth.getSession();
+  if(error)throw error;
+  if(data?.session?.user){
+   bcaGuestMode=false;
+   sessionStorage.removeItem("bcaGuestMode");
+   closeLanding();
+   await syncProfile();
+   await refreshCommunityAuth();
+  }
+ }catch(e){console.warn("Saved login could not be restored:",e);}
+})();
+sb.auth.onAuthStateChange((event,session)=>{
+ if((event==="INITIAL_SESSION"||event==="SIGNED_IN"||event==="TOKEN_REFRESHED")&&session?.user){
+  bcaGuestMode=false;
+  sessionStorage.removeItem("bcaGuestMode");
+  if(event==="INITIAL_SESSION")closeLanding();
+ }
+});
 function playLoginTransition(){
  const overlay=document.getElementById("bcaLoginTransition");
  if(!overlay){closeLanding();return;}
@@ -751,7 +773,7 @@ document.getElementById("welcomePassword").addEventListener("keydown",e=>{
 setWelcomeMode("choices");
 /* Independent navigation controls: keep them responsive even if other widgets fail. */
 (function(){
- const menu=document.getElementById("menuBtn"),profile=document.getElementById("profileBtn"),panel=document.getElementById("profilePanel"),welcome=document.getElementById("landing");
+ const profile=document.getElementById("profileBtn"),panel=document.getElementById("profilePanel");
  if(profile)profile.onclick=function(){panel.hidden=!panel.hidden;if(!panel.hidden&&typeof syncProfile==="function")syncProfile().catch(()=>{});};
 })();
 
@@ -789,24 +811,7 @@ setWelcomeMode=function(mode){
  });
 })();
 /* Returning signed-in members go straight to the site after refreshing. */
-(async function restoreLoginAfterRefresh(){
- try{
-  const {data,error}=await sb.auth.getSession();
-  if(error)throw error;
-  if(data.session?.user){
-   bcaGuestMode=false;
-   sessionStorage.removeItem("bcaGuestMode");
-   closeLanding();
-   await syncProfile();
-   refreshCommunityAuth();
-  }
- }catch(e){console.warn("Could not restore saved login:",e);}
-})();
-sb.auth.onAuthStateChange((event,session)=>{
- if((event==="SIGNED_IN"||event==="TOKEN_REFRESHED")&&session?.user){
-  bcaGuestMode=false;sessionStorage.removeItem("bcaGuestMode");
- }
-});
+
 /* Bunker Survival-inspired ash particles: real frame-by-frame drifting sparks. */
 (function(){
  const canvas=document.getElementById("auroraParticleCanvas");
