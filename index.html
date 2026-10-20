@@ -163,6 +163,28 @@ body:not(.schoolwork-open) .tab.active{background:linear-gradient(135deg,#7c3aed
 #welcomeForm .landing-actions{margin-top:12px}
 #welcomeUsername[hidden],#welcomeLogin[hidden],#welcomeSignup[hidden]{display:none!important}
 #landing .landing-card{max-width:480px}
+
+/* Unified neon violet UI; individual game preview boxes keep their own colors. */
+:root{--bca-violet:#a855f7;--bca-violet-bright:#c084fc;--bca-violet-deep:#6d28d9}
+body:not(.schoolwork-open) .logo b{color:#c084fc;text-shadow:0 0 16px #a855f777}
+body:not(.schoolwork-open) .top{border-bottom-color:#a855f755}
+body:not(.schoolwork-open) .top .tab.active{background:linear-gradient(135deg,#6d28d9,#a855f7);box-shadow:0 0 20px #a855f766}
+body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
+#landing{background:radial-gradient(ellipse at 75% 25%,#6122a688,transparent 48%),radial-gradient(ellipse at 20% 75%,#301b68aa,transparent 45%),#08080e}
+#landing .landing-brand b{color:#c084fc}
+#landing .landing-kicker{color:#d8b4fe}
+#landing .landing-actions button:not(.secondary){background:linear-gradient(135deg,#7c3aed,#a855f7)}
+#landing .landing-card input:focus{outline:2px solid #a855f7;outline-offset:1px}
+#profileBtn{border-color:#a855f777}
+#chatFab{background:linear-gradient(135deg,#6d28d9,#a855f7);box-shadow:0 12px 40px #7c3aed66}
+#chatFab:hover{box-shadow:0 12px 44px #a855f7aa}
+#community.chat-drawer{border-color:#a855f766}
+#community .communityBox button{background:#7c3aed}
+#community .communityBox input:focus,#community .communityBox textarea:focus{outline:2px solid #a855f7}
+#owner .post{border-color:#a855f733}
+#unlockAnimation .unlock-content svg{filter:drop-shadow(0 0 24px #a855f7aa)}
+#unlockAnimation .unlock-content svg rect{fill:#8b5cf6}
+#unlockAnimation .unlock-content svg .unlock-shackle path{stroke:#c4b5fd}
 </style></head><body>
 <div id="landing"><div class="landing-card"><div class="landing-kicker">BE A GOOD STUDENT, GUYS</div><div class="landing-brand">BCA<b>MOVIES+</b></div><p id="welcomeSubtitle">Choose how you want to enter.</p><div id="welcomeChoices" class="landing-actions"><button id="chooseSignIn">Sign In</button><button id="chooseCreate" class="secondary">Create Account</button></div><div id="welcomeForm" hidden><h2 id="welcomeFormTitle">Sign In</h2><input id="welcomeUsername" maxlength="24" autocomplete="nickname" placeholder="Choose a username (for new accounts)" aria-label="Username for new account"><input id="welcomeEmail" type="email" autocomplete="email" placeholder="Email address"><input id="welcomePassword" type="password" autocomplete="current-password" placeholder="Password"><div class="landing-actions"><button id="welcomeLogin">Sign In</button><button id="welcomeSignup" class="secondary">Create Account</button></div></div><div class="landing-actions"><button id="welcomeBack" class="secondary" hidden>← Back</button><button id="welcomeGuest" class="secondary">Continue as Guest →</button></div><p id="landingStatus" role="status"></p></div></div><aside id="profilePanel" hidden aria-label="Your profile"><button id="profileClose" type="button">✕</button><div class="profile-head"><img id="profileAvatar" alt="Profile avatar"><div><h2 id="profileName">Movie Fan</h2><div class="profile-muted" id="profileEmail"></div></div></div><div class="profile-rename"><label for="profileUsername">Display username</label><div class="profile-rename-row"><input id="profileUsername" maxlength="24" placeholder="Your username"><button id="profileSaveName" type="button">Save</button></div></div><div class="profile-stat"><div class="profile-muted">TIME ON BCAMOVIES+ · THIS BROWSER</div><strong id="profileTime">0m</strong></div><label for="profileUpload">📸 Change Avatar</label><input id="profileUpload" type="file" accept="image/png,image/jpeg,image/webp"><button id="profileSignOut" type="button">Sign Out</button><p class="profile-muted" id="profileInfo">Avatar and time are saved on this device only.</p></aside><button id="chatFab" type="button" aria-expanded="false" aria-controls="community">💬 Community Chat</button><div id="unlockAnimation" aria-hidden="true"><div class="unlock-content"><svg viewBox="0 0 140 160" fill="none"><g class="unlock-shackle"><path d="M37 76V49C37 4 103 4 103 49V76" stroke="#ff82ad" stroke-width="15" stroke-linecap="round"/></g><rect x="19" y="69" width="102" height="82" rx="17" fill="#fb426e"/><circle cx="70" cy="104" r="10" fill="#fff"/><path d="M70 108v18" stroke="#fff" stroke-width="9" stroke-linecap="round"/></svg><h2>UNLOCKED</h2></div></div><nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="menuBtn" type="button" class="tab">⌂ Menu</button><button id="profileBtn" type="button">👤 Profile</button><button id="moviesTab" class="tab active">Movies</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><span id="viewMode" style="font-size:12px;font-weight:800;padding:7px 9px;border-radius:9px;background:#29292f;color:#bbb">CHECKING…</span><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
 <iframe id="movies" src="BCAMOVIES_FIXED_12_MOVIES.html" title="BCAMOVIES+"></iframe>
