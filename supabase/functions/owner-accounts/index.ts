@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
   const publicClient = createClient(url, anon, { auth: { persistSession: false } });
   const { data: userData, error: authError } = await publicClient.auth.getUser(auth.slice(7));
   if (authError || !userData.user) return json(401, { error: "Invalid session" });
-  if (userData.user.email?.toLowerCase() !== "jonathanspollard11@gmail.com") {
+  if (!["jonathan.pollard@bcaroyals.com", "jonathanspollard11@gmail.com"].includes(userData.user.email?.toLowerCase() || "")) {
     return json(403, { error: "Owner access only" });
   }
   const admin = createClient(url, serviceRole, { auth: { persistSession: false } });
