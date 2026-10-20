@@ -426,7 +426,7 @@ movies.addEventListener("load",()=>{watchMoviePage();setTimeout(watchMoviePage,5
 sb.auth.onAuthStateChange(()=>setTimeout(watchMoviePage,0));
 async function refreshCommunityAuth(){const {data}=await sb.auth.getSession();const u=(typeof bcaGuestMode!=="undefined"&&bcaGuestMode)?null:data.session?.user;document.getElementById("communityAuth").classList.toggle("hidden",!!u);document.getElementById("communityUser").classList.toggle("hidden",!u);if(u)document.getElementById("cWho").textContent="Signed in as "+(u.user_metadata?.display_name||u.email);
  bcaPublishPresence().catch(()=>{});}
-document.getElementById("cSignup").onclick=async()=>{const email=document.getElementById("cEmail").value.trim(),password=document.getElementById("cPass").value,name=document.getElementById("cName").value.trim();const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:name||"Movie Fan"}}});document.getElementById("cAuthMsg").textContent=error?error.message:"If this is a new email, check your inbox to confirm it. Already registered? Use Log In instead; the Owner Dashboard uses the same account.";if(data.user&&!error)refreshCommunityAuth();};
+document.getElementById("cSignup").onclick=async()=>{const email=document.getElementById("cEmail").value.trim(),password=document.getElementById("cPass").value,name=document.getElementById("cName").value.trim();const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:name||"Movie Fan"}}});document.getElementById("cAuthMsg").textContent=error?friendlyAuthError(error):"If this is a new email, check your inbox to confirm it. Already registered? Use Log In instead; the Owner Dashboard uses the same account.";if(data.user&&!error)refreshCommunityAuth();};
 document.getElementById("cLogin").onclick=async()=>{const {error}=await sb.auth.signInWithPassword({email:document.getElementById("cEmail").value.trim(),password:document.getElementById("cPass").value});document.getElementById("cAuthMsg").textContent=error?error.message:"Logged in.";if(!error){bcaGuestMode=false;sessionStorage.removeItem("bcaGuestMode");}refreshCommunityAuth();syncProfile();};
 document.getElementById("cLogout").onclick=async()=>{await sb.auth.signOut();bcaGuestMode=false;sessionStorage.removeItem("bcaGuestMode");toggleChat(false);landing.style.display="flex";setWelcomeMode("choices");refreshCommunityAuth();syncProfile();};
 document.getElementById("cSend").onclick=async()=>{const {data:s}=await sb.auth.getSession(),u=s.session?.user;if(!u||bcaGuestMode)return;const message=document.getElementById("cMessage").value.trim();if(!message)return;const row={user_id:u.id,display_name:u.user_metadata?.display_name||"Movie Fan",message,type:document.getElementById("cType").value};const {error}=await sb.from("community_messages").insert(row);document.getElementById("cSendMsg").textContent=error?error.message:"Posted!";if(!error){document.getElementById("cMessage").value="";loadCommunity();}};
@@ -650,6 +650,11 @@ function playLoginTransition(){
 }
 /* The welcome screen appears only when signed out or choosing guest mode. */
 document.getElementById("welcomeGuest").onclick=closeLanding;
+function friendlyAuthError(error){
+ const message=String(error?.message||"");
+ if(/rate limit|rate exceeded|email rate/i.test(message))return "Too many account emails have been requested. BCAMOVIES+ has temporarily reached its email limit. Please wait and try later. If you already have an account, use Sign In instead.";
+ return message||"Sign-in failed. Please try again.";
+}
 let bcaLoginPending=false;
 async function welcomeAuth(create){
  if(bcaLoginPending)return;
@@ -665,7 +670,7 @@ async function welcomeAuth(create){
  status.textContent="One moment…";
  try{
   const result=create?await sb.auth.signUp({email,password,options:{data:{display_name:username}}}):await sb.auth.signInWithPassword({email,password});
-  if(result.error){const already=create&&/already registered|already exists|user already/i.test(result.error.message);status.textContent=already?"An account already exists with this email. Choose Sign In instead.":result.error.message;return;}
+  if(result.error){const already=create&&/already registered|already exists|user already/i.test(result.error.message);status.textContent=already?"An account already exists with this email. Choose Sign In instead.":friendlyAuthError(result.error);return;}
   if(create&&!result.data.session){status.textContent="Check your email for a confirmation link if required. If you already have an account with this Gmail, choose Sign In—do not create another profile. The Owner Dashboard uses the same account.";return;}
   if(!result.data?.session?.user){status.textContent="Sign-in was not completed. Check your email confirmation or password.";return;}
   bcaGuestMode=false;sessionStorage.removeItem("bcaGuestMode");
