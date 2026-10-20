@@ -236,8 +236,12 @@ body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
 .floating-particles .particle:nth-child(5n){background:#f5d0fe;box-shadow:0 0 10px 3px #d946ef88}
 @keyframes bcaParticleFloat{0%{transform:translate3d(-25px,35px,0) scale(.7);opacity:.35}50%{opacity:1}100%{transform:translate3d(38px,-75px,0) scale(1.3);opacity:.9}}
 @media(prefers-reduced-motion:reduce){.floating-particles .particle{animation:none!important}}
+
+/* Bunker-style drifting ash, recolored as luminous aurora sparks. */
+#auroraParticleCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;display:block}
+#landing .landing-card{z-index:3}
 </style></head><body>
-<div id="landing"><div class="aurora-sky" aria-hidden="true"><span class="aurora-ribbon aurora-one"></span><span class="aurora-ribbon aurora-two"></span><span class="aurora-ribbon aurora-three"></span><span class="aurora-stars"></span><span class="aurora-stars stars-two"></span><div class="floating-particles" aria-hidden="true"></div></div><div class="landing-card"><div class="landing-kicker">BE A GOOD STUDENT, GUYS</div><div class="landing-brand">BCA<b>MOVIES+</b></div><p id="welcomeSubtitle">Choose how you want to enter.</p><div id="welcomeChoices" class="landing-actions"><button id="chooseSignIn">Sign In</button><button id="chooseCreate" class="secondary">Create Account</button></div><div id="welcomeForm" hidden><h2 id="welcomeFormTitle">Sign In</h2><input id="welcomeUsername" maxlength="24" autocomplete="nickname" placeholder="Choose a username (for new accounts)" aria-label="Username for new account"><input id="welcomeEmail" type="email" autocomplete="email" placeholder="Email address"><input id="welcomePassword" type="password" autocomplete="current-password" placeholder="Password"><label class="password-toggle"><input id="welcomeShowPassword" type="checkbox"> Show password</label><div id="confirmPasswordWrap" hidden><input id="welcomeConfirmPassword" type="password" autocomplete="new-password" placeholder="Confirm password" aria-label="Confirm password"><label class="password-toggle"><input id="welcomeShowConfirm" type="checkbox"> Show confirmation password</label></div><div class="landing-actions"><button id="welcomeLogin">Sign In</button><button id="welcomeSignup" class="secondary">Create Account</button></div><p id="welcomeSwitch" class="welcome-switch"></p></div><div class="landing-actions"><button id="welcomeBack" class="secondary" hidden>← Back</button><button id="welcomeGuest" class="secondary">Continue as Guest →</button></div><p id="landingStatus" role="status"></p></div></div><aside id="profilePanel" hidden aria-label="Your profile"><button id="profileClose" type="button">✕</button><div class="profile-head"><img id="profileAvatar" alt="Profile avatar"><div><h2 id="profileName">Movie Fan</h2><div class="profile-muted" id="profileEmail"></div></div></div><div class="profile-rename"><label for="profileUsername">Display username</label><div class="profile-rename-row"><input id="profileUsername" maxlength="24" placeholder="Your username"><button id="profileSaveName" type="button">Save</button></div></div><div class="profile-stat"><div class="profile-muted">TIME ON BCAMOVIES+ · THIS BROWSER</div><strong id="profileTime">0m</strong></div><label for="profileUpload">📸 Change Avatar</label><input id="profileUpload" type="file" accept="image/png,image/jpeg,image/webp"><button id="profileSignOut" type="button">Sign Out</button><p class="profile-muted" id="profileInfo">Avatar and time are saved on this device only.</p></aside><button id="chatFab" type="button" aria-expanded="false" aria-controls="community">💬 Community Chat</button><div id="unlockAnimation" aria-hidden="true"><div class="unlock-content"><svg viewBox="0 0 140 160" fill="none"><g class="unlock-shackle"><path d="M37 76V49C37 4 103 4 103 49V76" stroke="#c084fc" stroke-width="15" stroke-linecap="round"/></g><rect x="19" y="69" width="102" height="82" rx="17" fill="#fb426e"/><circle cx="70" cy="104" r="10" fill="#fff"/><path d="M70 108v18" stroke="#fff" stroke-width="9" stroke-linecap="round"/></svg><h2>UNLOCKED</h2></div></div><nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="menuBtn" type="button" class="tab">⌂ Menu</button><button id="profileBtn" type="button">👤 Profile</button><button id="moviesTab" class="tab active">Movies</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><span id="viewMode" style="font-size:12px;font-weight:800;padding:7px 9px;border-radius:9px;background:#29292f;color:#bbb">CHECKING…</span><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
+<div id="landing"><div class="aurora-sky" aria-hidden="true"><span class="aurora-ribbon aurora-one"></span><span class="aurora-ribbon aurora-two"></span><span class="aurora-ribbon aurora-three"></span><span class="aurora-stars"></span><span class="aurora-stars stars-two"></span><canvas id="auroraParticleCanvas" aria-hidden="true"></canvas></div><div class="landing-card"><div class="landing-kicker">BE A GOOD STUDENT, GUYS</div><div class="landing-brand">BCA<b>MOVIES+</b></div><p id="welcomeSubtitle">Choose how you want to enter.</p><div id="welcomeChoices" class="landing-actions"><button id="chooseSignIn">Sign In</button><button id="chooseCreate" class="secondary">Create Account</button></div><div id="welcomeForm" hidden><h2 id="welcomeFormTitle">Sign In</h2><input id="welcomeUsername" maxlength="24" autocomplete="nickname" placeholder="Choose a username (for new accounts)" aria-label="Username for new account"><input id="welcomeEmail" type="email" autocomplete="email" placeholder="Email address"><input id="welcomePassword" type="password" autocomplete="current-password" placeholder="Password"><label class="password-toggle"><input id="welcomeShowPassword" type="checkbox"> Show password</label><div id="confirmPasswordWrap" hidden><input id="welcomeConfirmPassword" type="password" autocomplete="new-password" placeholder="Confirm password" aria-label="Confirm password"><label class="password-toggle"><input id="welcomeShowConfirm" type="checkbox"> Show confirmation password</label></div><div class="landing-actions"><button id="welcomeLogin">Sign In</button><button id="welcomeSignup" class="secondary">Create Account</button></div><p id="welcomeSwitch" class="welcome-switch"></p></div><div class="landing-actions"><button id="welcomeBack" class="secondary" hidden>← Back</button><button id="welcomeGuest" class="secondary">Continue as Guest →</button></div><p id="landingStatus" role="status"></p></div></div><aside id="profilePanel" hidden aria-label="Your profile"><button id="profileClose" type="button">✕</button><div class="profile-head"><img id="profileAvatar" alt="Profile avatar"><div><h2 id="profileName">Movie Fan</h2><div class="profile-muted" id="profileEmail"></div></div></div><div class="profile-rename"><label for="profileUsername">Display username</label><div class="profile-rename-row"><input id="profileUsername" maxlength="24" placeholder="Your username"><button id="profileSaveName" type="button">Save</button></div></div><div class="profile-stat"><div class="profile-muted">TIME ON BCAMOVIES+ · THIS BROWSER</div><strong id="profileTime">0m</strong></div><label for="profileUpload">📸 Change Avatar</label><input id="profileUpload" type="file" accept="image/png,image/jpeg,image/webp"><button id="profileSignOut" type="button">Sign Out</button><p class="profile-muted" id="profileInfo">Avatar and time are saved on this device only.</p></aside><button id="chatFab" type="button" aria-expanded="false" aria-controls="community">💬 Community Chat</button><div id="unlockAnimation" aria-hidden="true"><div class="unlock-content"><svg viewBox="0 0 140 160" fill="none"><g class="unlock-shackle"><path d="M37 76V49C37 4 103 4 103 49V76" stroke="#c084fc" stroke-width="15" stroke-linecap="round"/></g><rect x="19" y="69" width="102" height="82" rx="17" fill="#fb426e"/><circle cx="70" cy="104" r="10" fill="#fff"/><path d="M70 108v18" stroke="#fff" stroke-width="9" stroke-linecap="round"/></svg><h2>UNLOCKED</h2></div></div><nav class="top"><div class="logo">BCA<b>MOVIES+</b></div><button id="menuBtn" type="button" class="tab">⌂ Menu</button><button id="profileBtn" type="button">👤 Profile</button><button id="moviesTab" class="tab active">Movies</button><button id="ownerTab" class="tab">📣 Owner Messages <span id="msgCount"></span></button><span id="viewMode" style="font-size:12px;font-weight:800;padding:7px 9px;border-radius:9px;background:#29292f;color:#bbb">CHECKING…</span><a class="ownerlink" href="https://usingaiinschoolf4fun.github.io/BCAMOVIES-/owner.html">Owner Login</a></nav>
 <iframe id="movies" src="BCAMOVIES_FIXED_12_MOVIES.html" title="BCAMOVIES+"></iframe>
 <section id="community"><div class="wrap"><div class="hero"><h1>💬 BCAMOVIES Community</h1><p>Chat, request movies, and vote in owner polls.</p></div>
 <div id="guestChatNotice">👀 Guests can read chat, but you need an account to send messages or request movies. Sign in or create an account below.</div><div class="communityBox" id="communityAuth"><h2>Join the Community</h2><input id="cEmail" type="email" placeholder="Email"><input id="cPass" type="password" placeholder="Password"><label class="password-toggle"><input id="communityShowPassword" type="checkbox"> Show password</label><input id="cName" placeholder="Display name"><button id="cSignup">Create Account</button><button id="cLogin">Log In</button><p class="small" id="cAuthMsg"></p></div>
@@ -739,16 +743,50 @@ setWelcomeMode=function(mode){
  document.getElementById("welcomeShowConfirm").checked=false;document.getElementById("welcomeConfirmPassword").type="password";
 };
 
-/* Visible, independent floating dots across the aurora welcome screen. */
+/* Bunker Survival-inspired ash particles: real frame-by-frame drifting sparks. */
 (function(){
- const layer=document.querySelector("#landing .floating-particles");
- if(!layer)return;
- for(let i=0;i<46;i++){
-  const dot=document.createElement("i");
-  dot.className="particle";
-  const x=(i*37+13)%100,y=(i*61+19)%100,size=2+(i*7)%4;
-  dot.style.cssText="left:"+x+"%;top:"+y+"%;width:"+size+"px;height:"+size+"px;--duration:"+(5+(i*3)%11)+"s;--delay:-"+((i*7)%15)+"s";
-  layer.appendChild(dot);
+ const canvas=document.getElementById("auroraParticleCanvas");
+ if(!canvas)return;
+ const ctx=canvas.getContext("2d");if(!ctx)return;
+ let w=0,h=0,dpr=1,particles=[],last=0;
+ const count=85;
+ const rand=(min,max)=>min+Math.random()*(max-min);
+ function makeParticle(scatter){
+  return {x:rand(0,w),y:scatter?rand(0,h):h+rand(5,90),r:rand(1.2,3.4),
+   vx:rand(-.3,.3),vy:rand(-1.15,-.35),sway:rand(0,6.28),swaySpeed:rand(.012,.035),
+   alpha:rand(.45,.95),hue:[265,280,205,180,295][Math.floor(rand(0,5))]};
  }
+ function resize(){
+  const rect=canvas.getBoundingClientRect();
+  w=Math.max(1,rect.width);h=Math.max(1,rect.height);
+  dpr=Math.min(window.devicePixelRatio||1,2);
+  canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  particles=Array.from({length:count},()=>makeParticle(true));
+ }
+ window.addEventListener("resize",resize,{passive:true});resize();
+ const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+ function draw(time){
+  const dt=Math.min(2,(time-last)/16.67||1);last=time;
+  ctx.clearRect(0,0,w,h);
+  for(let i=0;i<particles.length;i++){
+   let p=particles[i];
+   if(!reduce){
+    p.sway+=p.swaySpeed*dt;
+    p.x+=(p.vx+Math.sin(p.sway)*.7)*dt;
+    p.y+=p.vy*dt;
+    if(p.y< -20||p.x< -30||p.x>w+30){particles[i]=p=makeParticle(false);}
+   }
+   const glow=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*5);
+   glow.addColorStop(0,"hsla("+p.hue+",100%,92%,"+p.alpha+")");
+   glow.addColorStop(.22,"hsla("+p.hue+",100%,77%,"+(p.alpha*.8)+")");
+   glow.addColorStop(1,"hsla("+p.hue+",100%,65%,0)");
+   ctx.fillStyle=glow;ctx.beginPath();ctx.arc(p.x,p.y,p.r*5,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle="rgba(255,255,255,"+(p.alpha*.85)+")";
+   ctx.beginPath();ctx.arc(p.x,p.y,Math.max(.6,p.r*.42),0,Math.PI*2);ctx.fill();
+  }
+  if(!reduce)requestAnimationFrame(draw);
+ }
+ requestAnimationFrame(draw);
 })();
 </script></body></html>
