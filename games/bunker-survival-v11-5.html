@@ -1359,11 +1359,16 @@ function strikeMotionFrame(now){
      let available=[...document.querySelectorAll("#battlefield .zombieDot")]
        .filter(q=>q.isConnected&&q.dataset.dead!=="1"&&q.dataset.side);
      if(available.length){
-       available.sort((a,b)=>{
-         let ax=parseFloat(a.style.left),ay=parseFloat(a.style.top);
-         let bx=parseFloat(b.style.left),by=parseFloat(b.style.top);
-         return Math.hypot(ax-x,ay-y)-Math.hypot(bx-x,by-y);
+       // Balance defenders across available zombies instead of everyone picking the nearest.
+       const load=new Map(available.map(z=>[z.dataset.zid,0]));
+       document.querySelectorAll("#battlePeople .defenderDot").forEach(other=>{
+         if(other===d)return;
+         const id=other.dataset.targetZombie;
+         if(load.has(id))load.set(id,load.get(id)+1);
        });
+       available.sort((a,b)=>(load.get(a.dataset.zid)-load.get(b.dataset.zid))||
+         Math.hypot((parseFloat(a.style.left)||50)-x,(parseFloat(a.style.top)||50)-y)-
+         Math.hypot((parseFloat(b.style.left)||50)-x,(parseFloat(b.style.top)||50)-y));
        d.dataset.response="1";
        d.dataset.responseSide=available[0].dataset.side;
        d.dataset.targetZombie=available[0].dataset.zid;
@@ -1493,14 +1498,29 @@ function liveZombieById(id){
 function chooseZombieForDefender(side,d){
  let current=liveZombieById(d?.dataset?.targetZombie);
  if(current&&current.dataset.side===side)return current;
- let zombies=[...document.querySelectorAll("#battlefield .zombieDot")].filter(z=>z.dataset.side===side&&z.dataset.dead!=="1");
+ let zombies=[...document.querySelectorAll("#battlefield .zombieDot")]
+   .filter(z=>z.isConnected&&z.dataset.side===side&&z.dataset.dead!=="1");
  if(!zombies.length)return null;
- let defenders=[...document.querySelectorAll("#battlePeople .defenderDot")].filter(x=>x.dataset.responseSide===side);
- let loads=new Map(zombies.map(z=>[z.dataset.zid,0]));
- defenders.forEach(x=>{let id=x.dataset.targetZombie;if(loads.has(id))loads.set(id,loads.get(id)+1)});
- zombies.sort((a,b)=>(loads.get(a.dataset.zid)-loads.get(b.dataset.zid))||((+a.dataset.hp||99)-(+b.dataset.hp||99)));
- let z=zombies[0];if(d&&z)d.dataset.targetZombie=z.dataset.zid;return z;
+ // Give each available zombie its own defender before doubling up.
+ const defenders=[...document.querySelectorAll("#battlePeople .defenderDot")];
+ const assigned=new Map(zombies.map(z=>[z.dataset.zid,0]));
+ for(const other of defenders){
+   if(other===d)continue;
+   const id=other.dataset.targetZombie;
+   if(assigned.has(id))assigned.set(id,assigned.get(id)+1);
+ }
+ const x=+(d?.dataset?.x||50),y=+(d?.dataset?.y||50);
+ zombies.sort((a,b)=>{
+   const load=assigned.get(a.dataset.zid)-assigned.get(b.dataset.zid);
+   if(load)return load;
+   return Math.hypot((parseFloat(a.style.left)||50)-x,(parseFloat(a.style.top)||50)-y)-
+          Math.hypot((parseFloat(b.style.left)||50)-x,(parseFloat(b.style.top)||50)-y);
+ });
+ const chosen=zombies[0];
+ if(d)d.dataset.targetZombie=chosen.dataset.zid;
+ return chosen;
 }
+
 function setStrikeResponse(side){
  let eligible=new Set(defendersForSide(side).map(p=>String(p.id)));
  let dots=[...document.querySelectorAll("#battlePeople .defenderDot")].filter(d=>eligible.has(String(d.dataset.id)));
@@ -2208,7 +2228,22 @@ function v113TitleMotion(t){
 }
 requestAnimationFrame(v113TitleMotion);
 
-function tick(){if(G.gameOver||G.lastStand)return;G.seconds++;ensureV7();updateRecruiting();if(G.seconds%20===0)resourcePressureTick();healTick();v6Tick();bunkerFlavor();if(G.seconds%3===0)updateLivingBunker();if(G.seconds%10===0)refreshWalkEvolution();ambientDefense();if(G.recruitCD)G.recruitCD--;if(G.seconds%5===0){let reconOn=G.survivors.some(p=>p.job==="Recon"&&!p.injury);
+// Passive wall maintenance: each damaged wall restores 1 HP every 8 game seconds.
+// Never exceed the current fortification maximum, and refresh the wall bars.
+function regenerateWalls(){
+ if(!G.walls)return;
+ const max=100+(G.research?.fort?25:0);
+ let changed=false;
+ for(const side of ["north","south","east","west"]){
+   const hp=Number(G.walls[side]);
+   if(Number.isFinite(hp)&&hp<max){
+     G.walls[side]=Math.min(max,Math.max(0,hp)+1);
+     changed=true;
+   }
+ }
+ if(changed)renderHorde();
+}
+function tick(){if(G.gameOver||G.lastStand)return;G.seconds++;ensureV7();if(G.seconds%8===0)regenerateWalls();updateRecruiting();if(G.seconds%20===0)resourcePressureTick();healTick();v6Tick();bunkerFlavor();if(G.seconds%3===0)updateLivingBunker();if(G.seconds%10===0)refreshWalkEvolution();ambientDefense();if(G.recruitCD)G.recruitCD--;if(G.seconds%5===0){let reconOn=G.survivors.some(p=>p.job==="Recon"&&!p.injury);
 G.threat=clamp(G.threat+G.buildings.generator*(reconOn?.10:.15),0,100);if(G.food<0){G.food=0;G.morale-=3;G.health-=2}}
 let done=G.missions.filter(m=>m.done<=G.seconds);done.forEach(finishMission);G.missions=G.missions.filter(m=>m.done>G.seconds);if(G.seconds>=G.eventAt&&!document.getElementById("modal").classList.contains("on"))situation();let reconOnDuty=G.survivors.some(p=>p.job==="Recon"&&!p.injury);
 let warnWindow=Math.max(45,hordePrepWindow());
