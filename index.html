@@ -652,8 +652,18 @@ async function loadCommunity(){
 async function loadPolls(){const box=document.getElementById("polls");const {data,error}=await sb.from("polls").select("*").order("created_at",{ascending:false});if(error){box.innerHTML='<div class="empty">Polls will appear here after Community setup.</div>';return}box.innerHTML=(data||[]).map(p=>'<div class="msg"><b>'+esc(p.question)+'</b><div>'+(p.options||[]).map((o,i)=>'<div class="pollopt"><button onclick="votePoll('+p.id+','+i+')">Vote</button><span>'+esc(o)+'</span></div>').join("")+'</div></div>').join("")||'<div class="empty">No polls yet.</div>';}
 async function votePoll(poll_id,option_index){const {data:s}=await sb.auth.getSession();if(!s.session?.user)return alert("Log in to vote.");const {error}=await sb.from("poll_votes").upsert({poll_id,user_id:s.session.user.id,option_index},{onConflict:"poll_id,user_id"});alert(error?error.message:"Vote saved!");}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-async function loadPosts(){const box=document.getElementById("posts");const {data,error}=await sb.from("owner_posts").select("*").order("created_at",{ascending:false});if(error){box.innerHTML='<div class="empty">Could not load Owner Chat.</div>';return}document.getElementById("msgCount").textContent=data?.length?"("+data.length+")":"";if(!data?.length){box.innerHTML='<div class="empty">No owner messages yet.</div>';return}box.innerHTML=data.map(p=>'<article class="post"><p>'+esc(p.message)+'</p><div class="date">BCAMOVIES owner • '+new Date(p.created_at).toLocaleString()+'</div></article>').join("");}
-  
+async function loadPosts(){
+ const box=document.getElementById("posts");
+ try{
+  const response=await fetch("./announcements.json?refresh="+Date.now(),{cache:"no-store"});
+  if(!response.ok)throw Error("Announcements file could not be loaded");
+  const posts=await response.json();
+  if(!Array.isArray(posts))throw Error("Invalid announcements file");
+  document.getElementById("msgCount").textContent=posts.length?"("+posts.length+")":"";
+  if(!posts.length){box.innerHTML='<div class="empty">No announcements yet.</div>';return;}
+  box.innerHTML=posts.map(p=>'<article class="post"><p>'+esc(p.message)+'</p><div class="date">BCAMOVIES owner'+(p.date?' • '+esc(p.date):'')+'</div></article>').join("");
+ }catch(e){box.innerHTML='<div class="empty">Could not load announcements. Please refresh.</div>';console.error(e)}
+}
 const toolsButton = document.createElement("button");
 toolsButton.className = "tab";
 toolsButton.innerHTML = "<svg class=\"bca-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M7 8h10a4 4 0 0 1 4 3l1 6a3 3 0 0 1-5 3l-3-3h-4l-3 3a3 3 0 0 1-5-3l1-6a4 4 0 0 1 4-3Z\"/><path d=\"M7 11v5m-2.5-2.5h5M16 12h.01M19 14h.01\"/></svg> Games";
