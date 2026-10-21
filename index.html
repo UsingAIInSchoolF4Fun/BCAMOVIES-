@@ -99,9 +99,9 @@ body:not(.schoolwork-open){background:radial-gradient(circle at 15% 0%,#311027,#
 #unlockAnimation.active{display:flex;animation:unlockFade 2.1s both}
 .unlock-content{text-align:center;animation:rise .5s both}
 .unlock-content svg{width:145px;height:160px;overflow:visible;filter:drop-shadow(0 0 24px #a855f799)}
-.unlock-shackle{transform-origin:70px 70px;animation:shackleOpen 1.15s .45s cubic-bezier(.2,1,.2,1) forwards}
+.unlock-shackle{transform-box:view-box;transform-origin:37px 76px;animation:shackleOpen 1.3s .2s cubic-bezier(.2,1,.2,1) both}
 .unlock-content h2{letter-spacing:.24em;font-size:20px;color:#fff}
-@keyframes shackleOpen{to{transform:translateY(-24px) rotate(-17deg)}}
+@keyframes shackleOpen{0%,12%{transform:translate(0,0) rotate(0deg)}40%,100%{transform:translate(-13px,-20px) rotate(-33deg)}}
 @keyframes unlockFade{0%,70%{opacity:1}100%{opacity:0}}
 @media(max-width:600px){.landing-card{padding:28px 22px}#chatFab{right:12px;bottom:12px}#community.chat-drawer{right:10px;bottom:74px}}
 @media(prefers-reduced-motion:reduce){#landing:before,.landing-card,#chatFab,.unlock-content,.unlock-shackle,#unlockAnimation.active{animation:none!important}}
@@ -259,6 +259,9 @@ body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
 /* Cinematic purple orb login transition */
 #bcaLoginTransition{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;overflow:hidden;pointer-events:all;isolation:isolate}
 #bcaLoginTransition.playing{display:flex}
+#bcaLoginTransition.profile-entry::before{animation-duration:2.3s}
+#bcaLoginTransition.profile-entry::after{animation-duration:2.3s}
+#bcaLoginTransition.profile-entry .bca-transition-brand{animation-duration:2.3s}
 #bcaLoginTransition::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,#e879f9 0%,#a855f7 18%,#7c3aed 42%,#32116d 72%,#090416 100%);clip-path:circle(0% at 50% 50%);animation:bcaOrbExpand 8s cubic-bezier(.4,0,.2,1) forwards;filter:saturate(1.3)}
 #bcaLoginTransition::after{content:"";position:absolute;width:90px;height:90px;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,#fff 0%,#f0abfc 18%,#a855f7 42%,#7c3aed99 68%,transparent 75%);box-shadow:0 0 45px #c084fc,0 0 110px #a855f7;animation:bcaOrbCore 8s ease-in-out forwards}
 #bcaLoginTransition .bca-transition-brand{position:relative;z-index:2;text-align:center;font-size:clamp(38px,8vw,100px);font-weight:1000;letter-spacing:.06em;color:white;text-shadow:0 0 20px #fff9,0 0 65px #d8b4fe,0 0 100px #a855f7;opacity:0;animation:bcaBrandReveal 8s ease-in-out forwards}
@@ -656,7 +659,15 @@ function bcaWelcomeLocal(){
 function bcaEnterLocal(){
  if(!bcaLocalProfile())return;
  bcaGuestMode=true;sessionStorage.setItem("bcaGuestMode","1");
- closeLanding();
+ const overlay=document.getElementById("bcaLoginTransition");
+ if(overlay){
+  overlay.classList.remove("playing");
+  overlay.classList.add("profile-entry");
+  void overlay.offsetWidth;
+  overlay.classList.add("playing");
+  window.setTimeout(closeLanding,650);
+  window.setTimeout(()=>overlay.classList.remove("playing"),2400);
+ }else closeLanding();
  syncProfile().catch(()=>{});bcaPublishPresence().catch(()=>{});
 }
 document.getElementById("chooseLocal").onclick=()=>{document.getElementById("welcomeChoices").hidden=true;document.getElementById("localProfileCreate").hidden=false;document.getElementById("welcomeGuest").hidden=true;document.getElementById("localProfileName").focus()};
