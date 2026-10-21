@@ -14,11 +14,44 @@ async function refreshSession(){const {data}=await sb.auth.getSession();const u=
 $("login").onclick=async()=>{ $("loginMsg").textContent="Signing in…";const {error}=await sb.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});$("loginMsg").textContent=error?error.message:"Signed in.";refreshSession();};
 $("logout").onclick=async()=>{await sb.auth.signOut();refreshSession()};
 $("addMovie").onclick=async()=>{const row={title:$("title").value.trim(),movie_url:$("movieUrl").value.trim(),poster_url:$("posterUrl").value.trim()||null,library:$("library").value};if(!row.title||!row.movie_url)return $("movieMsg").textContent="Title and movie URL are required.";const {error}=await sb.from("movies").insert(row);$("movieMsg").textContent=error?error.message:"Movie published.";if(!error){$("title").value="";$("movieUrl").value="";$("posterUrl").value="";loadMovies();}};
-$("post").onclick=async()=>{const message=$("message").value.trim();if(!message)return;const {error}=await sb.from("owner_posts").insert({message});$("postMsg").textContent=error?error.message:"Message published.";if(!error){$("message").value="";loadPosts();}};
+async function verifyOwnerForPosts(){
+ const {data,error}=await sb.auth.getUser();
+ if(error||!data?.user||!ownerEmails.includes((data.user.email||"").toLowerCase())){
+  $("postMsg").textContent="Owner session expired. Please sign out and sign in again.";
+  return false;
+ }
+ return true;
+}
+$("post").onclick=async()=>{
+ const message=$("message").value.trim();
+ if(!message){$("postMsg").textContent="Write an announcement first.";return;}
+ if(!await verifyOwnerForPosts())return;
+ $("post").disabled=true;$("postMsg").textContent="Publishing...";
+ try{
+  const {data,error}=await sb.from("owner_posts").insert({message}).select("id").single();
+  if(error)throw error;
+  if(!data?.id)throw Error("The announcement was not saved. Check database permissions.");
+  $("postMsg").textContent="Announcement published.";
+  $("message").value="";
+  await loadPosts();
+ }catch(e){$("postMsg").textContent="Could not publish: "+(e.message||String(e));console.error("Announcement publish failed",e)}
+ finally{$("post").disabled=false}
+};
 async function loadMovies(){const {data,error}=await sb.from("movies").select("*").order("created_at",{ascending:false});$("movieList").innerHTML=error?error.message:(data||[]).map(x=>'<div class="item"><b>'+esc(x.title)+'</b> <span class="small">('+esc(x.library)+')</span><br><button class="secondary" onclick="delMovie('+x.id+')">Delete</button></div>').join("")||'<p class="small">No live movies yet.</p>';}
 async function loadPosts(){const {data,error}=await sb.from("owner_posts").select("*").order("created_at",{ascending:false});if(!error){window.bcaAnnouncementCount=(data||[]).length;updateSiteStats();}$("postList").innerHTML=error?error.message:(data||[]).map(x=>'<div class="item">'+esc(x.message)+'<br><button class="secondary" onclick="delPost('+x.id+')">Delete</button></div>').join("")||'<p class="small">No posts yet.</p>';}
 async function delMovie(id){if(confirm("Delete this movie?")){await sb.from("movies").delete().eq("id",id);loadMovies();}}
-async function delPost(id){if(confirm("Delete this post?")){await sb.from("owner_posts").delete().eq("id",id);loadPosts();}}
+async function delPost(id){
+ if(!confirm("Delete this announcement?"))return;
+ if(!await verifyOwnerForPosts())return;
+ $("postMsg").textContent="Deleting...";
+ try{
+  const {data,error}=await sb.from("owner_posts").delete().eq("id",id).select("id");
+  if(error)throw error;
+  if(!data?.length)throw Error("Nothing was deleted. Your account may not have database delete permission.");
+  $("postMsg").textContent="Announcement deleted.";
+  await loadPosts();
+ }catch(e){$("postMsg").textContent="Could not delete: "+(e.message||String(e));console.error("Announcement delete failed",e)}
+}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 $("createPoll").onclick=async()=>{const question=$("pollQuestion").value.trim(),options=$("pollOptions").value.split("|").map(x=>x.trim()).filter(Boolean);if(!question||options.length<2)return $("pollMsg").textContent="Add a question and at least 2 options.";const {error}=await sb.from("polls").insert({question,options});$("pollMsg").textContent=error?error.message:"Poll published!";if(!error){$("pollQuestion").value="";$("pollOptions").value="";}};
 let ownerPresence=null;
