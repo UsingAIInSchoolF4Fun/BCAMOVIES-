@@ -260,6 +260,8 @@ body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
 #bcaLoginTransition{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;overflow:hidden;pointer-events:all;isolation:isolate}
 #bcaLoginTransition.playing{display:flex}
 /* GPU-friendly profile entry: grow the purple orb, then shrink it to reveal the site. */
+#bcaLoginTransition.profile-entry{pointer-events:none!important}
+#bcaLoginTransition.profile-entry .bca-transition-brand{pointer-events:none}
 #bcaLoginTransition.profile-entry::before{
  inset:auto;left:50%;top:50%;width:100vmax;height:100vmax;border-radius:50%;
  clip-path:none;filter:none;will-change:transform,opacity;
@@ -689,7 +691,12 @@ function bcaEnterLocal(){
   overlay.classList.add("playing");
   // Reveal the page underneath while the orb covers it; shrinking orb exposes the site.
   window.setTimeout(closeLanding,950);
-  window.setTimeout(()=>{overlay.classList.remove("playing","profile-entry");},8000);
+  // The overlay must never block clicks on the site beneath it.
+  // Remove it when the actual CSS animation ends, with a timeout fallback.
+  const finish=()=>{overlay.classList.remove("playing","profile-entry");overlay.removeEventListener("animationend",onEnd);};
+  const onEnd=e=>{if(e.animationName==="bcaProfileOrbPulse")finish();};
+  overlay.addEventListener("animationend",onEnd);
+  window.setTimeout(finish,8200);
  }else closeLanding();
  syncProfile().catch(()=>{});bcaPublishPresence().catch(()=>{});
 }
