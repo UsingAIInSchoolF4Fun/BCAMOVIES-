@@ -1620,7 +1620,7 @@ function ensureTruckMapNodes(){
  });
 }
 
-function render(){ensureV7();if(document.getElementById("viewer")?.classList.contains("on"))renderViewer();let _truckMount=document.getElementById("truckObjectiveMount");if(_truckMount)_truckMount.innerHTML=truckObjectiveHTML();let _mts=document.getElementById("mapTruckStatus");if(_mts){ensureV6();_mts.innerHTML=G.truck.repaired?"🚙 <b>Pickup repaired — long-range routes unlocked.</b>":`🚙 <b>Truck mission:</b> ${truckCount()}/5 parts found. Search the marked locations.`;}
+function render(){ensureV7();syncObjectiveCompletions();if(document.getElementById("viewer")?.classList.contains("on"))renderViewer();let _truckMount=document.getElementById("truckObjectiveMount");if(_truckMount)_truckMount.innerHTML=truckObjectiveHTML();let _mts=document.getElementById("mapTruckStatus");if(_mts){ensureV6();_mts.innerHTML=G.truck.repaired?"🚙 <b>Pickup repaired — long-range routes unlocked.</b>":`🚙 <b>Truck mission:</b> ${truckCount()}/5 parts found. Search the marked locations.`;}
 document.getElementById("scrap").textContent=Math.floor(G.scrap);document.getElementById("food").textContent=Math.floor(G.food);document.getElementById("fuel").textContent=Math.floor(G.fuel);document.getElementById("pop").textContent=`${G.survivors.length}/${cap()}`;document.getElementById("health").textContent=Math.max(0,Math.floor(G.health));document.getElementById("morale").textContent=Math.floor(G.morale)+"%";document.getElementById("threat").textContent=Math.floor(G.threat)+"%";document.getElementById("day").textContent="Day "+(Math.floor(G.seconds/120)+1);document.getElementById("time").textContent=`${String(Math.floor(G.seconds/60)).padStart(2,"0")}:${String(G.seconds%60).padStart(2,"0")} survived`;
 let left=Math.max(0,G.eventAt-G.seconds);document.getElementById("eventTimer").textContent=`${String(Math.floor(left/60)).padStart(2,"0")}:${String(left%60).padStart(2,"0")}`;
 document.getElementById("feed").innerHTML=G.feed.map(x=>`<div class="msg ${x.c}">${x.t}</div>`).join("");
@@ -2102,13 +2102,35 @@ function goObjective(dest){
  let map={crew:["survivors","CREW"],explore:["map","EXPLORE"],threats:["horde","THREATS"],command:["base","COMMAND"]},x=map[dest];if(!x)return;
  let b=[...document.querySelectorAll(".nav button")].find(q=>q.textContent.includes(x[1]));tab(x[0],b);
 }
+// Completed objectives are permanent per save slot, even if resources get spent later.
+// A tiny +2 Scrap bonus is awarded once when an objective is first completed.
+function syncObjectiveCompletions(){
+ if(!G||!ACTIVE_SLOT||document.getElementById("titleScreen")?.classList.contains("hidden")===false)return;
+ if(!G.completedObjectives||typeof G.completedObjectives!=="object")G.completedObjectives={};
+ let changed=false;
+ for(const group of objectiveData()){
+  for(const objective of group.items){
+   const key=objective.t;
+   if(!G.completedObjectives[key]&&objective.v>=objective.max){
+    G.completedObjectives[key]=true;
+    G.scrap=(G.scrap||0)+2;
+    changed=true;
+    log("Objective complete: "+key+" (+2 Scrap)","good");
+   }
+  }
+ }
+ if(changed)save();
+}
 function renderObjectives(){
  let box=document.getElementById("objectiveContent");if(!box)return;
+ syncObjectiveCompletions();
  box.innerHTML=objectiveData().map(g=>`<div class="objectiveGroup"><h3>${g.stage}</h3>${g.items.map(o=>{
-  let done=o.v>=o.max,pct=Math.min(100,Math.max(0,o.v/o.max*100));
-  return `<div class="objectiveRow ${done?"done":"current"}"><div>${done?"✓":"○"}</div><div><b>${o.t}</b><div class="mut">${o.d}</div><div class="objectiveProgress"><span style="width:${pct}%"></span></div>${!done?`<button class="btn" style="margin-top:8px;padding:5px 8px;font-size:10px" onclick="goObjective('${o.go}')">→ ${o.label}</button>`:""}</div><small>${Math.min(Math.floor(o.v),o.max)}/${o.max}</small></div>`
+  let done=!!G.completedObjectives?.[o.t]||o.v>=o.max;
+  let pct=done?100:Math.min(100,Math.max(0,o.v/o.max*100));
+  return `<div class="objectiveRow ${done?"done":"current"}"><div>${done?"✓":"○"}</div><div><b>${o.t}</b><div class="mut">${o.d}</div><div class="objectiveProgress"><span style="width:${pct}%"></span></div>${done?'<div class="mut" style="color:#8ed49b;margin-top:5px">COMPLETED · +2 Scrap earned</div>':`<button class="btn" style="margin-top:8px;padding:5px 8px;font-size:10px" onclick="goObjective('${o.go}')">→ ${o.label}</button>`}</div><small>${done?"DONE":`${Math.min(Math.floor(o.v),o.max)}/${o.max}`}</small></div>`
  }).join("")}</div>`).join("")
 }
+
 function showBossVictory(b,reward){let rewards=Object.entries(reward).map(([k,v])=>`<div class="victoryReward"><b>+${v}</b><div>${k.toUpperCase()}</div></div>`).join("");let box=document.getElementById("modalContent");box.innerHTML=`<div class="victoryBanner"><div class="victoryBoss">🏆</div><div class="victoryTitle">BOSS DEFEATED</div><h2>${b.name}</h2><p class="mut">Your strike team made it back. The bunker celebrates another victory.</p><h3>Recovered Rewards</h3><div class="victoryRewards">${rewards}</div><p>The next boss encounter will be stronger.</p><button class="btn" onclick="closeModal()">CONTINUE</button></div>`;document.getElementById("modal").classList.add("on")}
 const BOSSES=[
  {name:"The Butcher",icon:"🧟",hp:260,damage:7,reward:{scrap:90,food:45,ammo:20},desc:"A massive infected drags a rusted cleaver through the streets."},
@@ -2243,7 +2265,7 @@ function regenerateWalls(){
  }
  if(changed)renderHorde();
 }
-function tick(){if(G.gameOver||G.lastStand)return;G.seconds++;ensureV7();if(G.seconds%8===0)regenerateWalls();updateRecruiting();if(G.seconds%20===0)resourcePressureTick();healTick();v6Tick();bunkerFlavor();if(G.seconds%3===0)updateLivingBunker();if(G.seconds%10===0)refreshWalkEvolution();ambientDefense();if(G.recruitCD)G.recruitCD--;if(G.seconds%5===0){let reconOn=G.survivors.some(p=>p.job==="Recon"&&!p.injury);
+function tick(){if(G.gameOver||G.lastStand)return;G.seconds++;ensureV7();syncObjectiveCompletions();if(G.seconds%8===0)regenerateWalls();updateRecruiting();if(G.seconds%20===0)resourcePressureTick();healTick();v6Tick();bunkerFlavor();if(G.seconds%3===0)updateLivingBunker();if(G.seconds%10===0)refreshWalkEvolution();ambientDefense();if(G.recruitCD)G.recruitCD--;if(G.seconds%5===0){let reconOn=G.survivors.some(p=>p.job==="Recon"&&!p.injury);
 G.threat=clamp(G.threat+G.buildings.generator*(reconOn?.10:.15),0,100);if(G.food<0){G.food=0;G.morale-=3;G.health-=2}}
 let done=G.missions.filter(m=>m.done<=G.seconds);done.forEach(finishMission);G.missions=G.missions.filter(m=>m.done>G.seconds);if(G.seconds>=G.eventAt&&!document.getElementById("modal").classList.contains("on"))situation();let reconOnDuty=G.survivors.some(p=>p.job==="Recon"&&!p.injury);
 let warnWindow=Math.max(45,hordePrepWindow());
