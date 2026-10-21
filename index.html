@@ -254,7 +254,7 @@ body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
 #landing .aurora-dot:nth-child(5n){background:#e9d5ff;box-shadow:0 0 10px 3px #d946efbb}
 @keyframes auroraDotMove{0%{transform:translate3d(0,75px,0) scale(.45);opacity:0}12%{opacity:.9}80%{opacity:.95}100%{transform:translate3d(var(--dx),var(--dy),0) scale(1.15);opacity:0}}
 #landing .aurora-ribbon{animation-play-state:running!important}
-@media(prefers-reduced-motion:reduce){#landing .aurora-dot{animation-duration:8s!important}}
+@media(prefers-reduced-motion:reduce){#landing .aurora-dot{animation-duration:7s!important}}
 
 /* Cinematic purple orb login transition */
 #bcaLoginTransition{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;overflow:hidden;pointer-events:all;isolation:isolate}
@@ -266,10 +266,10 @@ body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
  inset:auto;left:50%;top:50%;width:100vmax;height:100vmax;border-radius:50%;
  clip-path:none;filter:none;will-change:transform,opacity;
  background:radial-gradient(circle,#e879f9 0%,#a855f7 24%,#7c3aed 55%,#32116d 82%,#090416 100%);
- animation:bcaProfileOrbPulse 8s linear both;
+ animation:bcaProfileOrbPulse 7s linear both;
 }
-#bcaLoginTransition.profile-entry::after{animation:bcaProfileCorePulse 8s ease-in-out both;will-change:transform,opacity}
-#bcaLoginTransition.profile-entry .bca-transition-brand{animation:bcaProfileBrandPulse 8s ease-in-out both;will-change:transform,opacity}
+#bcaLoginTransition.profile-entry::after{animation:bcaProfileCorePulse 7s ease-in-out both;will-change:transform,opacity}
+#bcaLoginTransition.profile-entry .bca-transition-brand{animation:bcaProfileBrandPulse 7s ease-in-out both;will-change:transform,opacity}
 @keyframes bcaProfileOrbPulse{
  0%{transform:translate(-50%,-50%) scale(.001);opacity:1}
  34%{transform:translate(-50%,-50%) scale(3.1);opacity:1}
@@ -301,7 +301,7 @@ body:not(.schoolwork-open) .top .tab:hover{border-color:#a855f777}
  #bcaLoginTransition:not(.profile-entry) .bca-transition-brand{animation-duration:.5s!important}
  #bcaLoginTransition.profile-entry::before,
  #bcaLoginTransition.profile-entry::after,
- #bcaLoginTransition.profile-entry .bca-transition-brand{animation-duration:8s!important}
+ #bcaLoginTransition.profile-entry .bca-transition-brand{animation-duration:7s!important}
 }
 
 #onlineBtn{white-space:nowrap;border:1px solid #22c55e66;background:#143024;color:#dcfce7;border-radius:13px;padding:10px 13px;font-weight:800;cursor:pointer}#onlineBtn:hover{background:#20513a}#onlinePanel{position:fixed;right:15px;top:70px;z-index:90;width:min(350px,calc(100vw - 30px));max-height:75vh;overflow:auto;border:1px solid #a855f7;border-radius:18px;background:#170f2d;padding:20px;box-shadow:0 15px 60px #000b}#onlinePanel[hidden]{display:none!important}#onlineClose{float:right;border:0;background:#42216c;color:white;border-radius:9px;padding:7px 11px;cursor:pointer}.online-person{display:flex;align-items:center;gap:11px;margin:12px 0;padding:8px;border-radius:12px;background:#ffffff0a}.online-person img,.msg-avatar{width:37px;height:37px;border-radius:50%;object-fit:cover;border:2px solid #a855f7;flex-shrink:0}.msg-header{display:flex;align-items:center;gap:9px;margin-bottom:6px}.online-dot{width:8px;height:8px;background:#4ade80;border-radius:50%;margin-left:auto;box-shadow:0 0 10px #4ade80}@media(max-width:650px){#onlineBtn{padding:7px 9px;font-size:12px}}
@@ -705,7 +705,7 @@ function bcaEnterLocal(){
   const finish=()=>{overlay.classList.remove("playing","profile-entry");overlay.removeEventListener("animationend",onEnd);};
   const onEnd=e=>{if(e.animationName==="bcaProfileOrbPulse")finish();};
   overlay.addEventListener("animationend",onEnd);
-  window.setTimeout(finish,8200);
+  window.setTimeout(finish,7200);
  }else closeLanding();
  syncProfile().catch(()=>{});bcaPublishPresence().catch(()=>{});
 }
