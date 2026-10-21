@@ -579,7 +579,7 @@ toolsPanel.style.cssText =
   "display:none;padding:25px;max-width:1000px;margin:auto";
 
 toolsPanel.innerHTML = `
-<div class="bunker-menu-feature"><div class="bunker-menu-preview" aria-label="Live preview of the original Bunker Survival main menu"><iframe src="games/bunker-survival-v11-5.html" title="Original Bunker Survival title menu preview" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="bunker-menu-preview-shield"></div></div><div class="bunker-menu-footer"><span>ORIGINAL GAME MENU · V11.5</span></div></div><h2>HTML Testing Lab</h2>
+<div class="bunker-menu-feature"><div class="bunker-menu-preview" aria-label="Live preview of the original Bunker Survival main menu"><iframe src="games/bunker-survival-v11-5.html" title="Original Bunker Survival title menu preview" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="bunker-menu-preview-shield"></div></div><div class="bunker-menu-footer"><span>ORIGINAL GAME MENU · V11.5</span><a href="games/bunker-survival-v11-5.html" target="_blank" rel="noopener">OPEN & PLAY THE GAME →</a></div></div><h2>HTML Testing Lab</h2>
 <p>Preview interactive, self-contained HTML projects in an isolated sandbox.</p>
 <input type="file" id="htmlUpload" accept=".html,.htm">
 <p>Or paste HTML code:</p>
@@ -597,6 +597,19 @@ border:1px solid #444;border-radius:12px"></iframe>
 <p id="htmlStatus">Ready.</p>`;
 
 document.body.appendChild(toolsPanel);
+/* The preview is decorative: hide the real game's unclickable menu buttons
+   inside its same-origin iframe, while leaving the playable game untouched. */
+const bunkerPreviewFrame=toolsPanel.querySelector(".bunker-menu-preview iframe");
+if(bunkerPreviewFrame)bunkerPreviewFrame.addEventListener("load",()=>{
+ try{
+  const doc=bunkerPreviewFrame.contentDocument;
+  if(!doc)return;
+  const style=doc.createElement("style");
+  style.textContent=".menuActions,.saveSlots,.menuPanel .menuBtn{display:none!important}";
+  doc.head.appendChild(style);
+ }catch(e){console.warn("Bunker preview controls could not be hidden",e)}
+});
+
 
 toolsButton.onclick = () => {
   document.getElementById("movies").style.display = "none";
