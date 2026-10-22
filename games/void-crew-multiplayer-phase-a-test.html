@@ -289,6 +289,7 @@ kbd{background:#222f43;padding:2px 6px;border-radius:4px}
 <input id="code" maxlength="6" placeholder="ROOM CODE" style="width:150px;padding:12px;border-radius:9px;border:1px solid #52647d;background:#0b1421;color:white;text-transform:uppercase">
 </div>
 <div class="menurow"><button class="btn green" onclick="mpCreate()">CREATE PRIVATE ROOM</button><button class="btn" onclick="mpJoin()">JOIN WITH CODE</button><button class="btn" onclick="mpLeave()">BACK</button></div>
+<div id="mpShareCode" style="display:none;margin:16px 0;padding:15px;border:2px solid #52d6ad;border-radius:12px;background:#092b2b;text-align:center"><div style="font-size:12px;color:#b7e8d8">YOUR PRIVATE ROOM CODE</div><div id="mpShareCodeValue" style="font-size:36px;font-weight:900;letter-spacing:7px;color:white;user-select:text"></div><button class="btn" onclick="navigator.clipboard?.writeText(document.getElementById('mpShareCodeValue').textContent)">COPY CODE</button></div>
 <div id="mpLobbyInfo" style="margin-top:15px;color:#b9e6ff;white-space:pre-wrap">Waiting to connect…</div>
 <div id="mpRoster" style="margin:12px 0;line-height:1.8"></div>
 <button id="mpStart" class="btn green" style="display:none" onclick="mpStart()">START GAME • FILL WITH BOTS</button>
@@ -1682,6 +1683,7 @@ function enterMPWaitingRoom(){
  if(typeof shuttlePlayer!=='undefined')shuttlePlayer.c=M.roster.get(M.id)?.c||myColor();
 }
 function rosterView(){
+ const share=el('mpShareCode');share.style.display=M.host&&M.code?'block':'none';el('mpShareCodeValue').textContent=M.host?M.code:'';
  if(M.code&&!M.started)enterMPWaitingRoom();
  let arr=[...M.roster.values()],names=arr.map((p,i)=>(i+1)+'. '+p.name+(p.id===M.id?' (you)':'')).join('\n');
  el('mpRoster').textContent=arr.length+' / 10 real players\n'+names+'\n'+(M.started?'MATCH IN PROGRESS':(10-arr.length)+' bot slots if started now');
@@ -1693,16 +1695,16 @@ function resetNetwork(){
  if(window.mpWaitingRoom){window.mpWaitingRoom=false;el('lobby').classList.remove('mpWaitingLobby')}
  if(M.peer){try{M.peer.destroy()}catch(e){}}
  M.peer=null;M.hostConn=null;M.conns.clear();M.roster.clear();M.active=false;M.started=false;M.meeting=null;M.gameEnded=false;
- el('mpHud').style.display='none';el('mpMeeting').style.display='none';el('mpStart').style.display='none';
+ el('mpHud').style.display='none';el('mpMeeting').style.display='none';el('mpStart').style.display='none';el('mpShareCode').style.display='none';
 }
 window.mpLeave=function(){resetNetwork();state='menu';backMenu()};
 function ensurePeer(){if(typeof Peer==='undefined'){info('Could not load the online connection library. Check your network.');return false}return true}
 window.mpCreate=function(){
  if(!ensurePeer())return;resetNetwork();M.host=true;M.code=rnd();M.id=PREFIX+M.code;
  M.roster.set(M.id,{id:M.id,name:ownName(),c:myColor(),alive:true});
- info('Creating private room…');
+ info('Creating private room…');el('mpShareCode').style.display='block';el('mpShareCodeValue').textContent=M.code;
  try{M.peer=new Peer(M.id)}catch(e){info('Could not create room: '+e.message);return;}
- M.peer.on('open',()=>{info('Room ready.');rosterView()});
+ M.peer.on('open',()=>{rosterView()});
  M.peer.on('error',e=>{info('Connection error: '+(e.type||e.message)+'\nTry Create Room again.');if(e.type==='unavailable-id')resetNetwork()});
  M.peer.on('connection',conn=>{
   if(M.started||M.roster.size>=MAX){conn.on('open',()=>{send(conn,{type:'reject',reason:M.started?'Game already started.':'Room is full.'});setTimeout(()=>conn.close(),300)});return}
