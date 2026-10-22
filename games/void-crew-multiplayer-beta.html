@@ -1748,7 +1748,7 @@ function guestReceive(d){
   if(d.ended)showMPEnd(d.ended)
   const me=M.roster.get(M.id);if(me&&!me.alive&&player.alive){player.alive=false;playerGhost=true}
  }else if(d.type==='meeting')showMeeting(d.reason);
- else if(d.type==='meetingEnd'){hideMeeting();toastMsg(d.text)}
+ else if(d.type==='meetingEnd'){hideMeeting();showMPEjection(d.text,d.color||'#7bb9c9');toastMsg(d.text)}
  else if(d.type==='chat')appendMPChat(d.name,d.text);
  else if(d.type==='botTask')toastMsg('✓ '+d.name+' completed a task ('+d.done+'/'+M.taskGoal+')');
  else if(d.type==='end')showMPEnd(d.text)
@@ -1866,7 +1866,7 @@ function finishGame(text){
 }
 function showMPEnd(text){
  M.gameEnded=text;M.active=false;hideMeeting();el('mpHudStatus').textContent='GAME OVER: '+text;
- const p=el('mpEndScreen');p.style.display='flex';el('mpEndTitle').textContent=/CREW won/i.test(text)?'CREW VICTORY':'INFILTRATOR VICTORY';el('mpEndTitle').style.color=/CREW won/i.test(text)?'#80ffb1':'#ff8190';el('mpEndText').textContent=text;
+ const p=el('mpEndScreen');setTimeout(()=>p.style.display='flex',el('mpEjectScene').style.display==='flex'?3500:0);el('mpEndTitle').textContent=/CREW won/i.test(text)?'CREW VICTORY':'INFILTRATOR VICTORY';el('mpEndTitle').style.color=/CREW won/i.test(text)?'#80ffb1':'#ff8190';el('mpEndText').textContent=text;
 }
 function startMPMeeting(reason){
  if(M.meeting||!M.active)return;
@@ -1899,12 +1899,18 @@ function endMPMeeting(){
  for(const b of bots.filter(b=>b.alive)){const suspect=M.suspicions.get(b.id);const aliveSuspect=[...M.roster.values(),...bots].some(p=>p.id===suspect&&p.alive);choices.push(suspect&&aliveSuspect?suspect:'SKIP')}
  const tally={};choices.forEach(v=>tally[v]=(tally[v]||0)+1);
  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
- let text='No one ejected (tie or skip).';
+ let text='No one ejected (tie or skip).',ejectColor='#7bb9c9';
  if(sorted.length&&sorted[0][0]!=='SKIP'&&(!sorted[1]||sorted[0][1]>sorted[1][1])){
   const id=sorted[0][0],p=M.roster.get(id)||bots.find(b=>b.id===id||b.name===id);
-  if(p){p.alive=false;if(p.id===M.id){player.alive=false;playerGhost=true}text=p.name+' was ejected.'}
+  if(p){p.alive=false;if(p.id===M.id){player.alive=false;playerGhost=true}text=p.name+' was ejected.';ejectColor=p.c||'#7bb9c9'}
  }
- M.meeting=null;M.suspicions.clear();bodies=[];hideMeeting();broadcast({type:'meetingEnd',text});broadcastSnapshot();checkMPWin();
+ M.meeting=null;M.suspicions.clear();bodies=[];hideMeeting();broadcast({type:'meetingEnd',text,color:ejectColor});showMPEjection(text,ejectColor);broadcastSnapshot();setTimeout(()=>checkMPWin(),3700);
+}
+function showMPEjection(text,color){
+ const scene=el('mpEjectScene'),person=el('mpEjectAstronaut'),caption=el('mpEjectCaption');
+ caption.textContent=text;person.style.setProperty('--eject-color',/^#[0-9a-f]{6}$/i.test(color)?color:'#7bb9c9');
+ scene.style.display='flex';person.classList.remove('launch');void person.offsetWidth;person.classList.add('launch');
+ clearTimeout(window.mpEjectTimer);window.mpEjectTimer=setTimeout(()=>{scene.style.display='none';person.classList.remove('launch')},3550);
 }
 function hideMeeting(){M.meeting=null;el('mpMeeting').style.display='none';el('mpVoteOptions').style.pointerEvents='auto';el('mpSabMenu').style.display='none'}
 function broadcastSnapshot(){
@@ -2025,7 +2031,17 @@ requestAnimationFrame(tick);
 #mpHud.mpCompact{opacity:.82}
  .mpWaitingLobby{position:fixed!important;top:12px!important;right:12px!important;left:auto!important;transform:none!important;width:min(330px,40vw)!important;max-height:90vh;overflow:auto;z-index:300;background:#07141dea!important;padding:15px!important;border:2px solid #69b9d3!important;border-radius:16px!important}
  .mpWaitingLobby::after{content:'WASD: move around the shuttle • SPACE near the computer: change color';display:block;color:#b1e5ec;font-size:12px;margin-top:10px}
+#mpEjectScene{display:none;position:fixed;inset:0;z-index:95000;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;background:radial-gradient(ellipse at center,#11273f 0%,#030815 70%);color:#f0faff;font:20px Arial}
+#mpEjectScene::before{content:'✦    ·    ✧     ·      ✦      ·      ✧     ·     ✦';position:absolute;top:20%;left:0;width:100%;font-size:35px;letter-spacing:24px;color:#d3f2ff88;animation:mpStarDrift 3.5s linear}
+#mpEjectAstronaut{position:relative;width:92px;height:118px;background:var(--eject-color);border:5px solid #243b52;border-radius:42px 42px 30px 30px;box-shadow:inset -14px -10px #0004,0 0 25px #ffffff44;transform:translateX(-120vw) rotate(-90deg)}
+#mpEjectAstronaut::before{content:'';position:absolute;top:15px;left:10px;width:62px;height:38px;background:linear-gradient(135deg,#d6faff,#28638d);border:6px solid #182a40;border-radius:35px}
+#mpEjectAstronaut.launch{animation:mpFloatAway 3.4s ease-in-out forwards}
+#mpEjectCaption{position:absolute;bottom:18%;font-weight:900;font-size:clamp(20px,4vw,40px);text-shadow:0 0 15px #59b9ee;text-align:center;padding:0 20px;animation:mpCaption 3.4s both}
+@keyframes mpFloatAway{0%{transform:translate(-100vw,30vh) rotate(-100deg) scale(1)}40%{transform:translate(-8vw,-3vh) rotate(0deg) scale(1)}100%{transform:translate(110vw,-30vh) rotate(490deg) scale(.25)}}
+@keyframes mpStarDrift{to{transform:translateX(-20%)}}
+@keyframes mpCaption{0%,20%{opacity:0}35%,85%{opacity:1}100%{opacity:0}}
 </style>
+<div id="mpEjectScene"><div id="mpEjectAstronaut"></div><div id="mpEjectCaption"></div></div>
 <div id="mpEndScreen"><div class="endBox"><h1 id="mpEndTitle">GAME OVER</h1><p id="mpEndText"></p><button onclick="mpLeave();document.getElementById('mpEndScreen').style.display='none'">RETURN TO MENU</button></div></div>
 <div id="voidTaskCelebrationBox">✓ TASK COMPLETE</div>
 <script>
