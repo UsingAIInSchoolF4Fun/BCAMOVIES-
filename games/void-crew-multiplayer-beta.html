@@ -1657,7 +1657,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 'use strict';
 const MAX=10, PREFIX='voidcrew-test-', abc='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const M={peer:null,host:false,code:'',id:'',conns:new Map(),hostConn:null,roster:new Map(),active:false,started:false,world:null,seq:0,lastSent:0,lastFrame:0,lastHost:0,meeting:null,meetingEnd:0,votes:new Map(),cooldowns:new Map(),botAI:new Map(),botCount:0,taskGoal:36,taskDone:0,gameEnded:false,interpolated:new Map(),sabotage:null,lastBotTask:0};
-window.VCMP={get active(){return M.active},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([,p])=>p)};
+window.VCMP={get active(){return M.active},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
 const el=id=>document.getElementById(id);
 const cleanName=s=>String(s||'Player').replace(/[^\w -]/g,'').slice(0,12)||'Player';
 const send=(c,d)=>{if(c&&c.open)try{c.send(d)}catch(e){}};
@@ -1726,7 +1726,7 @@ function guestReceive(d){
  }else if(d.type==='start'){M.started=true;beginLocal(d.role,d.spawn,d.botCount);M.taskGoal=d.taskGoal||10}
  else if(d.type==='snap'&&M.active){
   if(d.seq<=M.seq)return;M.seq=d.seq;
-  for(const p of d.players){const old=M.roster.get(p.id)||{};if(p.id!==M.id){M.interpolated.set(p.id,{x:old.x??p.x,y:old.y??p.y,tx:p.x,ty:p.y});M.roster.set(p.id,{...old,...p,x:old.x??p.x,y:old.y??p.y})}else M.roster.set(p.id,{...old,...p});}
+  for(const p of d.players){const old=M.roster.get(p.id)||{};if(p.id!==M.id){const v=M.interpolated.get(p.id);if(v){v.tx=p.x;v.ty=p.y}else M.interpolated.set(p.id,{x:p.x,y:p.y,tx:p.x,ty:p.y});M.roster.set(p.id,{...old,...p})}else M.roster.set(p.id,{...old,...p});}
   const oldBots=new Map(bots.map(b=>[b.id,b]));bots=d.bots.map(b=>{const old=oldBots.get(b.id);return {...b,x:old?.x??b.x,y:old?.y??b.y,netX:b.x,netY:b.y,brain:{state:'TASK'},spawnHold:0}});
   bodies=d.bodies.map(b=>({...b}));M.taskDone=d.tasks;M.taskGoal=d.goal;M.gameEnded=d.ended;M.sabotage=d.sabotage||null;syncSabotageVisuals();
   if(d.meeting&&!M.meeting)showMeeting(d.meeting);
@@ -1740,7 +1740,7 @@ function guestReceive(d){
 }
 function spawnFor(i){const p=safeCrewSpawn(i);if(i>=8){const cafe=rooms.find(r=>r.n==='Cafeteria');return {x:cafe.x+cafe.w/2+(i===8?-180:180),y:cafe.y+215}}return {x:p.x,y:p.y}}
 function beginLocal(myRole,spawn,botCount){
- M.active=true;M.gameEnded=false;M.seq=0;M.lastFrame=performance.now();M.lastSent=0;M.taskDone=0;M.botCount=botCount;M.meeting=null;M.sabotage=null;M.lastBotTask=0;
+ M.active=true;M.interpolated.clear();M.botAI.clear();M.gameEnded=false;M.seq=0;M.lastFrame=performance.now();M.lastSent=0;M.taskDone=0;M.botCount=botCount;M.meeting=null;M.sabotage=null;M.lastBotTask=0;
  state='mp';role=myRole;playerGhost=false;meeting=false;roundAge=0;visionRadius=188;ventAnim=null;cameraMode=false;
  const name=M.roster.get(M.id)?.name||ownName();
  player={x:spawn.x,y:spawn.y,r:18,c:M.roster.get(M.id)?.c||myColor(),name,alive:true,vx:0,vy:0};
@@ -1791,10 +1791,10 @@ function hostTaskDone(id,taskId){
 
 function hostReceive(id,d){
  const p=M.roster.get(id);if(!p||!M.started)return;
- if(d.type==='move'&&M.active&&p.alive&&!M.meeting){
+ if(d.type==='move'&&M.active&&(p.alive||p.role==='CREW')&&!M.meeting){
   const nx=Number(d.x),ny=Number(d.y);
   if(Number.isFinite(nx)&&Number.isFinite(ny)&&nx>=0&&nx<=world.w&&ny>=0&&ny<=world.h&&validPoint(nx,ny)){
-   if(Math.hypot(nx-p.x,ny-p.y)<95){p.x=nx;p.y=ny}
+   if(Math.hypot(nx-p.x,ny-p.y)<95){let v=M.interpolated.get(id);if(!v)M.interpolated.set(id,{x:p.x,y:p.y,tx:nx,ty:ny});else{v.tx=nx;v.ty=ny}p.x=nx;p.y=ny}
   }
  }else if(d.type==='action')hostAction(id,d.action);
  else if(d.type==='taskDone')hostTaskDone(id,d.taskId);
@@ -1923,6 +1923,7 @@ function syncSabotageVisuals(){
  if(!M.active)return;
  const type=M.sabotage?.type;
  visionRadius=type==='LIGHTS'?82:188;
+ sabotageType=type||'';
  doors=type==='DOORS'?V10_DOORS.map(d=>({...d,closed:true})):[];
 }
 const originalRepair=window.v10RepairSabotage;
@@ -1956,7 +1957,7 @@ function tick(t){
   const dy=Number(!!(keys.s||keys.KeyS||keys.ArrowDown))-Number(!!(keys.w||keys.KeyW||keys.ArrowUp));
   const l=Math.hypot(dx,dy)||1;
   if(player&&(player.alive||playerGhost)&&!taskActive&&el('mpSabMenu').style.display==='none'){const ox=player.x,oy=player.y;moveEnt(player,dx/l*moveSpeed*dt,dy/l*moveSpeed*dt);if(Math.hypot(player.x-ox,player.y-oy)>.2)walkPhase+=dt*12}
-  if(!M.host){for(const [id,pos] of M.interpolated){const p=M.roster.get(id);if(!p)continue;p.x+=(pos.tx-p.x)*Math.min(1,dt*13);p.y+=(pos.ty-p.y)*Math.min(1,dt*13)}for(const b of bots){if(Number.isFinite(b.netX)){b.x+=(b.netX-b.x)*Math.min(1,dt*11);b.y+=(b.netY-b.y)*Math.min(1,dt*11)}}}
+  {for(const [id,pos] of M.interpolated){const p=M.roster.get(id);if(!p)continue;pos.x+=(pos.tx-pos.x)*Math.min(1,dt*13);pos.y+=(pos.ty-pos.y)*Math.min(1,dt*13);if(!M.host){p.x=pos.x;p.y=pos.y}}if(!M.host)for(const b of bots){if(Number.isFinite(b.netX)){b.x+=(b.netX-b.x)*Math.min(1,dt*11);b.y+=(b.netY-b.y)*Math.min(1,dt*11)}}}
   if(M.host){
    const me=M.roster.get(M.id);if(me&&player){me.x=player.x;me.y=player.y;me.alive=player.alive}
    for(const b of bots.filter(b=>b.alive)){
