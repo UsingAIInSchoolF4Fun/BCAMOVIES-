@@ -1342,6 +1342,9 @@ function drawMap(cam){x.fillStyle='#050912';x.fillRect(0,0,W,H);x.save();let sh=
  // Clearly visible vent grates; only infiltrators can use them.
  vents.forEach(v=>{x.save();x.translate(v.x,v.y);x.fillStyle='#0c1922';x.strokeStyle='#9bb8c5';x.lineWidth=2.5;x.beginPath();x.roundRect(-19,-13,38,26,6);x.fill();x.stroke();x.strokeStyle='#668695';x.lineWidth=2.5;for(let j=-1;j<=1;j++){x.beginPath();x.moveTo(-12,j*6);x.lineTo(12,j*6);x.stroke()}if(role==='INFILTRATOR'&&player&&dist(player,v)<90){x.strokeStyle='#c594ff';x.lineWidth=2;x.beginPath();x.roundRect(-23,-17,46,34,8);x.stroke();x.fillStyle='#eed7ff';x.font='bold 9px Arial';x.textAlign='center';x.fillText('V TO VENT',0,-24)}x.restore()});
  tasks.forEach(t=>{if(t.done)return;let near=player&&dist(player,t)<72,phase=performance.now()/250+t.x*.03,rad=(near?13:10)+Math.sin(phase)*2;x.fillStyle=near?'#fff2a3':'#ffd84f';x.shadowColor='#ffd84f';x.shadowBlur=near?28:15;x.beginPath();x.arc(t.x,t.y,rad,0,Math.PI*2);x.fill();x.shadowBlur=0;x.strokeStyle='rgba(255,218,79,.45)';x.lineWidth=2;x.beginPath();x.arc(t.x,t.y,rad+7+Math.sin(phase)*3,0,Math.PI*2);x.stroke();if(near&&role==='CREW'){x.fillStyle='#fff';x.font='bold 10px Arial';x.textAlign='center';x.fillText('SPACE',t.x,t.y-23);x.textAlign='left'}});
+ if(window.VCMP?.active&&window.VCMP.sabotage&&role==='CREW'){
+ const st=V10_SAB_STATIONS[window.VCMP.sabotage.type];if(st){x.save();x.fillStyle='#ffe28a';x.strokeStyle='#ff526d';x.lineWidth=4;x.shadowColor='#ff526d';x.shadowBlur=20;x.beginPath();x.arc(st.x,st.y,23+Math.sin(performance.now()/180)*3,0,7);x.stroke();x.textAlign='center';x.font='bold 12px Arial';x.fillText('REPAIR '+window.VCMP.sabotage.type,st.x,st.y-33);x.restore()}
+ }
  particles.forEach(p=>{x.fillStyle=p.c||'#d74b4b';x.globalAlpha=Math.max(0,p.t/.7);x.beginPath();x.arc(p.x,p.y,3,0,7);x.fill();x.globalAlpha=1});
 if(killAnim){let kp=1-killAnim.t/.42;x.save();x.translate(killAnim.x,killAnim.y);x.globalAlpha=Math.min(.36,killAnim.t*1.6);x.strokeStyle='#ff6268';x.lineWidth=1.5+kp*1.8;x.beginPath();x.arc(0,0,12+kp*18,0,Math.PI*2);x.stroke();for(let q=0;q<4;q++){let a=q*Math.PI/2+kp;x.beginPath();x.moveTo(Math.cos(a)*12,Math.sin(a)*12);x.lineTo(Math.cos(a)*(18+kp*20),Math.sin(a)*(18+kp*20));x.stroke()}x.restore()}
 if(role==='INFILTRATOR'&&player.alive&&!meeting&&killCD<=0){let near=bots.some(b=>b.alive&&!b.evil&&dist(player,b)<68);x.save();x.strokeStyle=near?'rgba(255,75,75,.72)':'rgba(255,90,90,.20)';x.lineWidth=2;x.setLineDash([7,7]);x.beginPath();x.arc(player.x,player.y,68,0,7);x.stroke();x.restore()}
@@ -1657,7 +1660,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 'use strict';
 const MAX=10, PREFIX='voidcrew-test-', abc='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const M={peer:null,host:false,code:'',id:'',conns:new Map(),hostConn:null,roster:new Map(),active:false,started:false,world:null,seq:0,lastSent:0,lastFrame:0,lastHost:0,meeting:null,meetingEnd:0,votes:new Map(),cooldowns:new Map(),botAI:new Map(),suspicions:new Map(),botCount:0,taskGoal:36,taskDone:0,gameEnded:false,interpolated:new Map(),sabotage:null,lastBotTask:0};
-window.VCMP={get active(){return M.active},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
+window.VCMP={get active(){return M.active},get sabotage(){return M.sabotage},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
 const el=id=>document.getElementById(id);
 const cleanName=s=>String(s||'Player').replace(/[^\w -]/g,'').slice(0,12)||'Player';
 const send=(c,d)=>{if(c&&c.open)try{c.send(d)}catch(e){}};
