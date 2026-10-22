@@ -1233,7 +1233,7 @@ function roundedPanel(px,py,w,h,label,accent='#5f8496'){
  if(label){x.fillStyle='#a8bdc8';x.font='bold 9px Arial';x.textAlign='center';x.fillText(label,px+w/2,py+h-7)}x.restore();
 }
 function drawBotWorkEffect(b){
- if(!b.working||!b.alive)return;
+ if(state==='mp'||!b.working||!b.alive)return;
  const t=performance.now()/1000;
  x.save();x.translate(b.x,b.y-38);
  x.strokeStyle='rgba(112,230,225,.68)';x.lineWidth=2;
@@ -1749,6 +1749,7 @@ function guestReceive(d){
   M.roster.clear();d.players.forEach(p=>M.roster.set(p.id,{...p,alive:true}));
   rosterView();
  }else if(d.type==='start'){M.started=true;beginLocal(d.role,d.spawn,d.botCount);M.taskGoal=d.taskGoal||10}
+ else if(d.type==='ventMove'&&M.active&&player){player.x=d.x;player.y=d.y;camPos.x=Math.max(0,Math.min(world.w-W/gameZoom,player.x-W/gameZoom/2));camPos.y=Math.max(0,Math.min(world.h-H/gameZoom,player.y-H/gameZoom/2));}
  else if(d.type==='snap'&&M.active){
   if(d.seq<=M.seq)return;M.seq=d.seq;
   for(const p of d.players){const old=M.roster.get(p.id)||{};if(p.id!==M.id){const v=M.interpolated.get(p.id);if(v){v.tx=p.x;v.ty=p.y}else M.interpolated.set(p.id,{x:p.x,y:p.y,tx:p.x,ty:p.y});M.roster.set(p.id,{...old,...p})}else M.roster.set(p.id,{...old,...p});}
@@ -1869,7 +1870,9 @@ function hostAction(id,action){
  }else if(action==='vent'){
   if(p.role!=='INFILTRATOR')return;const idx=vents.findIndex(v=>dist(v,p)<65);if(idx<0)return;
   const next=vents[(idx+1)%vents.length];p.x=next.x;p.y=next.y;
-  if(id===M.id){player.x=p.x;player.y=p.y}
+  if(id===M.id){player.x=p.x;player.y=p.y;camPos.x=Math.max(0,Math.min(world.w-W/gameZoom,p.x-W/gameZoom/2));camPos.y=Math.max(0,Math.min(world.h-H/gameZoom,p.y-H/gameZoom/2));}
+  else send(M.conns.get(id),{type:'ventMove',x:p.x,y:p.y});
+  broadcastSnapshot();
  }
 }
 function recordWitnesses(killer,victim){
@@ -2035,7 +2038,7 @@ function tick(t){
    const me=M.roster.get(M.id);if(me&&player){me.x=player.x;me.y=player.y;me.alive=player.alive}
    for(const b of bots.filter(b=>b.alive)){
     let brain=M.botAI.get(b.id);if(!brain||!brain.target||brain.until<t||M.sabotage&&brain.target!==V10_SAB_STATIONS[M.sabotage.type]&&!b.evil){const goal=M.sabotage&&!b.evil?V10_SAB_STATIONS[M.sabotage.type]:TASK_POOL[Math.floor(Math.random()*TASK_POOL.length)];brain={target:goal,until:t+6000+Math.random()*4000,work:0};M.botAI.set(b.id,brain)}
-    const distance=dist(b,brain.target);if(distance<50){b.working=true;brain.work+=dt;if(brain.work>9){if(M.sabotage&&!b.evil&&brain.target===V10_SAB_STATIONS[M.sabotage.type]){M.sabotage=null;syncSabotageVisuals()}else if(!b.evil&&M.taskDone<M.taskGoal){M.taskDone++;b.working=false;if(M.taskDone>=M.taskGoal)finishGame('CREW won — tasks completed')}brain.until=0;brain.work=0}continue}else b.working=false;
+    const distance=dist(b,brain.target);if(distance<50){b.working=true;brain.work+=dt;if(brain.work>9){if(M.sabotage&&!b.evil&&brain.target===V10_SAB_STATIONS[M.sabotage.type]){/* Multiplayer bots cannot automatically repair sabotage. */}else if(!b.evil&&M.taskDone<M.taskGoal){M.taskDone++;b.working=false;if(M.taskDone>=M.taskGoal)finishGame('CREW won — tasks completed')}brain.until=0;brain.work=0}continue}else b.working=false;
     botGo(b,brain.target,dt,95);
     if(b.evil){const targets=[...M.roster.values(),...bots].filter(q=>q.alive&&q!==b&&q.role!=='INFILTRATOR'&&!q.evil);const v=targets.sort((a,c)=>dist(a,b)-dist(c,b))[0];if(v){const dd=Math.max(1,dist(v,b));if(dd>62)botGo(b,v,dt,112);if(dd<62&&t>(M.cooldowns.get(b.id)||0)){if(!brain.killWindup||brain.killTarget!==v.id){brain.killWindup=t+1800;brain.killTarget=v.id;}if(t<brain.killWindup)continue;brain.killWindup=0;v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true;toastMsg('YOU DIED — finish your tasks as a ghost.');}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});killAnim={x:v.x,y:v.y,t:.42,c:v.c};recordWitnesses(b,v);M.cooldowns.set(b.id,t+15000);broadcastSnapshot();checkMPWin()}}}
     // Living crew bots notice nearby bodies and report them after approaching.
