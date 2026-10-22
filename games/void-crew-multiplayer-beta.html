@@ -1646,11 +1646,12 @@ window.addEventListener('DOMContentLoaded',()=>{
 #mpHud{position:fixed;top:12px;left:12px;z-index:115;display:none;background:#07131de8;border:1px solid #69b9d3;border-radius:12px;padding:12px;color:#e8f7ff;font:13px Arial;max-width:320px}
 #mpMeeting{display:none;position:fixed;inset:0;z-index:350;background:#020b15ed;color:white;align-items:center;justify-content:center;font:16px Arial}
 #mpMeeting .inner{background:#102333;border:2px solid #72b8cf;border-radius:16px;padding:24px;width:min(550px,92vw);max-height:88vh;overflow:auto}
-#mpMeeting button,#mpHud button{padding:8px 12px;margin:4px;background:#29455c;color:white;border:1px solid #7da7c5;border-radius:7px;cursor:pointer}
+#mpMeeting button,#mpHud button,#mpSabMenu button{padding:8px 12px;margin:4px;background:#29455c;color:white;border:1px solid #7da7c5;border-radius:7px;cursor:pointer}
 #mpRoster{color:#c9f3ff}
 </style>
-<div id="mpHud"><b id="mpHudTitle">VOID CREW ONLINE</b><div id="mpHudStatus" style="margin:7px 0"></div><div style="font-size:11px;color:#b5d2e5">WASD move • E task / meeting • R report • K kill • V vent • M map</div><button onclick="mpAction('task')">USE / TASK</button><button onclick="mpAction('kill')">KILL</button><button onclick="mpAction('report')">REPORT</button><button onclick="mpAction('vent')">VENT</button></div>
-<div id="mpMeeting"><div class="inner"><h2>EMERGENCY MEETING</h2><p id="mpMeetReason"></p><p id="mpMeetClock"></p><div id="mpVoteOptions"></div><p id="mpVoteStatus"></p></div></div>
+<div id="mpHud"><b id="mpHudTitle">VOID CREW ONLINE</b><div id="mpHudStatus" style="margin:7px 0"></div><div style="font-size:11px;color:#b5d2e5">WASD move • E task / meeting • R report • K kill • V vent • M map</div><button onclick="mpAction('task')">USE / TASK</button><button onclick="mpAction('kill')">KILL</button><button onclick="mpAction('report')">REPORT</button><button onclick="mpAction('vent')">VENT</button><button onclick="openMPSabotage()">SABOTAGE</button><div id="mpTaskList" style="font-size:11px;color:#c1f0d0;max-height:120px;overflow:auto;margin-top:8px"></div></div>
+<div id="mpSabMenu" style="display:none;position:fixed;inset:0;z-index:355;background:#03101aee;color:white;align-items:center;justify-content:center;font:16px Arial"><div style="padding:28px;border:2px solid #f17b87;border-radius:16px;background:#152333"><h2>SABOTAGE SHIP</h2><button onclick="mpSab('LIGHTS')">LIGHTS</button><button onclick="mpSab('DOORS')">DOORS</button><button onclick="mpSab('REACTOR')">REACTOR</button><button onclick="mpSab('OXYGEN')">OXYGEN</button><button onclick="document.getElementById('mpSabMenu').style.display='none'">CANCEL</button></div></div>
+<div id="mpMeeting"><div class="inner"><h2>EMERGENCY MEETING</h2><p id="mpMeetReason"></p><p id="mpMeetClock"></p><div id="mpVoteOptions"></div><p id="mpVoteStatus"></p><div id="mpChatLog" style="max-height:150px;overflow:auto;background:#061420;padding:10px;border-radius:8px;font-size:13px;margin-top:10px"></div><div style="display:flex"><input id="mpChatInput" maxlength="160" placeholder="Discuss with your crew" style="flex:1;background:#091e30;color:white;border:1px solid #587d95;padding:10px"><button onclick="mpChat()">SEND</button></div></div></div>
 <script>
 (function(){
 'use strict';
@@ -1727,13 +1728,14 @@ function guestReceive(d){
   if(d.seq<=M.seq)return;M.seq=d.seq;
   for(const p of d.players){const old=M.roster.get(p.id)||{};if(p.id!==M.id){M.interpolated.set(p.id,{x:old.x??p.x,y:old.y??p.y,tx:p.x,ty:p.y});M.roster.set(p.id,{...old,...p,x:old.x??p.x,y:old.y??p.y})}else M.roster.set(p.id,{...old,...p});}
   const oldBots=new Map(bots.map(b=>[b.id,b]));bots=d.bots.map(b=>{const old=oldBots.get(b.id);return {...b,x:old?.x??b.x,y:old?.y??b.y,netX:b.x,netY:b.y,brain:{state:'TASK'},spawnHold:0}});
-  bodies=d.bodies.map(b=>({...b}));M.taskDone=d.tasks;M.taskGoal=d.goal;M.gameEnded=d.ended;M.sabotage=d.sabotage||null;
+  bodies=d.bodies.map(b=>({...b}));M.taskDone=d.tasks;M.taskGoal=d.goal;M.gameEnded=d.ended;M.sabotage=d.sabotage||null;syncSabotageVisuals();
   if(d.meeting&&!M.meeting)showMeeting(d.meeting);
   if(!d.meeting&&M.meeting)hideMeeting();
   if(d.ended){el('mpHudStatus').textContent='GAME OVER: '+d.ended;M.active=false}
   const me=M.roster.get(M.id);if(me&&!me.alive&&player.alive){player.alive=false;playerGhost=true}
  }else if(d.type==='meeting')showMeeting(d.reason);
  else if(d.type==='meetingEnd'){hideMeeting();toastMsg(d.text)}
+ else if(d.type==='chat')appendMPChat(d.name,d.text);
  else if(d.type==='end'){M.active=false;el('mpHudStatus').textContent='GAME OVER: '+d.text;hideMeeting()}
 }
 function spawnFor(i){const p=safeCrewSpawn(i);if(i>=8){const cafe=rooms.find(r=>r.n==='Cafeteria');return {x:cafe.x+cafe.w/2+(i===8?-180:180),y:cafe.y+215}}return {x:p.x,y:p.y}}
@@ -1747,6 +1749,7 @@ function beginLocal(myRole,spawn,botCount){
  el('menu').style.setProperty('display','none','important');el('lobby').style.display='none';el('menuSpace').style.display='none';
  el('minimap').style.display='block';el('gamehud').style.display='none';el('mpHud').style.display='block';
  el('mpHudTitle').textContent='ROOM '+M.code+' • '+role;
+ el('mpTaskList').textContent=role==='CREW'?tasks.map(t=>'○ '+t.n+' — '+t.room).join(' | '):'You are the infiltrator. Fake tasks and sabotage.';
  toastMsg('Online game started: '+role+' • '+botCount+' bots');
 }
 window.mpStart=function(){
@@ -1769,6 +1772,7 @@ window.finishTask=function(){
  const t=taskActive;
  if(!M.active||!t)return previousFinishTask();
  previousFinishTask();
+ el('mpTaskList').textContent=tasks.map(t=>(t.done?'✓ ':'○ ')+t.n+' — '+t.room).join(' | ');
  if(M.host)hostTaskDone(M.id,t.id);
  else send(M.hostConn,{type:'taskDone',taskId:t.id});
 };
@@ -1794,6 +1798,7 @@ function hostReceive(id,d){
   }
  }else if(d.type==='action')hostAction(id,d.action);
  else if(d.type==='taskDone')hostTaskDone(id,d.taskId);
+ else if(d.type==='chat')hostChat(id,d.text);
  else if(d.type==='vote')hostVote(id,d.choice);
 }
 function hostAction(id,action){
@@ -1815,6 +1820,15 @@ function hostAction(id,action){
  }else if(action==='meeting'){
   const cafe=rooms.find(r=>r.n==='Cafeteria'),button={x:cafe.x+cafe.w/2,y:cafe.y+120};
   if(dist(p,button)<78&&now-(M.cooldowns.get('meeting')||0)>60000){M.cooldowns.set('meeting',now);startMPMeeting(p.name+' called an emergency meeting!')}
+ }else if(typeof action==='string'&&action.startsWith('sabotage:')){
+  if(p.role!=='INFILTRATOR'||M.sabotage||now<(M.cooldowns.get('sabotage')||0))return;
+  const type=action.split(':')[1];if(!['LIGHTS','DOORS','REACTOR','OXYGEN'].includes(type))return;
+  M.sabotage={type,until:now+(type==='REACTOR'||type==='OXYGEN'?45000:20000)};
+  M.cooldowns.set('sabotage',now+40000);syncSabotageVisuals();broadcastSnapshot();
+ }else if(action==='repair'){
+  if(p.role!=='CREW'||!M.sabotage)return;
+  const station=V10_SAB_STATIONS[M.sabotage.type];if(!station||dist(p,station)>95)return;
+  M.sabotage=null;syncSabotageVisuals();broadcastSnapshot();
  }else if(action==='vent'){
   if(p.role!=='INFILTRATOR')return;const idx=vents.findIndex(v=>dist(v,p)<65);if(idx<0)return;
   const next=vents[(idx+1)%vents.length];p.x=next.x;p.y=next.y;
@@ -1834,7 +1848,8 @@ function startMPMeeting(reason){
  M.meeting=reason;M.meetingEnd=Date.now()+25000;M.votes.clear();showMeeting(reason);broadcast({type:'meeting',reason});
 }
 function showMeeting(reason){
- M.meeting=reason;el('mpMeeting').style.display='flex';el('mpMeetReason').textContent=reason;
+ M.meeting=reason;
+ el('mpChatLog').replaceChildren();el('mpMeeting').style.display='flex';el('mpMeetReason').textContent=reason;
  el('mpVoteStatus').textContent='Choose someone to eject or skip.';
  const root=el('mpVoteOptions');root.replaceChildren();
  for(const p of [...M.roster.values(),...bots].filter(p=>p.alive)){
@@ -1865,7 +1880,7 @@ function endMPMeeting(){
  }
  M.meeting=null;hideMeeting();broadcast({type:'meetingEnd',text});checkMPWin();
 }
-function hideMeeting(){M.meeting=null;el('mpMeeting').style.display='none';el('mpVoteOptions').style.pointerEvents='auto'}
+function hideMeeting(){M.meeting=null;el('mpMeeting').style.display='none';el('mpVoteOptions').style.pointerEvents='auto';el('mpSabMenu').style.display='none'}
 function broadcastSnapshot(){
  if(!M.host||!M.started)return;
  const players=[...M.roster.values()].map(p=>({id:p.id,name:p.name,c:p.c,x:p.x,y:p.y,alive:p.alive}));
@@ -1873,6 +1888,9 @@ function broadcastSnapshot(){
 }
 window.mpAction=function(action){
  if(!M.active||M.meeting||(!player?.alive&&!playerGhost))return;
+ if(action==='task'&&M.sabotage&&role==='CREW'){
+  const station=V10_SAB_STATIONS[M.sabotage.type];if(station&&dist(player,station)<85){openSabotageFix(station);return}
+ }
  if(action==='task'){
   const cafe=rooms.find(r=>r.n==='Cafeteria'),btn={x:cafe.x+cafe.w/2,y:cafe.y+120};
   if(dist(player,btn)<78)action='meeting';
@@ -1889,6 +1907,48 @@ addEventListener('keydown',e=>{
  const k=e.key.toLowerCase();
  if(k==='e'||e.code==='Space')mpAction('task');if(k==='r')mpAction('report');if(k==='k')mpAction('kill');if(k==='v')mpAction('vent');if(k==='q')openMPSabotage();
 });
+
+window.openMPSabotage=function(){
+ if(!M.active||M.meeting||role!=='INFILTRATOR'||!player?.alive)return;
+ if(M.sabotage)return toastMsg('A sabotage is already active.');
+ el('mpSabMenu').style.display='flex';
+};
+window.mpSab=function(type){
+ el('mpSabMenu').style.display='none';
+ if(!M.active||role!=='INFILTRATOR')return;
+ const action='sabotage:'+type;
+ if(M.host)hostAction(M.id,action);else send(M.hostConn,{type:'action',action});
+};
+function syncSabotageVisuals(){
+ if(!M.active)return;
+ const type=M.sabotage?.type;
+ visionRadius=type==='LIGHTS'?82:188;
+ doors=type==='DOORS'?V10_DOORS.map(d=>({...d,closed:true})):[];
+}
+const originalRepair=window.v10RepairSabotage;
+window.v10RepairSabotage=function(){
+ if(!M.active)return originalRepair();
+ closeSabotageFix();
+ if(M.host)hostAction(M.id,'repair');else send(M.hostConn,{type:'action',action:'repair'});
+ toastMsg('Repair controls activated');
+};
+function appendMPChat(name,text){
+ const div=document.createElement('div');div.textContent=cleanName(name)+': '+String(text).slice(0,160);
+ el('mpChatLog').appendChild(div);el('mpChatLog').scrollTop=el('mpChatLog').scrollHeight;
+}
+function hostChat(id,text){
+ if(!M.meeting||typeof text!=='string'||!text.trim())return;
+ const p=M.roster.get(id);if(!p||!p.alive)return;
+ const safe=text.replace(/[<>]/g,'').trim().slice(0,160);
+ appendMPChat(p.name,safe);broadcast({type:'chat',name:p.name,text:safe});
+}
+window.mpChat=function(){
+ const input=el('mpChatInput'),value=input.value.trim();input.value='';
+ if(!value||!M.meeting||!player?.alive)return;
+ if(M.host)hostChat(M.id,value);else send(M.hostConn,{type:'chat',text:value});
+};
+el('mpChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();mpChat()}});
+
 function tick(t){
  const dt=Math.min(.05,(t-M.lastFrame)/1000||0);M.lastFrame=t;
  if(M.active&&!M.meeting){
@@ -1903,7 +1963,7 @@ function tick(t){
     let brain=M.botAI.get(b.id);if(!brain||!brain.target||brain.until<t){const goal=TASK_POOL[Math.floor(Math.random()*TASK_POOL.length)];brain={target:goal,until:t+6000+Math.random()*4000,work:0};M.botAI.set(b.id,brain)}
     const distance=dist(b,brain.target);if(distance<50){b.working=true;brain.work+=dt;if(brain.work>3){if(!b.evil&&M.taskDone<M.taskGoal){M.taskDone++;if(M.taskDone>=M.taskGoal)finishGame('CREW won — tasks completed')}brain.until=0;brain.work=0}continue}else b.working=false;
     botGo(b,brain.target,dt,95);
-    if(b.evil){const targets=[...M.roster.values(),...bots].filter(q=>q.alive&&q!==b&&q.role!=='INFILTRATOR'&&!q.evil);const v=targets.sort((a,c)=>dist(a,b)-dist(c,b))[0];if(v){const dd=Math.max(1,dist(v,b));brain.dx=(v.x-b.x)/dd;brain.dy=(v.y-b.y)/dd;if(dd<62&&t>(M.cooldowns.get(b.id)||0)){v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});M.cooldowns.set(b.id,t+15000);checkMPWin()}}}
+    if(b.evil){const targets=[...M.roster.values(),...bots].filter(q=>q.alive&&q!==b&&q.role!=='INFILTRATOR'&&!q.evil);const v=targets.sort((a,c)=>dist(a,b)-dist(c,b))[0];if(v){const dd=Math.max(1,dist(v,b));if(dd>62)botGo(b,v,dt,112);if(dd<62&&t>(M.cooldowns.get(b.id)||0)){v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});M.cooldowns.set(b.id,t+15000);checkMPWin()}}}
     // botGo uses the existing room/corridor pathfinding.
    }
   }
@@ -1915,7 +1975,7 @@ function tick(t){
   el('mpHudStatus').textContent=(player?.alive?'ALIVE':'GHOST')+' • '+M.taskDone+'/'+M.taskGoal+' tasks • '+M.botCount+' bots'+(M.sabotage?' • SABOTAGE: '+M.sabotage.type:'');
  }
  if(M.host&&M.meeting&&Date.now()>M.meetingEnd)endMPMeeting();
- if(M.host&&M.sabotage){if(Date.now()>=M.sabotage.until){if(M.sabotage.type==='LIGHTS'||M.sabotage.type==='DOORS')M.sabotage=null;else finishGame('INFILTRATOR won — '+M.sabotage.type+' failure')} }
+ if(M.host&&M.sabotage){if(Date.now()>=M.sabotage.until){if(M.sabotage.type==='LIGHTS'||M.sabotage.type==='DOORS'){M.sabotage=null;syncSabotageVisuals()}else finishGame('INFILTRATOR won — '+M.sabotage.type+' failure')} }
  if(M.meeting)el('mpMeetClock').textContent=M.host?'Voting ends in '+Math.max(0,Math.ceil((M.meetingEnd-Date.now())/1000))+'s':'Vote now — host controls timer';
  requestAnimationFrame(tick);
 }
