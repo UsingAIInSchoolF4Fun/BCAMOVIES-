@@ -343,7 +343,7 @@ const rooms=[
 ], world={w:2320,h:1480};
 function openLobby(){menuEl.style.display='none';lobbyEl.style.display='block';minimapEl.style.display='none';pingEl.style.display='none'} function backMenu(){let ctb=document.getElementById('crewTaskBar');if(ctb)ctb.style.display='none';let ka=document.getElementById('killerActions');if(ka)ka.style.display='none';lobbyEl.style.display='none';menuEl.style.setProperty('display','block','important');menuEl.style.visibility='visible';menuEl.style.pointerEvents='auto';minimapEl.style.display='none';pingEl.style.display='none';document.getElementById('menuSpace').style.display='block'}
 function openCustom(){menu.style.display='none';custom.style.display='block';swatches.innerHTML=colors.map((c,i)=>'<button class="swatch" aria-label="color '+(i+1)+'" style="background:'+c+'" onclick="pickColor('+i+')"></button>').join('')}
-function pickColor(i){selectedColor=colors[i];[...swatches.children].forEach((e,j)=>e.style.outline=j===i?'4px solid white':'none');tone(520,.05)}
+function pickColor(i){selectedColor=colors[i];if(window.mpWaitingRoom){const p=M.roster.get(M.id);if(p){p.c=selectedColor;if(M.host)emitRoster();else send(M.hostConn,{type:'color',c:selectedColor})}if(typeof shuttlePlayer!=='undefined')shuttlePlayer.c=selectedColor}[...swatches.children].forEach((e,j)=>e.style.outline=j===i?'4px solid white':'none');tone(520,.05)}
 function closeCustom(){custom.style.display='none';if(state==='shuttle'){menu.style.display='none';shuttlePlayer.c=selectedColor;document.getElementById('shuttleHud').style.display='block'}else menu.style.display='block'}
 function openSettings(){menu.style.display='none';settings.style.display='block'}function closeSettings(){moveSpeed=+speedRange.value;settings.style.display='none';menu.style.display='block'}
 let sharedAudioContext=null;function tone(freq=300,d=.08){if(!soundOn?.checked)return;try{let A=sharedAudioContext||(sharedAudioContext=new (window.AudioContext||window.webkitAudioContext)()),o=A.createOscillator(),g=A.createGain();if(A.state==='suspended')A.resume();o.frequency.value=freq;o.type='sine';g.gain.setValueAtTime(.05,A.currentTime);g.gain.exponentialRampToValueAtTime(.001,A.currentTime+d);o.connect(g);g.connect(A.destination);o.start();o.stop(A.currentTime+d)}catch(e){}}
@@ -1669,7 +1669,16 @@ const info=t=>el('mpLobbyInfo').textContent=t;
 const rnd=()=>Array.from({length:6},()=>abc[Math.floor(Math.random()*abc.length)]).join('');
 const ownName=()=>cleanName(el('name').value);
 const myColor=()=>selectedColor||'#69d7e8';
+function enterMPWaitingRoom(){
+ if(M.started||M.active)return;
+ window.mpWaitingRoom=true;state='shuttle';
+ el('menu').style.setProperty('display','none','important');el('menuSpace').style.display='none';
+ el('lobby').style.display='block';el('lobby').classList.add('mpWaitingLobby');
+ el('minimap').style.display='none';
+ if(typeof shuttlePlayer!=='undefined')shuttlePlayer.c=M.roster.get(M.id)?.c||myColor();
+}
 function rosterView(){
+ if(M.code&&!M.started)enterMPWaitingRoom();
  let arr=[...M.roster.values()],names=arr.map((p,i)=>(i+1)+'. '+p.name+(p.id===M.id?' (you)':'')).join('\n');
  el('mpRoster').textContent=arr.length+' / 10 real players\n'+names+'\n'+(M.started?'MATCH IN PROGRESS':(10-arr.length)+' bot slots if started now');
  el('mpStart').style.display=M.host&&!M.started&&arr.length>0?'inline-block':'none';
@@ -1677,11 +1686,12 @@ function rosterView(){
 }
 function emitRoster(){const data={type:'roster',code:M.code,players:[...M.roster].map(([id,p])=>({id,name:p.name,c:p.c}))};broadcast(data);rosterView()}
 function resetNetwork(){
+ if(window.mpWaitingRoom){window.mpWaitingRoom=false;el('lobby').classList.remove('mpWaitingLobby')}
  if(M.peer){try{M.peer.destroy()}catch(e){}}
  M.peer=null;M.hostConn=null;M.conns.clear();M.roster.clear();M.active=false;M.started=false;M.meeting=null;M.gameEnded=false;
  el('mpHud').style.display='none';el('mpMeeting').style.display='none';el('mpStart').style.display='none';
 }
-window.mpLeave=function(){resetNetwork();backMenu()};
+window.mpLeave=function(){resetNetwork();state='menu';backMenu()};
 function ensurePeer(){if(typeof Peer==='undefined'){info('Could not load the online connection library. Check your network.');return false}return true}
 window.mpCreate=function(){
  if(!ensurePeer())return;resetNetwork();M.host=true;M.code=rnd();M.id=PREFIX+M.code;
@@ -1699,7 +1709,8 @@ window.mpCreate=function(){
     const id=conn.peer;if(M.roster.has(id))return;
     M.conns.set(id,conn);M.roster.set(id,{id,name:cleanName(d.name),c:typeof d.c==='string'&&/^#[0-9a-f]{6}$/i.test(d.c)?d.c:'#69d7e8',alive:true});
     emitRoster();
-   }else if(M.roster.has(conn.peer))hostReceive(conn.peer,d);
+   }else if(d.type==='color'&&M.roster.has(conn.peer)&&/^#[0-9a-f]{6}$/i.test(d.c)){M.roster.get(conn.peer).c=d.c;emitRoster()}
+   else if(M.roster.has(conn.peer))hostReceive(conn.peer,d);
   });
   conn.on('close',()=>{M.conns.delete(conn.peer);if(!M.started)M.roster.delete(conn.peer);else{const p=M.roster.get(conn.peer);if(p)p.alive=false}emitRoster()});
   conn.on('error',()=>{});
@@ -1744,6 +1755,7 @@ function guestReceive(d){
 }
 function spawnFor(i){const p=safeCrewSpawn(i);if(i>=8){const cafe=rooms.find(r=>r.n==='Cafeteria');return {x:cafe.x+cafe.w/2+(i===8?-180:180),y:cafe.y+215}}return {x:p.x,y:p.y}}
 function beginLocal(myRole,spawn,botCount){
+ window.mpWaitingRoom=false;el('lobby').classList.remove('mpWaitingLobby');
  el('mpEndScreen').style.display='none';M.active=true;M.interpolated.clear();M.botAI.clear();M.suspicions.clear();M.gameEnded=false;M.seq=0;M.lastFrame=performance.now();M.lastSent=0;M.taskDone=0;M.botCount=botCount;M.meeting=null;M.sabotage=null;M.lastBotTask=0;
  state='mp';role=myRole;playerGhost=false;meeting=false;roundAge=0;visionRadius=188;ventAnim=null;cameraMode=false;
  const name=M.roster.get(M.id)?.name||ownName();
@@ -2011,6 +2023,8 @@ requestAnimationFrame(tick);
 #mpHud{max-width:290px;transition:opacity .2s}
 #mpHud.mpCompact button,#mpHud.mpCompact #mpTaskList{display:none}
 #mpHud.mpCompact{opacity:.82}
+ .mpWaitingLobby{position:fixed!important;top:12px!important;right:12px!important;left:auto!important;transform:none!important;width:min(330px,40vw)!important;max-height:90vh;overflow:auto;z-index:300;background:#07141dea!important;padding:15px!important;border:2px solid #69b9d3!important;border-radius:16px!important}
+ .mpWaitingLobby::after{content:'WASD: move around the shuttle • SPACE near the computer: change color';display:block;color:#b1e5ec;font-size:12px;margin-top:10px}
 </style>
 <div id="mpEndScreen"><div class="endBox"><h1 id="mpEndTitle">GAME OVER</h1><p id="mpEndText"></p><button onclick="mpLeave();document.getElementById('mpEndScreen').style.display='none'">RETURN TO MENU</button></div></div>
 <div id="voidTaskCelebrationBox">✓ TASK COMPLETE</div>
