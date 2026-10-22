@@ -1656,7 +1656,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 (function(){
 'use strict';
 const MAX=10, PREFIX='voidcrew-test-', abc='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const M={peer:null,host:false,code:'',id:'',conns:new Map(),hostConn:null,roster:new Map(),active:false,started:false,world:null,seq:0,lastSent:0,lastFrame:0,lastHost:0,meeting:null,meetingEnd:0,votes:new Map(),cooldowns:new Map(),botAI:new Map(),botCount:0,taskGoal:36,taskDone:0,gameEnded:false,interpolated:new Map(),sabotage:null,lastBotTask:0};
+const M={peer:null,host:false,code:'',id:'',conns:new Map(),hostConn:null,roster:new Map(),active:false,started:false,world:null,seq:0,lastSent:0,lastFrame:0,lastHost:0,meeting:null,meetingEnd:0,votes:new Map(),cooldowns:new Map(),botAI:new Map(),suspicions:new Map(),botCount:0,taskGoal:36,taskDone:0,gameEnded:false,interpolated:new Map(),sabotage:null,lastBotTask:0};
 window.VCMP={get active(){return M.active},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
 const el=id=>document.getElementById(id);
 const cleanName=s=>String(s||'Player').replace(/[^\w -]/g,'').slice(0,12)||'Player';
@@ -1740,7 +1740,7 @@ function guestReceive(d){
 }
 function spawnFor(i){const p=safeCrewSpawn(i);if(i>=8){const cafe=rooms.find(r=>r.n==='Cafeteria');return {x:cafe.x+cafe.w/2+(i===8?-180:180),y:cafe.y+215}}return {x:p.x,y:p.y}}
 function beginLocal(myRole,spawn,botCount){
- M.active=true;M.interpolated.clear();M.botAI.clear();M.gameEnded=false;M.seq=0;M.lastFrame=performance.now();M.lastSent=0;M.taskDone=0;M.botCount=botCount;M.meeting=null;M.sabotage=null;M.lastBotTask=0;
+ M.active=true;M.interpolated.clear();M.botAI.clear();M.suspicions.clear();M.gameEnded=false;M.seq=0;M.lastFrame=performance.now();M.lastSent=0;M.taskDone=0;M.botCount=botCount;M.meeting=null;M.sabotage=null;M.lastBotTask=0;
  state='mp';role=myRole;playerGhost=false;meeting=false;roundAge=0;visionRadius=188;ventAnim=null;cameraMode=false;
  const name=M.roster.get(M.id)?.name||ownName();
  player={x:spawn.x,y:spawn.y,r:18,c:M.roster.get(M.id)?.c||myColor(),name,alive:true,vx:0,vy:0};
@@ -1812,7 +1812,7 @@ function hostAction(id,action){
   if(p.role!=='INFILTRATOR'||now<cd)return;
   const victims=[...M.roster.values(),...bots].filter(v=>v.alive&&v!==p&&v.role!=='INFILTRATOR'&&!v.evil).sort((a,b)=>dist(a,p)-dist(b,p));
   const v=victims[0];if(!v||dist(v,p)>92)return;
-  v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});M.cooldowns.set(id,now+12000);
+  v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});recordWitnesses(p,v);M.cooldowns.set(id,now+12000);
   // Killer stays alive.
   checkMPWin();
  }else if(action==='report'){
@@ -1835,6 +1835,11 @@ function hostAction(id,action){
   if(id===M.id){player.x=p.x;player.y=p.y}
  }
 }
+function recordWitnesses(killer,victim){
+ for(const b of bots.filter(b=>b.alive&&b!==killer&&b!==victim)){
+  if(dist(b,killer)<230&&hasLineOfSight(b,killer))M.suspicions.set(b.id,killer.id);
+ }
+}
 function checkMPWin(){
  const all=[...M.roster.values(),...bots].filter(p=>p.alive),bad=all.filter(p=>p.role==='INFILTRATOR'||p.evil).length;
  if(!bad)finishGame('CREW won — infiltrator eliminated');
@@ -1845,7 +1850,8 @@ function finishGame(text){
 }
 function startMPMeeting(reason){
  if(M.meeting||!M.active)return;
- M.meeting=reason;M.meetingEnd=Date.now()+25000;M.votes.clear();showMeeting(reason);broadcast({type:'meeting',reason});
+ M.meeting=reason;M.meetingEnd=Date.now()+35000;M.votes.clear();showMeeting(reason);broadcast({type:'meeting',reason});
+ setTimeout(()=>{if(!M.meeting)return;for(const b of bots.filter(b=>b.alive)){const suspect=M.suspicions.get(b.id);const line=suspect?'I saw '+(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name+' near a kill!':'I was doing tasks. Anyone see anything?';appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})}},1300);
 }
 function showMeeting(reason){
  M.meeting=reason;
@@ -1870,7 +1876,7 @@ function hostVote(id,choice){
 function endMPMeeting(){
  if(!M.meeting)return;
  const choices=[...M.votes.values()];
- for(const b of bots.filter(b=>b.alive))choices.push(Math.random()<.35?'SKIP':([...M.roster.values(),...bots].filter(p=>p.alive&&p!==b)[Math.floor(Math.random()*([...M.roster.values(),...bots].filter(p=>p.alive&&p!==b).length))]?.id||'SKIP'));
+ for(const b of bots.filter(b=>b.alive)){const suspect=M.suspicions.get(b.id);const aliveSuspect=[...M.roster.values(),...bots].some(p=>p.id===suspect&&p.alive);choices.push(suspect&&aliveSuspect?suspect:'SKIP')}
  const tally={};choices.forEach(v=>tally[v]=(tally[v]||0)+1);
  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
  let text='No one ejected (tie or skip).';
@@ -1878,7 +1884,7 @@ function endMPMeeting(){
   const id=sorted[0][0],p=M.roster.get(id)||bots.find(b=>b.id===id||b.name===id);
   if(p){p.alive=false;if(p.id===M.id){player.alive=false;playerGhost=true}text=p.name+' was ejected.'}
  }
- M.meeting=null;hideMeeting();broadcast({type:'meetingEnd',text});checkMPWin();
+ M.meeting=null;M.suspicions.clear();hideMeeting();broadcast({type:'meetingEnd',text});checkMPWin();
 }
 function hideMeeting(){M.meeting=null;el('mpMeeting').style.display='none';el('mpVoteOptions').style.pointerEvents='auto';el('mpSabMenu').style.display='none'}
 function broadcastSnapshot(){
@@ -1961,10 +1967,10 @@ function tick(t){
   if(M.host){
    const me=M.roster.get(M.id);if(me&&player){me.x=player.x;me.y=player.y;me.alive=player.alive}
    for(const b of bots.filter(b=>b.alive)){
-    let brain=M.botAI.get(b.id);if(!brain||!brain.target||brain.until<t){const goal=TASK_POOL[Math.floor(Math.random()*TASK_POOL.length)];brain={target:goal,until:t+6000+Math.random()*4000,work:0};M.botAI.set(b.id,brain)}
-    const distance=dist(b,brain.target);if(distance<50){b.working=true;brain.work+=dt;if(brain.work>3){if(!b.evil&&M.taskDone<M.taskGoal){M.taskDone++;if(M.taskDone>=M.taskGoal)finishGame('CREW won — tasks completed')}brain.until=0;brain.work=0}continue}else b.working=false;
+    let brain=M.botAI.get(b.id);if(!brain||!brain.target||brain.until<t||M.sabotage&&brain.target!==V10_SAB_STATIONS[M.sabotage.type]&&!b.evil){const goal=M.sabotage&&!b.evil?V10_SAB_STATIONS[M.sabotage.type]:TASK_POOL[Math.floor(Math.random()*TASK_POOL.length)];brain={target:goal,until:t+6000+Math.random()*4000,work:0};M.botAI.set(b.id,brain)}
+    const distance=dist(b,brain.target);if(distance<50){b.working=true;brain.work+=dt;if(brain.work>3){if(M.sabotage&&!b.evil&&brain.target===V10_SAB_STATIONS[M.sabotage.type]){M.sabotage=null;syncSabotageVisuals()}else if(!b.evil&&M.taskDone<M.taskGoal){M.taskDone++;if(M.taskDone>=M.taskGoal)finishGame('CREW won — tasks completed')}brain.until=0;brain.work=0}continue}else b.working=false;
     botGo(b,brain.target,dt,95);
-    if(b.evil){const targets=[...M.roster.values(),...bots].filter(q=>q.alive&&q!==b&&q.role!=='INFILTRATOR'&&!q.evil);const v=targets.sort((a,c)=>dist(a,b)-dist(c,b))[0];if(v){const dd=Math.max(1,dist(v,b));if(dd>62)botGo(b,v,dt,112);if(dd<62&&t>(M.cooldowns.get(b.id)||0)){v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});M.cooldowns.set(b.id,t+15000);checkMPWin()}}}
+    if(b.evil){const targets=[...M.roster.values(),...bots].filter(q=>q.alive&&q!==b&&q.role!=='INFILTRATOR'&&!q.evil);const v=targets.sort((a,c)=>dist(a,b)-dist(c,b))[0];if(v){const dd=Math.max(1,dist(v,b));if(dd>62)botGo(b,v,dt,112);if(dd<62&&t>(M.cooldowns.get(b.id)||0)){v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});recordWitnesses(b,v);M.cooldowns.set(b.id,t+15000);checkMPWin()}}}
     // botGo uses the existing room/corridor pathfinding.
    }
   }
