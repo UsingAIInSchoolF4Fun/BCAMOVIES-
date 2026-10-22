@@ -343,7 +343,7 @@ const rooms=[
 ], world={w:2320,h:1480};
 function openLobby(){menuEl.style.display='none';lobbyEl.style.display='block';minimapEl.style.display='none';pingEl.style.display='none'} function backMenu(){let ctb=document.getElementById('crewTaskBar');if(ctb)ctb.style.display='none';let ka=document.getElementById('killerActions');if(ka)ka.style.display='none';lobbyEl.style.display='none';menuEl.style.setProperty('display','block','important');menuEl.style.visibility='visible';menuEl.style.pointerEvents='auto';minimapEl.style.display='none';pingEl.style.display='none';document.getElementById('menuSpace').style.display='block'}
 function openCustom(){menu.style.display='none';custom.style.display='block';swatches.innerHTML=colors.map((c,i)=>'<button class="swatch" aria-label="color '+(i+1)+'" style="background:'+c+'" onclick="pickColor('+i+')"></button>').join('')}
-function pickColor(i){selectedColor=colors[i];if(window.mpWaitingRoom){const p=M.roster.get(M.id);if(p){p.c=selectedColor;if(M.host)emitRoster();else send(M.hostConn,{type:'color',c:selectedColor})}if(typeof shuttlePlayer!=='undefined')shuttlePlayer.c=selectedColor}[...swatches.children].forEach((e,j)=>e.style.outline=j===i?'4px solid white':'none');tone(520,.05)}
+function pickColor(i){selectedColor=colors[i];if(window.mpWaitingRoom){if(typeof window.mpSetColor==='function')window.mpSetColor(selectedColor);if(typeof shuttlePlayer!=='undefined')shuttlePlayer.c=selectedColor}[...swatches.children].forEach((e,j)=>e.style.outline=j===i?'4px solid white':'none');tone(520,.05)}
 function closeCustom(){custom.style.display='none';if(state==='shuttle'){menu.style.display='none';shuttlePlayer.c=selectedColor;document.getElementById('shuttleHud').style.display='block'}else menu.style.display='block'}
 function openSettings(){menu.style.display='none';settings.style.display='block'}function closeSettings(){moveSpeed=+speedRange.value;settings.style.display='none';menu.style.display='block'}
 let sharedAudioContext=null;function tone(freq=300,d=.08){if(!soundOn?.checked)return;try{let A=sharedAudioContext||(sharedAudioContext=new (window.AudioContext||window.webkitAudioContext)()),o=A.createOscillator(),g=A.createGain();if(A.state==='suspended')A.resume();o.frequency.value=freq;o.type='sine';g.gain.setValueAtTime(.05,A.currentTime);g.gain.exponentialRampToValueAtTime(.001,A.currentTime+d);o.connect(g);g.connect(A.destination);o.start();o.stop(A.currentTime+d)}catch(e){}}
@@ -1617,7 +1617,7 @@ requestAnimationFrame(v10AuxLoop);
 window.addEventListener('error',function(ev){
  console.error('VOID CREW runtime error:',ev.error||ev.message);
  let box=document.getElementById('runtimeNoticeV10');
- if(box){box.style.display='block';box.textContent='A V10 optional system hit an error, but the core game is still running. Open the browser console for details.'}
+ if(box){box.style.display='block';box.style.cursor='pointer';const detail=String(ev.message||ev.error?.message||'Unknown error')+' (line '+(ev.lineno||'?')+')';box.textContent='VOID CREW error: '+detail+' — Tap to copy';box.onclick=()=>{if(navigator.clipboard?.writeText)navigator.clipboard.writeText(detail);else prompt('Copy error:',detail)}}
 });
 
 (function buildMenuStars(){
@@ -1661,6 +1661,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 'use strict';
 const MAX=10, PREFIX='voidcrew-test-', abc='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const M={peer:null,host:false,code:'',id:'',conns:new Map(),hostConn:null,roster:new Map(),active:false,started:false,world:null,seq:0,lastSent:0,lastFrame:0,lastHost:0,meeting:null,meetingEnd:0,votes:new Map(),cooldowns:new Map(),botAI:new Map(),suspicions:new Map(),botCount:0,taskGoal:36,taskDone:0,gameEnded:false,interpolated:new Map(),sabotage:null,lastBotTask:0};
+window.mpSetColor=function(c){const p=M.roster.get(M.id);if(!p||!/^#[0-9a-f]{6}$/i.test(c))return;p.c=c;if(M.host)emitRoster();else send(M.hostConn,{type:'color',c});};
 window.VCMP={get active(){return M.active},get sabotage(){return M.sabotage},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
 const el=id=>document.getElementById(id);
 const cleanName=s=>String(s||'Player').replace(/[^\w -]/g,'').slice(0,12)||'Player';
@@ -1698,7 +1699,7 @@ window.mpCreate=function(){
  if(!ensurePeer())return;resetNetwork();M.host=true;M.code=rnd();M.id=PREFIX+M.code;
  M.roster.set(M.id,{id:M.id,name:ownName(),c:myColor(),alive:true});
  info('Creating private room…');
- M.peer=new Peer(M.id);
+ try{M.peer=new Peer(M.id)}catch(e){info('Could not create room: '+e.message);return;}
  M.peer.on('open',()=>{info('Room ready.');rosterView()});
  M.peer.on('error',e=>{info('Connection error: '+(e.type||e.message)+'\nTry Create Room again.');if(e.type==='unavailable-id')resetNetwork()});
  M.peer.on('connection',conn=>{
