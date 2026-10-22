@@ -288,7 +288,7 @@ kbd{background:#222f43;padding:2px 6px;border-radius:4px}
 <input id="name" maxlength="12" value="Player" placeholder="Nickname" style="flex:1;padding:12px;border-radius:9px;border:1px solid #52647d;background:#0b1421;color:white">
 <input id="code" maxlength="6" placeholder="ROOM CODE" style="width:150px;padding:12px;border-radius:9px;border:1px solid #52647d;background:#0b1421;color:white;text-transform:uppercase">
 </div>
-<div class="menurow"><button class="btn green" onclick="mpCreate()">CREATE PRIVATE ROOM</button><button class="btn" onclick="mpJoin()">JOIN WITH CODE</button><button class="btn" onclick="mpLeave()">BACK</button></div>
+<div class="menurow" id="mpRoomEntryActions"><button class="btn green" onclick="mpCreate()">CREATE PRIVATE ROOM</button><button class="btn" onclick="mpJoin()">JOIN WITH CODE</button><button class="btn" onclick="mpLeave()">BACK</button></div>
 <div id="mpShareCode" style="display:none;margin:16px 0;padding:15px;border:2px solid #52d6ad;border-radius:12px;background:#092b2b;text-align:center"><div style="font-size:12px;color:#b7e8d8">YOUR PRIVATE ROOM CODE</div><div id="mpShareCodeValue" style="font-size:36px;font-weight:900;letter-spacing:7px;color:white;user-select:text"></div><button class="btn" onclick="navigator.clipboard?.writeText(document.getElementById('mpShareCodeValue').textContent)">COPY CODE</button></div>
 <div id="mpLobbyInfo" style="margin-top:15px;color:#b9e6ff;white-space:pre-wrap">Waiting to connect…</div>
 <div id="mpRoster" style="margin:12px 0;line-height:1.8"></div>
@@ -1675,6 +1675,7 @@ const rnd=()=>Array.from({length:6},()=>abc[Math.floor(Math.random()*abc.length)
 const ownName=()=>cleanName(el('name').value);
 const myColor=()=>selectedColor||'#69d7e8';
 function enterMPWaitingRoom(){
+ el('mpRoomEntryActions').style.display='none';el('code').style.display='none';
  if(M.started||M.active)return;
  if(!window.mpWaitingRoom||!shuttlePlayer){enterShuttle();}
  window.mpWaitingRoom=true;state='shuttle';
@@ -1694,6 +1695,7 @@ function rosterView(){
 }
 function emitRoster(){const data={type:'roster',code:M.code,players:[...M.roster].map(([id,p])=>({id,name:p.name,c:p.c,shuttleX:p.shuttleX,shuttleY:p.shuttleY}))};broadcast(data);rosterView()}
 function resetNetwork(){
+ el('mpRoomEntryActions').style.display='flex';el('code').style.display='';
  if(window.mpWaitingRoom){window.mpWaitingRoom=false;el('lobby').classList.remove('mpWaitingLobby')}
  if(M.peer){try{M.peer.destroy()}catch(e){}}
  M.peer=null;M.hostConn=null;M.conns.clear();M.roster.clear();M.active=false;M.started=false;M.meeting=null;M.gameEnded=false;
