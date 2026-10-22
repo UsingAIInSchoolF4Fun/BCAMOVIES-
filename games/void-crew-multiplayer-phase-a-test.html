@@ -441,7 +441,7 @@ function allCrewTasks(){const lists=[];if(role==='CREW')lists.push(tasks);bots.f
 function updateCrewTaskBar(){
  let a=allCrewTasks(),done=a.filter(t=>t.done).length,pct=a.length?Math.round(done/a.length*100):0;
  let box=document.getElementById('crewTaskBar'),fill=document.getElementById('crewTaskFill'),lab=document.getElementById('crewTaskPct');
- if(box)box.style.display=state==='game'?'block':'none';if(fill)fill.style.width=pct+'%';if(lab)lab.textContent=pct+'% • '+done+'/'+a.length;
+ if(state==='mp'){done=window.MULTIPLAYER_TASK_DONE();pct=window.MULTIPLAYER_TASK_PERCENT();}if(box)box.style.display=(state==='game'||state==='mp')?'block':'none';if(fill)fill.style.width=pct+'%';if(lab)lab.textContent=pct+'% • '+done+'/'+a.length;
 }
 function checkCrewTaskWin(){let a=allCrewTasks();updateCrewTaskBar();if(a.length&&a.every(t=>t.done))endGame(role==='CREW','All crew tasks completed.')}
 
@@ -1661,11 +1661,11 @@ window.addEventListener('DOMContentLoaded',()=>{
 <script>
 (function(){
 'use strict';
-const MAX=10, PREFIX='voidcrew-test-', abc='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+window.MULTIPLAYER_TASK_DONE=()=>window.VCMP?.tasksDone||0;window.MULTIPLAYER_TASK_PERCENT=()=>Math.min(100,Math.round(100*(window.VCMP?.tasksDone||0)/Math.max(1,window.VCMP?.tasksGoal||1)));const MAX=10, PREFIX='voidcrew-test-', abc='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const M={peer:null,host:false,code:'',id:'',conns:new Map(),hostConn:null,roster:new Map(),active:false,started:false,world:null,seq:0,lastSent:0,lastFrame:0,lastHost:0,meeting:null,meetingEnd:0,votes:new Map(),cooldowns:new Map(),botAI:new Map(),suspicions:new Map(),botCount:0,taskGoal:36,taskDone:0,gameEnded:false,interpolated:new Map(),sabotage:null,lastBotTask:0};
 window.mpSetColor=function(c){const p=M.roster.get(M.id);if(!p||!/^#[0-9a-f]{6}$/i.test(c))return;p.c=c;if(M.host)emitRoster();else send(M.hostConn,{type:'color',c});};
 window.mpShuttlePlayers=()=>[...M.roster.values()].filter(p=>p.id!==M.id);
-window.VCMP={get active(){return M.active},get sabotage(){return M.sabotage},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
+window.VCMP={get active(){return M.active},get sabotage(){return M.sabotage},get tasksDone(){return M.taskDone},get tasksGoal(){return M.taskGoal},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
 const el=id=>document.getElementById(id);
 const cleanName=s=>String(s||'Player').replace(/[^\w -]/g,'').slice(0,12)||'Player';
 const send=(c,d)=>{if(c&&c.open)try{c.send(d)}catch(e){}};
@@ -1759,7 +1759,7 @@ function guestReceive(d){
   if(!d.meeting&&M.meeting)hideMeeting();
   if(d.ended)showMPEnd(d.ended)
   const me=M.roster.get(M.id);if(me&&!me.alive&&player.alive){player.alive=false;playerGhost=true}
- }else if(d.type==='meeting')showMeeting(d.reason);
+ }else if(d.type==='meeting')showMeeting(d.reason,d.endsAt);
  else if(d.type==='shuttleMove'){const p=M.roster.get(d.id);if(p){p.shuttleX=d.x;p.shuttleY=d.y}}
  else if(d.type==='meetingEnd'){hideMeeting();showMPEjection(d.text,d.color||'#7bb9c9');toastMsg(d.text)}
  else if(d.type==='chat')appendMPChat(d.name,d.text);
@@ -1895,11 +1895,11 @@ function showMPEnd(text){
 function startMPMeeting(reason){
  if(M.meeting||!M.active||Date.now()<(M.nextMeetingAllowed||0))return;
  M.nextMeetingAllowed=Date.now()+45000;
- M.meeting=reason;M.meetingEnd=Date.now()+35000;M.votes.clear();showMeeting(reason);broadcast({type:'meeting',reason});
+ M.meeting=reason;M.meetingEnd=Date.now()+35000;M.votes.clear();showMeeting(reason,M.meetingEnd);broadcast({type:'meeting',reason,endsAt:M.meetingEnd});
  setTimeout(()=>{if(!M.meeting)return;const speakers=bots.filter(b=>b.alive).sort(()=>Math.random()-.5).slice(0,3);speakers.forEach((b,i)=>setTimeout(()=>{if(!M.meeting)return;const suspect=M.suspicions.get(b.id);const line=suspect?'I saw '+(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name+' near a kill!':'I was doing tasks. Anyone see anything?';appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})},i*2800));},2000);
 }
-function showMeeting(reason){
- M.meeting=reason;
+function showMeeting(reason,endsAt){
+ M.meeting=reason;if(endsAt)M.meetingEnd=endsAt;
  el('mpChatLog').replaceChildren();el('mpMeeting').style.display='flex';setTimeout(()=>el('mpChatInput').focus(),80);el('mpMeetReason').textContent=reason;
  el('mpVoteStatus').textContent='Choose someone to eject or skip.';
  const root=el('mpVoteOptions');root.replaceChildren();
@@ -1924,10 +1924,10 @@ function endMPMeeting(){
  for(const b of bots.filter(b=>b.alive)){const suspect=M.suspicions.get(b.id);const aliveSuspect=[...M.roster.values(),...bots].some(p=>p.id===suspect&&p.alive);choices.push(suspect&&aliveSuspect?suspect:'SKIP')}
  const tally={};choices.forEach(v=>tally[v]=(tally[v]||0)+1);
  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
- let text='No one ejected (tie or skip).',ejectColor='#7bb9c9';
+ let text='No one ejected (tie or skip).',ejectColor='#7bb9c9',alignment='';
  if(sorted.length&&sorted[0][0]!=='SKIP'&&(!sorted[1]||sorted[0][1]>sorted[1][1])){
   const id=sorted[0][0],p=M.roster.get(id)||bots.find(b=>b.id===id||b.name===id);
-  if(p){p.alive=false;if(p.id===M.id){player.alive=false;playerGhost=true}text=p.name+' was ejected.';ejectColor=p.c||'#7bb9c9'}
+  if(p){p.alive=false;if(p.id===M.id){player.alive=false;playerGhost=true}alignment=(p.role==='INFILTRATOR'||p.evil)?'INFILTRATOR':'INNOCENT CREWMATE';text=p.name+' was ejected. '+alignment+'.';ejectColor=p.c||'#7bb9c9'}
  }
  M.meeting=null;M.suspicions.clear();bodies=[];hideMeeting();broadcast({type:'meetingEnd',text,color:ejectColor});showMPEjection(text,ejectColor);broadcastSnapshot();setTimeout(()=>checkMPWin(),3700);
 }
@@ -2055,7 +2055,7 @@ function tick(t){
  }
  if(M.host&&M.meeting&&Date.now()>M.meetingEnd)endMPMeeting();
  if(M.host&&M.sabotage){if(Date.now()>=M.sabotage.until){if(M.sabotage.type==='LIGHTS'||M.sabotage.type==='DOORS'){M.sabotage=null;syncSabotageVisuals()}else finishGame('INFILTRATOR won — '+M.sabotage.type+' failure')} }
- if(M.meeting)el('mpMeetClock').textContent=M.host?'Voting ends in '+Math.max(0,Math.ceil((M.meetingEnd-Date.now())/1000))+'s':'Vote now — host controls timer';
+ if(M.meeting)el('mpMeetClock').textContent='Voting ends in '+Math.max(0,Math.ceil((M.meetingEnd-Date.now())/1000))+'s';
  requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
