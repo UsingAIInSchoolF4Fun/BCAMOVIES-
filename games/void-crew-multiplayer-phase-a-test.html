@@ -1673,8 +1673,10 @@ const ownName=()=>cleanName(el('name').value);
 const myColor=()=>selectedColor||'#69d7e8';
 function enterMPWaitingRoom(){
  if(M.started||M.active)return;
+ if(!window.mpWaitingRoom||!shuttlePlayer){enterShuttle();}
  window.mpWaitingRoom=true;state='shuttle';
  el('menu').style.setProperty('display','none','important');el('menuSpace').style.display='none';
+ el('shuttleHud').style.display='none';
  el('lobby').style.display='block';el('lobby').classList.add('mpWaitingLobby');
  el('minimap').style.display='none';
  if(typeof shuttlePlayer!=='undefined')shuttlePlayer.c=M.roster.get(M.id)?.c||myColor();
