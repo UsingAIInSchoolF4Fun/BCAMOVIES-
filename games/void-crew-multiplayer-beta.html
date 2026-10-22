@@ -265,7 +265,7 @@ kbd{background:#222f43;padding:2px 6px;border-radius:4px}
 @media(max-width:1100px){#buttons{right:20px!important;bottom:245px!important}}
 #minimap:not(.expanded){width:min(285px,25vw)!important;height:185px!important;right:12px!important;bottom:12px!important;opacity:.83!important}#minimap.expanded{z-index:95!important}
 </style>
-<style id="ownerGateStyle">body{visibility:hidden!important}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>(async()=>{try{const sb=supabase.createClient("https://hzydgsxjamynfabonszg.supabase.co","sb_publishable_yUMhCuP8O-4XJM7sTivo3w_AsEcYsqR");const {data}=await sb.auth.getSession();const email=data.session?.user?.email?.toLowerCase();if(["jonathan.pollard@bcaroyals.com","jonathanspollard11@gmail.com"].includes(email)){document.getElementById("ownerGateStyle").remove();return}}catch(e){}location.replace("../owner.html")})()</script></head>
+<!-- Multiplayer beta accessible by link; private rooms require invite code. --></head>
 <body>
 <canvas id="c"></canvas>
 <div id="menuSpace"><div id="stars"></div><div class="menuShip"><div style="position:absolute;right:210px;top:45px;width:150px;height:3px;background:linear-gradient(90deg,transparent,rgba(85,190,255,.65));filter:blur(2px)"></div><div class="menuWing"></div><div class="menuShipBody"></div><div class="menuEngine"></div></div></div><div id="shuttleHud" style="display:none;position:fixed;inset:0;z-index:25;pointer-events:none;color:white;font-family:Arial">
@@ -1743,6 +1743,7 @@ function beginLocal(myRole,spawn,botCount){
  const name=M.roster.get(M.id)?.name||ownName();
  player={x:spawn.x,y:spawn.y,r:18,c:M.roster.get(M.id)?.c||myColor(),name,alive:true,vx:0,vy:0};
  bots=[];bodies=[];ghosts=[];particles=[];doors=[];tasks=[];
+ vents=[{x:165,y:745,id:0},{x:705,y:1115,id:1},{x:1225,y:1290,id:2},{x:2075,y:620,id:3},{x:1710,y:1120,id:4},{x:1050,y:380,id:5}];
  el('menu').style.setProperty('display','none','important');el('lobby').style.display='none';el('menuSpace').style.display='none';
  el('minimap').style.display='block';el('gamehud').style.display='none';el('mpHud').style.display='block';
  el('mpHudTitle').textContent='ROOM '+M.code+' • '+role;
@@ -1777,7 +1778,9 @@ function hostAction(id,action){
  const p=M.roster.get(id);if(!p||!p.alive)return;
  const now=Date.now(),cd=M.cooldowns.get(id)||0;
  if(action==='task'){
-  if(p.role!=='CREW')return;
+  if(p.role!=='CREW'||now<cd)return;
+  if(!TASK_POOL.some(t=>dist(p,t)<80))return;
+  M.cooldowns.set(id,now+2200);
   M.taskDone=Math.min(M.taskGoal,M.taskDone+1);toastMsg(p.name+' completed a task');
   if(M.taskDone>=M.taskGoal)finishGame('CREW won — tasks completed');
  }else if(action==='kill'){
@@ -1785,7 +1788,7 @@ function hostAction(id,action){
   const victims=[...M.roster.values(),...bots].filter(v=>v.alive&&v!==p&&v.role!=='INFILTRATOR'&&!v.evil).sort((a,b)=>dist(a,p)-dist(b,p));
   const v=victims[0];if(!v||dist(v,p)>92)return;
   v.alive=false;bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});M.cooldowns.set(id,now+12000);
-  if(id===M.id){player.alive=false===true} // Host stays alive after eliminating a target.
+  // Killer stays alive.
   checkMPWin();
  }else if(action==='report'){
   const b=bodies.find(b=>dist(b,p)<95);if(b)startMPMeeting(p.name+' reported '+b.name+'!');
