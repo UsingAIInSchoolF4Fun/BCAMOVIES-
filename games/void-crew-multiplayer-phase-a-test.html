@@ -1774,6 +1774,7 @@ function beginLocal(myRole,spawn,botCount){
  vents=[{x:165,y:745,id:0},{x:705,y:1115,id:1},{x:1225,y:1290,id:2},{x:2075,y:620,id:3},{x:1710,y:1120,id:4},{x:1050,y:380,id:5}];
  el('menu').style.setProperty('display','none','important');el('lobby').style.display='none';el('menuSpace').style.display='none';
  el('minimap').style.display='block';el('gamehud').style.display='block';el('mpHud').style.display='none';
+ updateHUD();
  el('mpHudTitle').textContent='ROOM '+M.code+' • '+role;
  el('mpTaskList').textContent=role==='CREW'?tasks.map(t=>'○ '+t.n+' — '+t.room).join(' | '):'You are the infiltrator. Fake tasks and sabotage.';document.querySelector('#taskmodal > p').textContent='Complete the station-specific minigame to repair the ship.';
  toastMsg('Online game started: '+role+' • '+botCount+' bots');
@@ -1800,7 +1801,7 @@ window.finishTask=function(){
  const name=t.n||'Task';
  previousFinishTask();
  if(typeof voidTaskCelebration==='function')voidTaskCelebration(name);
- el('mpTaskList').textContent=tasks.map(t=>(t.done?'✓ ':'○ ')+t.n+' — '+t.room).join(' | ');
+ el('mpTaskList').textContent=tasks.map(t=>(t.done?'✓ ':'○ ')+t.n+' — '+t.room).join(' | ');updateHUD();
  if(M.host)hostTaskDone(M.id,t.id);
  else send(M.hostConn,{type:'taskDone',taskId:t.id});
 };
@@ -1937,6 +1938,16 @@ function broadcastSnapshot(){
  const players=[...M.roster.values()].map(p=>({id:p.id,name:p.name,c:p.c,x:p.x,y:p.y,alive:p.alive}));
  broadcast({type:'snap',seq:++M.seq,players,bots:bots.map(b=>({x:b.x,y:b.y,id:b.id,name:b.name,c:b.c,alive:b.alive,r:18,vx:b.vx||0,vy:b.vy||0})),bodies,meeting:M.meeting,tasks:M.taskDone,goal:M.taskGoal,ended:M.gameEnded,sabotage:M.sabotage});
 }
+// Route the original solo controls to multiplayer while preserving solo behavior.
+const soloUse=window.use,soloKill=window.killNearest,soloReport=window.report,soloVent=window.useVent,soloSabotage=window.openSabotage,soloChooseSabotage=window.chooseSabotageV110;
+window.use=function(){if(M.active){window.mpAction('task');return}return soloUse()};
+window.killNearest=function(){if(M.active){window.mpAction('kill');return}return soloKill()};
+window.report=function(){if(M.active){window.mpAction('report');return}return soloReport()};
+window.useVent=function(){if(M.active){window.mpAction('vent');return}return soloVent()};
+window.openSabotage=function(){if(M.active){if(role==='INFILTRATOR'&&player?.alive)document.getElementById('sabotageChoiceV110').style.display='flex';return}return soloSabotage()};
+window.chooseSabotageV110=function(type){if(M.active){document.getElementById('sabotageChoiceV110').style.display='none';window.mpSab(type);return}return soloChooseSabotage(type)};
+const mpSoloKeyHandler=e=>{if(!M.active||M.meeting||typingInUI()||e.repeat)return;const k=e.key.toLowerCase();if(k==='e'){e.preventDefault();window.mpAction('task')}else if(k==='r'){e.preventDefault();window.mpAction('report')}else if(k==='v'){e.preventDefault();window.mpAction('vent')}else if(k==='q'){e.preventDefault();window.openSabotage()}else if(e.code==='Space'){e.preventDefault();if(role==='INFILTRATOR')window.mpAction('kill');else window.mpAction('task')}else if(k==='c'){toggleCams()}};
+window.addEventListener('keydown',mpSoloKeyHandler);
 window.mpAction=function(action){
  if(!M.active||M.meeting||(!player?.alive&&!playerGhost))return;
  if(action==='task'&&M.sabotage&&role==='CREW'){
@@ -2034,7 +2045,7 @@ function tick(t){
    if(M.host)broadcastSnapshot();
    else if(player)send(M.hostConn,{type:'move',x:player.x,y:player.y});
   }
-  el('mpHudStatus').textContent=(player?.alive?'ALIVE':'GHOST')+' • '+M.taskDone+'/'+M.taskGoal+' tasks • '+M.botCount+' bots'+(M.sabotage?' • SABOTAGE: '+M.sabotage.type:'');
+  if(t-(M.lastHUDUpdate||0)>250){M.lastHUDUpdate=t;updateHUD();}
  }
  if(M.host&&M.meeting&&Date.now()>M.meetingEnd)endMPMeeting();
  if(M.host&&M.sabotage){if(Date.now()>=M.sabotage.until){if(M.sabotage.type==='LIGHTS'||M.sabotage.type==='DOORS'){M.sabotage=null;syncSabotageVisuals()}else finishGame('INFILTRATOR won — '+M.sabotage.type+' failure')} }
