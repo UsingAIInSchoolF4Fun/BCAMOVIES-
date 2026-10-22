@@ -1893,7 +1893,7 @@ function startMPMeeting(reason){
  if(M.meeting||!M.active||Date.now()<(M.nextMeetingAllowed||0))return;
  M.nextMeetingAllowed=Date.now()+45000;
  M.meeting=reason;M.meetingEnd=Date.now()+35000;M.votes.clear();showMeeting(reason);broadcast({type:'meeting',reason});
- setTimeout(()=>{if(!M.meeting)return;const speakers=bots.filter(b=>b.alive).sort(()=>Math.random()-.5).slice(0,3);speakers.forEach((b,i)=>setTimeout(()=>{if(!M.meeting)return;const suspect=M.suspicions.get(b.id);const line=suspect?'I saw '+(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name+' near a kill!':'I was doing tasks. Anyone see anything?';appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})},i*2800))},2000);
+ setTimeout(()=>{if(!M.meeting)return;const speakers=bots.filter(b=>b.alive).sort(()=>Math.random()-.5).slice(0,3);speakers.forEach((b,i)=>setTimeout(()=>{if(!M.meeting)return;const suspect=M.suspicions.get(b.id);const line=suspect?'I saw '+(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name+' near a kill!':'I was doing tasks. Anyone see anything?';appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})},i*2800));},2000);
 }
 function showMeeting(reason){
  M.meeting=reason;
