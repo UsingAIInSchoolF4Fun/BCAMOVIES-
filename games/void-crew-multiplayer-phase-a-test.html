@@ -1698,10 +1698,10 @@ function resetNetwork(){
  el('mpRoomEntryActions').style.display='flex';el('code').style.display='';
  if(window.mpWaitingRoom){window.mpWaitingRoom=false;el('lobby').classList.remove('mpWaitingLobby')}
  if(M.peer){try{M.peer.destroy()}catch(e){}}
- M.peer=null;M.hostConn=null;M.conns.clear();M.roster.clear();M.active=false;M.started=false;M.meeting=null;M.gameEnded=false;
+ M.peer=null;M.hostConn=null;M.conns.clear();M.roster.clear();M.active=false;M.started=false;M.meeting=null;M.gameEnded=false;M.botAI.clear();M.suspicions.clear();M.votes.clear();
  el('mpHud').style.display='none';el('mpMeeting').style.display='none';el('mpStart').style.display='none';el('mpShareCode').style.display='none';
 }
-window.mpLeave=function(){resetNetwork();state='menu';backMenu()};
+window.mpLeave=function(){resetNetwork();state='menu';el('mpEndScreen').style.display='none';el('mpEjectScene').style.display='none';el('gamehud').style.display='none';el('mpMeeting').style.display='none';el('minimap').style.display='none';el('taskmodal').style.display='none';backMenu()};
 function ensurePeer(){if(typeof Peer==='undefined'){info('Could not load the online connection library. Check your network.');return false}return true}
 window.mpCreate=function(){
  if(!ensurePeer())return;resetNetwork();M.host=true;M.code=rnd();M.id=PREFIX+M.code;
@@ -1892,13 +1892,13 @@ function finishGame(text){
 }
 function showMPEnd(text){
  M.gameEnded=text;M.active=false;hideMeeting();el('mpHudStatus').textContent='GAME OVER: '+text;
- const p=el('mpEndScreen');setTimeout(()=>p.style.display='flex',el('mpEjectScene').style.display==='flex'?3500:0);el('mpEndTitle').textContent=/CREW won/i.test(text)?'CREW VICTORY':'INFILTRATOR VICTORY';el('mpEndTitle').style.color=/CREW won/i.test(text)?'#80ffb1':'#ff8190';el('mpEndText').textContent=text;
+ const p=el('mpEndScreen');const endedText=text;setTimeout(()=>{if(M.gameEnded===endedText&&!M.active)p.style.display='flex'},el('mpEjectScene').style.display==='flex'?3500:0);el('mpEndTitle').textContent=/CREW won/i.test(text)?'CREW VICTORY':'INFILTRATOR VICTORY';el('mpEndTitle').style.color=/CREW won/i.test(text)?'#80ffb1':'#ff8190';el('mpEndText').textContent=text;
 }
 function startMPMeeting(reason){
  if(M.meeting||!M.active||Date.now()<(M.nextMeetingAllowed||0))return false;
  M.nextMeetingAllowed=Date.now()+45000;
  M.meeting=reason;M.meetingEnd=Date.now()+45000;M.votes.clear();showMeeting(reason,M.meetingEnd);broadcast({type:'meeting',reason,endsAt:M.meetingEnd});broadcastVoteProgress();
- setTimeout(()=>{if(!M.meeting)return;const speakers=bots.filter(b=>b.alive).sort(()=>Math.random()-.5).slice(0,3);speakers.forEach((b,i)=>setTimeout(()=>{if(!M.meeting)return;const suspect=M.suspicions.get(b.id);const line=suspect?'I saw '+(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name+' near a kill!':'I was doing tasks. Anyone see anything?';appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})},i*2800));},2000);
+ setTimeout(()=>{if(!M.meeting)return;const speakers=bots.filter(b=>b.alive).sort((a,b)=>Number(M.suspicions.has(b.id))-Number(M.suspicions.has(a.id))).slice(0,Math.min(4,bots.filter(b=>b.alive).length));speakers.forEach((b,i)=>setTimeout(()=>{if(!M.meeting)return;const suspect=M.suspicions.get(b.id);const suspectName=(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name;const line=suspect&&suspectName?'I saw '+suspectName+' near the body. I think we should vote them.':b.evil?['Where was everyone?','I was in Navigation. Anyone have proof?','I think we should skip without evidence.'][Math.floor(Math.random()*3)]:['I was doing tasks. Did anyone see the killer?','Which room was the body in?','I have no proof yet. Be careful who we vote.'][Math.floor(Math.random()*3)];appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})},i*2800));},2000);
  return true;
 }
 function showMeeting(reason,endsAt){
@@ -1931,7 +1931,7 @@ function hostVote(id,choice){
 function endMPMeeting(){
  if(!M.meeting)return;
  const choices=[...M.votes.values()];
- for(const b of bots.filter(b=>b.alive)){const suspect=M.suspicions.get(b.id);const aliveSuspect=[...M.roster.values(),...bots].some(p=>p.id===suspect&&p.alive);choices.push(suspect&&aliveSuspect?suspect:'SKIP')}
+ for(const b of bots.filter(b=>b.alive)){const suspect=M.suspicions.get(b.id);const target=[...M.roster.values(),...bots].find(p=>p.id===suspect&&p.alive);const others=[...M.roster.values(),...bots].filter(p=>p.alive&&p!==b);const accusation=target&&Math.random()<.85?target:null;const candidate=accusation||(b.evil&&Math.random()<.45?others.filter(p=>!p.evil&&p.role!=='INFILTRATOR').sort((a,c)=>dist(a,b)-dist(c,b))[0]:null);choices.push(candidate?(candidate.id||candidate.name):'SKIP')}
  const tally={};choices.forEach(v=>tally[v]=(tally[v]||0)+1);
  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
  let text='No one ejected (tie or skip).',ejectColor='#7bb9c9',alignment='';
@@ -2051,9 +2051,9 @@ function tick(t){
     let brain=M.botAI.get(b.id);if(!brain||!brain.target||brain.until<t||M.sabotage&&brain.target!==V10_SAB_STATIONS[M.sabotage.type]&&!b.evil){const goal=M.sabotage&&!b.evil?V10_SAB_STATIONS[M.sabotage.type]:TASK_POOL[Math.floor(Math.random()*TASK_POOL.length)];brain={target:goal,until:t+11000+Math.random()*5000,work:0};M.botAI.set(b.id,brain)}
     const distance=dist(b,brain.target);if(distance<65){b.working=true;brain.work+=dt;if(brain.work>5.5){if(M.sabotage&&!b.evil&&brain.target===V10_SAB_STATIONS[M.sabotage.type]){/* Multiplayer bots cannot automatically repair sabotage. */}else if(!b.evil&&M.taskDone<M.taskGoal){M.taskDone++;b.working=false;if(M.taskDone>=M.taskGoal)finishGame('CREW won — tasks completed')}brain.until=0;brain.work=0}continue}else b.working=false;
     botGo(b,brain.target,dt,b.evil?95:125);
-    if(b.evil){const targets=[...M.roster.values(),...bots].filter(q=>q.alive&&q!==b&&q.role!=='INFILTRATOR'&&!q.evil);const v=targets.sort((a,c)=>dist(a,b)-dist(c,b))[0];if(v){const dd=Math.max(1,dist(v,b));if(dd>62&&dd<330)botGo(b,v,dt,95);if(dd<62&&t>(M.cooldowns.get(b.id)||0)){if(!brain.killWindup||brain.killTarget!==v.id){brain.killWindup=t+1800;brain.killTarget=v.id;}if(t<brain.killWindup)continue;brain.killWindup=0;v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true;toastMsg('YOU DIED — finish your tasks as a ghost.');}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});killAnim={x:v.x,y:v.y,t:.42,c:v.c};recordWitnesses(b,v);M.cooldowns.set(b.id,t+25000);brain.until=0;broadcastSnapshot();checkMPWin()}}}
+    if(b.evil){const targets=[...M.roster.values(),...bots].filter(q=>q.alive&&q!==b&&q.role!=='INFILTRATOR'&&!q.evil);const v=targets.sort((a,c)=>dist(a,b)-dist(c,b))[0];if(v){const dd=Math.max(1,dist(v,b));if(dd>62&&dd<270&&(!bodies.some(body=>dist(body,b)<130)||Math.random()<.012))botGo(b,v,dt,100);if(dd<62&&t>(M.cooldowns.get(b.id)||0)){const witnesses=[...M.roster.values(),...bots].filter(q=>q.alive&&q!==v&&q!==b&&dist(q,b)<175&&hasLineOfSight(q,b));if(witnesses.length&&Math.random()<.97){brain.killWindup=0;continue;}if(!brain.killWindup||brain.killTarget!==v.id){brain.killWindup=t+1800;brain.killTarget=v.id;}if(t<brain.killWindup)continue;if(dist(v,b)>67){brain.killWindup=0;continue;}brain.killWindup=0;v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true;toastMsg('YOU DIED — finish your tasks as a ghost.');}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});killAnim={x:v.x,y:v.y,t:.42,c:v.c};recordWitnesses(b,v);M.cooldowns.set(b.id,t+25000);brain.until=0;broadcastSnapshot();checkMPWin()}}}
     // Living crew bots notice nearby bodies and report them after approaching.
-    if(!b.evil&&!M.meeting){const body=bodies.find(body=>dist(b,body)<135);if(body){brain.reportSince=brain.reportSince||t;if(t-brain.reportSince>3200&&Date.now()>=(M.nextMeetingAllowed||0)){startMPMeeting(b.name+' reported '+body.name+'!');break}}else brain.reportSince=0;}
+    if(!b.evil&&!M.meeting){const body=bodies.find(body=>dist(b,body)<210&&hasLineOfSight(b,body));if(body){brain.reportSince=brain.reportSince||t;if(dist(b,body)>100)botGo(b,body,dt,130);if(t-brain.reportSince>1400&&Date.now()>=(M.nextMeetingAllowed||0)){startMPMeeting(b.name+' reported '+body.name+'!');break}}else brain.reportSince=0;}
     // botGo uses the existing room/corridor pathfinding.
    }
   }
