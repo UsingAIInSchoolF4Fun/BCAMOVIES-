@@ -344,6 +344,7 @@ const rooms=[
 ], world={w:2320,h:1480};
 function openLobby(){menuEl.style.display='none';lobbyEl.style.display='block';minimapEl.style.display='none';pingEl.style.display='none'} function backMenu(){let ctb=document.getElementById('crewTaskBar');if(ctb)ctb.style.display='none';let ka=document.getElementById('killerActions');if(ka)ka.style.display='none';lobbyEl.style.display='none';menuEl.style.setProperty('display','block','important');menuEl.style.visibility='visible';menuEl.style.pointerEvents='auto';minimapEl.style.display='none';pingEl.style.display='none';document.getElementById('menuSpace').style.display='block'}
 function openCustom(){menu.style.display='none';custom.style.display='block';swatches.innerHTML=colors.map((c,i)=>'<button class="swatch" aria-label="color '+(i+1)+'" style="background:'+c+'" onclick="pickColor('+i+')"></button>').join('')}
+window.vcB2ApplyColor=function(c){if(/^#[0-9a-f]{6}$/i.test(c)){selectedColor=c;if(player)player.c=c;if(typeof shuttlePlayer!=='undefined')shuttlePlayer.c=c;if(typeof window.mpSetColor==='function')window.mpSetColor(c)}};
 function pickColor(i){selectedColor=colors[i];if(window.mpWaitingRoom){if(typeof window.mpSetColor==='function')window.mpSetColor(selectedColor);if(typeof shuttlePlayer!=='undefined')shuttlePlayer.c=selectedColor}[...swatches.children].forEach((e,j)=>e.style.outline=j===i?'4px solid white':'none');tone(520,.05)}
 function closeCustom(){custom.style.display='none';if(state==='shuttle'){menu.style.display='none';shuttlePlayer.c=selectedColor;document.getElementById('shuttleHud').style.display='block'}else menu.style.display='block'}
 function openSettings(){menu.style.display='none';settings.style.display='block'}function closeSettings(){moveSpeed=+speedRange.value;settings.style.display='none';menu.style.display='block'}
@@ -1797,6 +1798,8 @@ function guestReceive(d){
 }
 function spawnFor(i){const p=safeCrewSpawn(i);if(i>=8){const cafe=rooms.find(r=>r.n==='Cafeteria');return {x:cafe.x+cafe.w/2+(i===8?-180:180),y:cafe.y+215}}return {x:p.x,y:p.y}}
 function beginLocal(myRole,spawn,botCount){
+ window.vcB2PlayerRole=myRole;if(window.vcB2MatchStart)window.vcB2MatchStart();
+ if(window.vcB2State&&window.vcB2ApplyColor)window.vcB2ApplyColor(window.vcB2State().color);
  window.mpWaitingRoom=false;el('lobby').classList.remove('mpWaitingLobby');
  el('mpEndScreen').style.display='none';M.active=true;M.interpolated.clear();M.botAI.clear();M.suspicions.clear();M.gameEnded=false;M.seq=0;M.lastFrame=performance.now();M.lastSent=0;M.taskDone=0;M.botCount=botCount;M.meeting=null;M.sabotage=null;M.lastBotTask=0;M.nextMeetingAllowed=Date.now()+20000;M.chatTimes=new Map();
  state='mp';role=myRole;playerGhost=false;meeting=false;roundAge=0;visionRadius=188;ventAnim=null;cameraMode=false;
@@ -2247,7 +2250,7 @@ function button(parent,label,fn,active,disabled){const b=document.createElement(
 function render(){
  claimEarned();$('vcTasks').textContent=state.tasks;$('vcWins').textContent=state.wins;$('vcUnlockCount').textContent=state.claimed.length;
  $('vcAvatar').style.setProperty('--suit',state.color);
- const cs=$('vcColors');cs.replaceChildren();colors.forEach(c=>{const b=button(cs,'',()=>{state.color=c;save();if(typeof window.pickColor==='function'&&typeof window.colors!=='undefined'){const i=colors.indexOf(c);try{window.pickColor(i)}catch(e){}}if(typeof window.mpSetColor==='function')window.mpSetColor(c);render()},state.color===c);b.style.background=c;b.title='Suit color'});
+ const cs=$('vcColors');cs.replaceChildren();colors.forEach(c=>{const b=button(cs,'',()=>{state.color=c;save();if(typeof window.vcB2ApplyColor==='function')window.vcB2ApplyColor(c);render()},state.color===c);b.style.background=c;b.title='Suit color'});
  const ps=$('vcPets');ps.replaceChildren();button(ps,'No Pet',()=>{state.pet='none';save();render()},state.pet==='none');
  const hs=$('vcHats');hs.replaceChildren();button(hs,'No Hat',()=>{state.hat='none';save();render()},state.hat==='none');
  rewards.forEach(r=>{if(r.kind==='pet')button(ps,r.emoji+' '+r.name+(owned(r.id)?'':' 🔒'),()=>{state.pet=r.id;save();render()},state.pet===r.id,!owned(r.id));else button(hs,r.emoji+' '+r.name+(owned(r.id)?'':' 🔒'),()=>{state.hat=r.id;save();render()},state.hat===r.id,!owned(r.id))});
@@ -2263,7 +2266,7 @@ window.openVCLocker=function(){const panel=$('vcLocker');prevView=document.activ
 window.closeVCLocker=function(){$('vcLocker').style.display='none';prevView?.focus?.()};
 window.vcB2TaskComplete=function(){state.tasks++;save();renderIfOpen()};
 window.vcB2MatchStart=function(){wonMatch=false};
-window.vcB2MatchEnd=function(text){if(wonMatch)return;wonMatch=true;const crewWin=/CREW won/i.test(text),evilWin=/INFILTRATOR won/i.test(text);if((crewWin&&window.role==='CREW')||(evilWin&&window.role==='INFILTRATOR')){state.wins++;save();renderIfOpen()}};
+window.vcB2MatchEnd=function(text){if(wonMatch)return;wonMatch=true;const crewWin=/CREW won/i.test(text),evilWin=/INFILTRATOR won/i.test(text);if((crewWin&&window.vcB2PlayerRole==='CREW')||(evilWin&&window.vcB2PlayerRole==='INFILTRATOR')){state.wins++;save();renderIfOpen()}};
 function renderIfOpen(){claimEarned();if($('vcLocker').style.display==='block')render()}
 window.vcB2State=()=>({tasks:state.tasks,wins:state.wins,claimed:[...state.claimed],color:state.color,pet:state.pet,hat:state.hat,theme:state.theme});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('vcLocker').style.display==='block')window.closeVCLocker()});
