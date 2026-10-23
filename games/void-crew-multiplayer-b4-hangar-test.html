@@ -508,21 +508,21 @@ let shuttlePlayer=null,shuttleBots=[],shuttleT=0,shuttleComputer={x:490,y:160},s
 function enterShuttle(){
  state='shuttle';menuEl.style.display='none';lobbyEl.style.display='none';gamehudEl.style.display='none';minimapEl.style.display='none';pingEl.style.display='none';
  document.getElementById('menuSpace').style.display='none';document.getElementById('shuttleHud').style.display='block';
- shuttlePlayer={x:490,y:410,r:17,c:window.vcB3SavedColor?.()||selectedColor,name:(document.getElementById('name').value||'Player'),vx:0,vy:0};
- let pts=[[260,250],[355,310],[625,300],[720,250],[260,410],[720,410],[590,430]];
+ shuttlePlayer={x:900,y:555,r:17,c:window.vcB3SavedColor?.()||selectedColor,name:(document.getElementById('name').value||'Player'),vx:0,vy:0};
+ let pts=[[720,520],[850,540],[990,530],[1120,560],[740,680],[1060,680],[920,730]];
  shuttleBots=CREW_IDENTITIES.map((id,i)=>({x:pts[i][0],y:pts[i][1],tx:pts[i][0],ty:pts[i][1],r:17,c:id.color,name:id.name,vx:0,vy:0,think:Math.random()*2}));
  last=performance.now();
 }
-function vcB3Spawn(i){return {x:190+(i%5)*155,y:i<5?190:410}}
-function shuttleValid(px,py){return px>95&&px<885&&py>95&&py<530}
+function vcB3Spawn(i){return {x:200+(i%5)*315,y:i<5?215:790}}
+function shuttleValid(px,py){return px>65&&px<1735&&py>70&&py<1050}
 function updateShuttle(dt){
  shuttleT+=dt;let dx=((keys.d||keys.KeyD||keys.ArrowRight)?1:0)-((keys.a||keys.KeyA||keys.ArrowLeft)?1:0),dy=((keys.s||keys.KeyS||keys.ArrowDown)?1:0)-((keys.w||keys.KeyW||keys.ArrowUp)?1:0),m=Math.hypot(dx,dy)||1;
  if(dx||dy){walkPhase+=dt*12;shuttlePlayer.vx=dx/m*145;shuttlePlayer.vy=dy/m*145}else{shuttlePlayer.vx*=.75;shuttlePlayer.vy*=.75}
  let nx=shuttlePlayer.x+dx/m*145*dt,ny=shuttlePlayer.y+dy/m*145*dt;if(shuttleValid(nx,shuttlePlayer.y))shuttlePlayer.x=nx;if(shuttleValid(shuttlePlayer.x,ny))shuttlePlayer.y=ny;
- shuttleBots.forEach((b,i)=>{b.think-=dt;if(b.think<=0||Math.hypot(b.tx-b.x,b.ty-b.y)<18){let zones=[[210,235],[770,235],[220,425],[760,425],[400,340],[580,350],[490,260]];let z=zones[Math.floor(Math.random()*zones.length)];b.tx=z[0]+(Math.random()-.5)*45;b.ty=z[1]+(Math.random()-.5)*40;b.think=2.5+Math.random()*4}let ax=b.tx-b.x,ay=b.ty-b.y,d=Math.hypot(ax,ay)||1;b.vx=ax/d*45;b.vy=ay/d*45;b.x+=b.vx*dt;b.y+=b.vy*dt});
+ shuttleBots.forEach((b,i)=>{b.think-=dt;if(b.think<=0||Math.hypot(b.tx-b.x,b.ty-b.y)<18){let zones=[[650,510],[820,520],[970,520],[1150,530],[670,740],[1140,740],[900,610]];let z=zones[Math.floor(Math.random()*zones.length)];b.tx=z[0]+(Math.random()-.5)*45;b.ty=z[1]+(Math.random()-.5)*40;b.think=2.5+Math.random()*4}let ax=b.tx-b.x,ay=b.ty-b.y,d=Math.hypot(ax,ay)||1;b.vx=ax/d*45;b.vy=ay/d*45;b.x+=b.vx*dt;b.y+=b.vy*dt});
 }
 function shuttleInteract(){
- if(window.mpWaitingRoom){const roster=window.vcB3Roster?.()||[];const slot=roster.findIndex(p=>p.id===window.vcB3MyId?.());const home=vcB3Spawn(Math.max(0,slot));if(Math.hypot(shuttlePlayer.x-home.x,shuttlePlayer.y-home.y)<85){window.openVCLocker?.();return}toastMsg('Go to your quarters to open your Locker.');return}
+ if(window.mpWaitingRoom){const roster=window.vcB3Roster?.()||[];const slot=roster.findIndex(p=>p.id===window.vcB3MyId?.());const home=vcB3Spawn(Math.max(0,slot));if(Math.hypot(shuttlePlayer.x-home.x,shuttlePlayer.y-home.y)<125){window.openVCLocker?.();return}toastMsg('Go to your quarters to open your Locker.');return}
  if(Math.hypot(shuttlePlayer.x-shuttleComputer.x,shuttlePlayer.y-shuttleComputer.y)<80){openShuttleCustom();return}
  if(Math.hypot(shuttlePlayer.x-shuttleDoor.x,shuttlePlayer.y-shuttleDoor.y)<75){startFromShuttle();return}
  toastMsg('Nothing to interact with here.');
@@ -531,35 +531,41 @@ function openShuttleCustom(){openCustom();document.getElementById('shuttleHud').
 function returnToShuttle(){custom.style.display='none';menu.style.display='none';state='shuttle';if(shuttlePlayer)shuttlePlayer.c=selectedColor;document.getElementById('shuttleHud').style.display='block'}
 function startFromShuttle(){if(state!=='shuttle')return;document.getElementById('shuttleHud').style.display='none';quickPlay()}
 function drawShuttle(){
- x.clearRect(0,0,W,H);const sc=Math.min(W/980,H/620),ox=(W-980*sc)/2,oy=(H-620*sc)/2;
- x.save();x.translate(ox,oy);x.scale(sc,sc);
- const bg=x.createLinearGradient(0,0,980,620);bg.addColorStop(0,'#080e26');bg.addColorStop(.5,'#201038');bg.addColorStop(1,'#080d22');x.fillStyle=bg;x.fillRect(0,0,980,620);
- for(let i=0;i<75;i++){x.fillStyle=i%3?'#977bc988':'#9eeeff88';x.fillRect((i*137+17)%980,(i*67+shuttleT*3)%620,1.5,1.5)}
- // Ten individual quarters, opening onto a long shared central corridor.
- x.fillStyle='#18233c';x.fillRect(92,255,798,110);x.strokeStyle='#6f4ca6';x.lineWidth=5;x.strokeRect(92,255,798,110);
- x.fillStyle='#1a2440';x.fillRect(365,253,250,114);x.fillStyle='#32b6df22';x.fillRect(378,264,224,88);
- x.fillStyle='#aeeaff';x.textAlign='center';x.font='bold 17px Arial';x.fillText('MAIN HANGOUT',490,306);x.font='12px Arial';x.fillText('MEET YOUR CREW • START THE MISSION',490,327);
+ const mapW=1800,mapH=1120,zoom=Math.min(W/950,H/640),viewW=W/zoom,viewH=H/zoom;
+ const cx=Math.max(viewW/2,Math.min(mapW-viewW/2,shuttlePlayer.x)),cy=Math.max(viewH/2,Math.min(mapH-viewH/2,shuttlePlayer.y));
+ x.clearRect(0,0,W,H);x.save();x.scale(zoom,zoom);x.translate(-cx+viewW/2,-cy+viewH/2);
+ const bg=x.createLinearGradient(0,0,mapW,mapH);bg.addColorStop(0,'#070c20');bg.addColorStop(.5,'#1d1532');bg.addColorStop(1,'#071225');x.fillStyle=bg;x.fillRect(0,0,mapW,mapH);
+ for(let i=0;i<145;i++){x.fillStyle=i%4?'#7669a64d':'#91f2ff6b';x.fillRect((i*137+17)%mapW,(i*71+13)%mapH,2,2)}
+ // A dedicated, much larger peaceful social ship: five rooms on each side of a corridor.
+ x.fillStyle='#1b2c41';x.fillRect(55,440,1690,235);x.strokeStyle='#6a7ba4';x.lineWidth=9;x.strokeRect(55,440,1690,235);
+ x.strokeStyle='#60eaff30';x.lineWidth=3;for(let j=0;j<16;j++){x.beginPath();x.moveTo(100+j*105,454);x.lineTo(100+j*105,665);x.stroke()}
+ x.fillStyle='#142a42';x.strokeStyle='#5ccfea';x.lineWidth=5;x.beginPath();x.roundRect(615,470,570,175,30);x.fill();x.stroke();
+ x.textAlign='center';x.fillStyle='#a4f5ff';x.font='bold 30px Arial';x.fillText('CREW COMMONS',900,535);x.font='17px Arial';x.fillStyle='#b9d5ec';x.fillText('NO IMPOSTORS • RELAX & EXPLORE',900,565);
+ x.fillStyle='#233b55';x.beginPath();x.roundRect(760,585,280,38,15);x.fill();x.stroke();
  const roster=window.vcB3Roster?.()||[];
+ const themes={cyan:['#153e55','#54dfff'],rose:['#51223f','#ff9fda'],violet:['#302047','#a67bff']};
+ const icons={bed:'🛏️',plant:'🪴',trophy:'🏆',lamp:'💡',console:'🕹️',star:'🌟'};
  for(let i=0;i<10;i++){
-  const p=roster[i],rx=105+(i%5)*155,ry=i<5?103:373,rw=145,rh=143;
-  const themes={cyan:['#17384e','#53dfff'],rose:['#49213f','#ff9cd9'],violet:['#302044','#ad78ff']};
-  const palette=themes[p?.room?.theme]||themes.violet;
-  x.fillStyle=palette[0];x.strokeStyle=palette[1];x.lineWidth=2.5;x.beginPath();x.roundRect(rx,ry,rw,rh,12);x.fill();x.stroke();
-  x.fillStyle='#0006';x.fillRect(rx+10,ry+10,rw-20,25);x.fillStyle='#f7e9ff';x.font='bold 11px Arial';x.fillText(p?.name?.slice(0,13)||'EMPTY QUARTERS',rx+rw/2,ry+27);
-  x.fillStyle='#ffffff12';x.fillRect(rx+8,ry+42,rw-16,rh-51);
-  const items=Array.isArray(p?.room?.furniture)?p.room.furniture:(p?[]:[{type:'bed',x:15,y:55}]);
-  const icons={bed:'🛏️',plant:'🪴',trophy:'🏆',lamp:'💡',console:'🕹️',star:'🌟'};
-  x.font='23px Arial';items.slice(0,12).forEach(f=>{if(!icons[f.type])return;x.fillText(icons[f.type],rx+12+Math.max(0,Math.min(88,f.x))*1.2,ry+45+Math.max(0,Math.min(83,f.y))*.92)});
-  x.fillStyle='#071122';x.fillRect(rx+57,i<5?ry+rh-3:ry-4,32,8);x.fillStyle='#77f7ff';x.fillRect(rx+62,i<5?ry+rh-2:ry-3,22,5);
-  if(p?.room?.hat==='dum'){x.fillStyle='#f6d44d';x.fillRect(rx+107,ry+45,29,18);x.fillStyle='#372d0a';x.font='bold 10px Arial';x.fillText('DUM',rx+121,ry+57)}
+  const p=roster[i],rx=75+(i%5)*335,ry=i<5?105:705,rw=305,rh=305,palette=themes[p?.room?.theme]||themes.violet;
+  x.fillStyle=palette[0];x.strokeStyle=palette[1];x.lineWidth=5;x.beginPath();x.roundRect(rx,ry,rw,rh,20);x.fill();x.stroke();
+  x.fillStyle='#ffffff0b';for(let n=0;n<6;n++)x.fillRect(rx+15+n*48,ry+55,2,rh-75);
+  x.fillStyle='#091022aa';x.fillRect(rx+12,ry+12,rw-24,39);x.fillStyle='#fff';x.font='bold 17px Arial';x.fillText(p?.name?.slice(0,18)||'VACANT ROOM',rx+rw/2,ry+38);
+  const items=Array.isArray(p?.room?.furniture)?p.room.furniture:(p?[]:[{type:'bed',x:14,y:55}]);
+  x.font='39px Arial';items.slice(0,24).forEach(item=>{if(!icons[item.type])return;x.fillText(icons[item.type],rx+35+Math.max(0,Math.min(88,item.x))*2.4,ry+70+Math.max(0,Math.min(83,item.y))*2.3)});
+  x.fillStyle='#09152b';x.fillRect(rx+122,i<5?ry+rh-5:ry-7,65,13);x.fillStyle='#7bf9ff';x.fillRect(rx+128,i<5?ry+rh-4:ry-6,53,7);
  }
- x.strokeStyle='#7b5bd477';x.lineWidth=2;for(let i=0;i<14;i++){x.beginPath();x.moveTo(95+i*60,310);x.lineTo(105+i*60,310);x.stroke()}
- if(window.mpWaitingRoom&&window.mpShuttlePlayers)window.mpShuttlePlayers().forEach(p=>{if(!Number.isFinite(p.shuttleX)||!Number.isFinite(p.shuttleY))return;drawCrewShape({x:p.shuttleX,y:p.shuttleY,r:17,c:p.c||'#69d7e8',name:p.name,vx:0,vy:0},1,false,false);x.fillStyle='#f5e9ff';x.font='bold 10px Arial';x.fillText(p.name,p.shuttleX,p.shuttleY+39)});
- drawCrewShape(shuttlePlayer,1,false,true);x.fillStyle='#fff';x.font='bold 11px Arial';x.fillText('YOU',shuttlePlayer.x,shuttlePlayer.y+40);
- const slot=roster.findIndex(p=>p.id===window.vcB3MyId?.());const spawn=vcB3Spawn(Math.max(0,slot));
- if(Math.hypot(shuttlePlayer.x-spawn.x,shuttlePlayer.y-spawn.y)<80){x.fillStyle='#f6ddff';x.font='bold 13px Arial';x.fillText('E — YOUR LOCKER',shuttlePlayer.x,shuttlePlayer.y-43)}
- x.fillStyle='#c5b9ed';x.font='bold 13px Arial';x.fillText('WASD / ARROWS — EXPLORE THE HALLWAY & VISIT ROOMS',490,575);
+ // NPC crewmates make the commons feel occupied, without impostor gameplay.
+ shuttleBots.forEach(b=>{drawCrewShape(b,1,false,false);x.fillStyle='#cbe7f7';x.font='bold 13px Arial';x.fillText(b.name,b.x,b.y+47)});
+ if(window.mpWaitingRoom&&window.mpShuttlePlayers)window.mpShuttlePlayers().forEach(p=>{if(!Number.isFinite(p.shuttleX)||!Number.isFinite(p.shuttleY))return;drawCrewShape({x:p.shuttleX,y:p.shuttleY,r:17,c:p.c||'#69d7e8',name:p.name,hat:p.room?.hat,vx:0,vy:0},1,false,false)});
+ drawCrewShape(shuttlePlayer,1,false,true);
+ // Soft radial field-of-view: ship beyond the player's vision fades into darkness.
+ const light=x.createRadialGradient(shuttlePlayer.x,shuttlePlayer.y,85,shuttlePlayer.x,shuttlePlayer.y,440);
+ light.addColorStop(0,'#02050c00');light.addColorStop(.48,'#02050c12');light.addColorStop(.83,'#02050cbb');light.addColorStop(1,'#02050cf2');x.fillStyle=light;x.fillRect(cx-viewW/2,cy-viewH/2,viewW,viewH);
+ const slot=roster.findIndex(p=>p.id===window.vcB3MyId?.()),home=vcB3Spawn(Math.max(0,slot));
+ if(window.mpWaitingRoom&&Math.hypot(shuttlePlayer.x-home.x,shuttlePlayer.y-home.y)<105){x.fillStyle='#c9ffff';x.font='bold 16px Arial';x.fillText('E — CUSTOMIZE YOUR ROOM',shuttlePlayer.x,shuttlePlayer.y-54)}
  x.restore();
+ // Screen-space help, always readable while the camera moves.
+ x.fillStyle='#0a1125dc';x.fillRect(14,H-52,Math.min(W-28,560),40);x.fillStyle='#b7f3ff';x.font='bold 13px Arial';x.textAlign='left';x.fillText('WASD: MOVE  •  E: ROOM LOCKER  •  VISIT CREW QUARTERS',27,H-27);
 }
 function quickPlay(){
  document.getElementById('minimap').classList.remove('expanded');v10ForceExitVent();
@@ -1780,7 +1786,7 @@ window.mpLeave=function(){resetNetwork();state='menu';el('mpEndScreen').style.di
 function ensurePeer(){if(typeof Peer==='undefined'){info('Could not load the online connection library. Check your network.');return false}return true}
 window.mpCreate=function(){
  if(!ensurePeer())return;resetNetwork();M.host=true;M.code=rnd();M.id=PREFIX+M.code;
- M.roster.set(M.id,{id:M.id,name:ownName(),c:myColor(),alive:true,shuttleX:180,shuttleY:190});
+ M.roster.set(M.id,{id:M.id,name:ownName(),c:myColor(),alive:true,shuttleX:200,shuttleY:215});
  info('Creating private room…');el('mpShareCode').style.display='block';el('mpShareCodeValue').textContent=M.code;
  try{M.peer=new Peer(M.id)}catch(e){info('Could not create room: '+e.message);return;}
  M.peer.on('open',()=>{rosterView()});
@@ -1908,7 +1914,7 @@ function hostTaskDone(id,taskId){
 
 function hostReceive(id,d){
  const p=M.roster.get(id);if(!p)return;
- if(d.type==='shuttleMove'&&!M.started){const xx=Number(d.x),yy=Number(d.y);if(Number.isFinite(xx)&&Number.isFinite(yy)&&xx>=95&&xx<=885&&yy>=95&&yy<=530){p.shuttleX=xx;p.shuttleY=yy;broadcast({type:'shuttleMove',id,x:xx,y:yy});}return;}
+ if(d.type==='shuttleMove'&&!M.started){const xx=Number(d.x),yy=Number(d.y);if(Number.isFinite(xx)&&Number.isFinite(yy)&&xx>=65&&xx<=1735&&yy>=70&&yy<=1050){p.shuttleX=xx;p.shuttleY=yy;broadcast({type:'shuttleMove',id,x:xx,y:yy});}return;}
  if(!M.started)return;
  if(d.type==='move'&&M.active&&(p.alive||p.role==='CREW')&&!M.meeting){
   const nx=Number(d.x),ny=Number(d.y);
