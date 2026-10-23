@@ -333,7 +333,7 @@ kbd{background:#222f43;padding:2px 6px;border-radius:4px}
 .vcB7EndActions button{background:linear-gradient(135deg,#45228d,#9657f5)!important;border:2px solid #b6a5ff!important;border-radius:12px!important;color:white!important;font-weight:900!important;padding:14px 20px!important;cursor:pointer}
 .vcB7EndActions .vcB7Leave{background:#131a2c!important}
 #vcB7RematchStatus{color:#b8b7d4;font:13px Arial;margin-top:18px}
-</style></head>
+</style><style id="vcB7NameLimits">#lobby label[for="name"],#lobby label[for="code"]{display:block;width:100%;margin:6px 0 0}#lobby #name,#lobby #code{flex:1;min-width:130px}#lobby.mpWaitingLobby label[for="name"],#lobby.mpWaitingLobby label[for="code"]{display:none!important}</style></head>
 <body>
 <canvas id="c"></canvas>
 <div id="menuSpace"><div id="stars"></div><div class="menuShip"><div style="position:absolute;right:210px;top:45px;width:150px;height:3px;background:linear-gradient(90deg,transparent,rgba(85,190,255,.65));filter:blur(2px)"></div><div class="menuWing"></div><div class="menuShipBody"></div><div class="menuEngine"></div></div></div><div id="shuttleHud" style="display:none;position:fixed;inset:0;z-index:25;pointer-events:none;color:white;font-family:Arial">
@@ -356,8 +356,8 @@ kbd{background:#222f43;padding:2px 6px;border-radius:4px}
 <h2>VOID CREW • PRIVATE ONLINE ROOM</h2>
 <p style="color:#b3c6d4">Join with a nickname and a six-character code. Up to 10 real players; empty seats become bots when the host starts. No account needed.</p>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-<input id="name" maxlength="12" value="Player" placeholder="Nickname" style="flex:1;padding:12px;border-radius:9px;border:1px solid #52647d;background:#0b1421;color:white">
-<input id="code" maxlength="6" placeholder="ROOM CODE" style="width:150px;padding:12px;border-radius:9px;border:1px solid #52647d;background:#0b1421;color:white;text-transform:uppercase">
+<label for="name" style="color:#b8e9ff;font-size:12px;font-weight:bold">NICKNAME · 1–12 CHARACTERS (letters, numbers, spaces, _ and -)</label><input id="name" maxlength="12" value="Player" placeholder="Nickname · max 12" style="flex:1;padding:12px;border-radius:9px;border:1px solid #52647d;background:#0b1421;color:white">
+<label for="code" style="color:#b8e9ff;font-size:12px;font-weight:bold">JOIN CODE · EXACTLY 6 CHARACTERS</label><input id="code" maxlength="6" placeholder="6-character code" style="width:150px;padding:12px;border-radius:9px;border:1px solid #52647d;background:#0b1421;color:white;text-transform:uppercase">
 </div>
 <div class="menurow" id="mpRoomEntryActions"><button class="btn green" onclick="mpCreate()">CREATE PRIVATE ROOM</button><button class="btn" onclick="mpJoin()">JOIN WITH CODE</button><button class="btn" onclick="mpLeave()">BACK</button></div>
 <div id="mpShareCode" style="display:none;margin:16px 0;padding:15px;border:2px solid #52d6ad;border-radius:12px;background:#092b2b;text-align:center"><div style="font-size:12px;color:#b7e8d8">YOUR PRIVATE ROOM CODE</div><div id="mpShareCodeValue" style="font-size:36px;font-weight:900;letter-spacing:7px;color:white;user-select:text"></div><button class="btn" onclick="navigator.clipboard?.writeText(document.getElementById('mpShareCodeValue').textContent)">COPY CODE</button></div>
