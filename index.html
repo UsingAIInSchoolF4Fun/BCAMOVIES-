@@ -1118,6 +1118,7 @@ async function bcaPublishPresence(){
  const seconds=Number(localStorage.getItem("bca-player-"+id+"-seconds")||0);
  await bcaPresenceChannel.track({id,name,avatar,seconds:Math.max(0,seconds),tab:bcaPresenceTabId,updated:Date.now()});
 }
+let bcaPresenceRetry=null;
 function bcaStartPresence(){
  if(bcaPresenceChannel)return;
  bcaPresenceChannel=sb.channel("bca-site-online-v1",{config:{presence:{key:bcaPresenceTabId}}});
@@ -1132,11 +1133,13 @@ function bcaStartPresence(){
   for(const p of users.values())if(!String(p.id).startsWith("guest-")){bcaProfileCache.set(p.id,{name:p.name,avatar:p.avatar});rememberBcaVisitor(p);}
   renderOnlinePeople();
   if(document.getElementById("communityMessages")?.children.length)loadCommunity();
- }).subscribe(status=>{if(status==="SUBSCRIBED")bcaPublishPresence().catch(()=>{});});
+ }).subscribe(status=>{if(status==="SUBSCRIBED"){if(bcaPresenceRetry){clearTimeout(bcaPresenceRetry);bcaPresenceRetry=null}bcaPublishPresence().catch(()=>{});}else if(["CHANNEL_ERROR","TIMED_OUT","CLOSED"].includes(status)){if(!bcaPresenceRetry)bcaPresenceRetry=setTimeout(()=>{bcaPresenceRetry=null;const stale=bcaPresenceChannel;bcaPresenceChannel=null;if(stale)sb.removeChannel(stale).catch(()=>{});bcaStartPresence()},4000)}});
 }
 bcaStartPresence();
 /* Keep the online roster fresh without manually refreshing the page. */
-setInterval(()=>{if(bcaPresenceChannel)bcaPublishPresence().catch(()=>{})},15000);
+setInterval(()=>{if(bcaPresenceChannel)bcaPublishPresence().catch(()=>{});else bcaStartPresence()},15000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(!bcaPresenceChannel)bcaStartPresence();else bcaPublishPresence().catch(()=>{})}});
+window.addEventListener("pageshow",()=>{if(!bcaPresenceChannel)bcaStartPresence();else bcaPublishPresence().catch(()=>{})});
 window.addEventListener("pagehide",()=>{if(bcaPresenceChannel)bcaPresenceChannel.untrack().catch(()=>{})});
 sb.auth.onAuthStateChange(()=>setTimeout(()=>bcaPublishPresence().catch(()=>{}),300));
 
