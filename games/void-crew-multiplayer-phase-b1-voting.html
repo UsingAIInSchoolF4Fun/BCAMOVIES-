@@ -1970,6 +1970,8 @@ function selectMPVote(choice){
  el('mpVoteStatus').textContent=choice==='SKIP'?'Skip selected — press Confirm Skip.':'Vote selected — press Confirm Vote.';
 }
 function confirmMPVote(){if(!M._selectedVote)return;castMPVote(M._selectedVote)}
+window.selectMPVote=selectMPVote;
+window.confirmMPVote=confirmMPVote;
 function updateMPVoteCount(count,total){const node=el('mpVoteCount');if(node)node.textContent=Math.max(0,count||0)+' / '+Math.max(0,total||0)+' players voted'}
 function broadcastVoteProgress(){if(!M.host)return;const count=M.votes.size,total=livingVoterTotal();updateMPVoteCount(count,total);broadcast({type:'voteProgress',count,total})}
 function castMPVote(choice){
