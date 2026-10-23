@@ -1569,11 +1569,44 @@ body>#movies{border-color:#bb77ff9c!important;box-shadow:0 0 30px #8b5cf630,0 20
     `;
     d.head.appendChild(style);
    }
-   const headings=[...d.querySelectorAll('h1,h2,h3,p,span')].filter(n=>n.children.length===0&&/your movies.{0,30}your library/i.test((n.textContent||'').trim()));
-   for(const h of headings){h.textContent='Baines a chud watch movies';h.style.fontFamily="Impact, 'Arial Black', system-ui, sans-serif";h.style.fontWeight='900';h.style.letterSpacing='.045em';h.style.color='#f3dcff';h.style.textShadow='0 0 20px #b76bff, 0 3px 0 #4a1678';}
+   // Match heading text even when it is split across nested spans or line breaks.
+   const headingPattern=/your\\s*movies[\\s\\S]{0,100}your\\s*library/i;
+   const candidates=[...d.querySelectorAll('h1,h2,h3,.hero,.hero-title,.headline,.tagline,.banner')];
+   let changed=false;
+   for(const node of candidates){
+     if(changed)break;
+     if(!headingPattern.test(node.textContent||''))continue;
+     const nested=[...node.querySelectorAll('h1,h2,h3')].find(h=>headingPattern.test(h.textContent||''));
+     const target=nested||node;
+     // Only replace the heading, not the surrounding library layout.
+     if(target===node&&node.querySelector('button,input,a,.card'))continue;
+     target.textContent='Baines a chud watch movies';
+     target.style.setProperty('font-family',"Impact, 'Arial Black', system-ui, sans-serif",'important');
+     target.style.setProperty('font-weight','900','important');
+     target.style.setProperty('letter-spacing','.045em','important');
+     target.style.setProperty('color','#f3dcff','important');
+     target.style.setProperty('text-shadow','0 0 20px #b76bff, 0 3px 0 #4a1678','important');
+     changed=true;
+   }
+   if(!changed){
+     const walker=d.createTreeWalker(d.body,NodeFilter.SHOW_TEXT);
+     const matches=[];let n;
+     while((n=walker.nextNode())){if(/your\\s*movies|your\\s*library/i.test(n.nodeValue||''))matches.push(n)}
+     const first=matches.find(n=>/your\\s*movies/i.test(n.nodeValue||''));
+     const last=matches.find(n=>/your\\s*library/i.test(n.nodeValue||''));
+     if(first&&last){
+       const container=first.parentElement?.closest('h1,h2,h3')||first.parentElement;
+       if(container&&container.contains(last)&&!container.querySelector('button,input,a')){
+         container.textContent='Baines a chud watch movies';
+         container.style.setProperty('font-family',"Impact, 'Arial Black', system-ui, sans-serif",'important');
+         container.style.setProperty('color','#f3dcff','important');
+         container.style.setProperty('text-shadow','0 0 20px #b76bff','important');
+       }
+     }
+   }
   }catch(e){}
  }
- frame.addEventListener('load',()=>{themeMovieLibrary();setTimeout(themeMovieLibrary,600);setTimeout(themeMovieLibrary,1800)});
+ frame.addEventListener('load',()=>{themeMovieLibrary();setTimeout(themeMovieLibrary,600);setTimeout(themeMovieLibrary,1800);setTimeout(themeMovieLibrary,3500)});
  if(frame.contentDocument?.readyState==='complete')themeMovieLibrary();
 })();
 </script>
