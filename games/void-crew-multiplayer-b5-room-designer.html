@@ -304,6 +304,11 @@ kbd{background:#222f43;padding:2px 6px;border-radius:4px}
 #lobby.mpWaitingLobby #mpStart{margin:0!important;padding:10px 13px!important;font-size:12px!important}
 #lobby.mpWaitingLobby::after{content:none!important}
 #lobby.mpWaitingLobby>p:last-child{display:none!important}
+</style><style id="vcB5LobbyCodeFix">
+#lobby.mpWaitingLobby #mpShareCode{display:none!important}
+#lobby.mpWaitingLobby #mpShareCode[style*="block"]{display:flex!important}
+#lobby.mpWaitingLobby:before{content:'CREW LOBBY';font:800 11px Arial;letter-spacing:.12em;color:#d2c0ff}
+#lobby.mpWaitingLobby #mpStart[style*="none"]{display:none!important}
 </style></head>
 <body>
 <canvas id="c"></canvas>
@@ -560,10 +565,10 @@ function drawShuttle(){
  const themes={cyan:['#153e55','#54dfff'],rose:['#51223f','#ff9fda'],violet:['#302047','#a67bff']};
  const icons={bed:'🛏️',plant:'🪴',trophy:'🏆',lamp:'💡',console:'🕹️',star:'🌟'};
  for(let i=0;i<10;i++){
-  const p=roster[i],rx=75+(i%5)*335,ry=i<5?105:705,rw=305,rh=305,palette=themes[p?.room?.theme]||themes.violet;
+  const p=roster[i],bot=!p&&i<10,botName=bot?'BOT '+String(i+1).padStart(2,'0'):null,rx=75+(i%5)*335,ry=i<5?105:705,rw=305,rh=305,palette=themes[p?.room?.theme]||themes.violet;
   x.fillStyle=palette[0];x.strokeStyle=palette[1];x.lineWidth=5;x.beginPath();x.roundRect(rx,ry,rw,rh,20);x.fill();x.stroke();
   x.fillStyle='#ffffff0b';for(let n=0;n<6;n++)x.fillRect(rx+15+n*48,ry+55,2,rh-75);
-  x.fillStyle='#091022aa';x.fillRect(rx+12,ry+12,rw-24,39);x.fillStyle='#fff';x.font='bold 17px Arial';x.fillText(p?.name?.slice(0,18)||'VACANT ROOM',rx+rw/2,ry+38);
+  x.fillStyle='#091022aa';x.fillRect(rx+12,ry+12,rw-24,39);x.fillStyle='#fff';x.font='bold 17px Arial';x.fillText(p?.name?.slice(0,18)||botName||'VACANT ROOM',rx+rw/2,ry+38);
   const items=Array.isArray(p?.room?.furniture)?p.room.furniture:(p?[]:[{type:'bed',x:14,y:55}]);
   items.slice(0,24).forEach(item=>{if(!icons[item.type])return;const xx=rx+35+Math.max(0,Math.min(88,item.x))*2.4,yy=ry+70+Math.max(0,Math.min(83,item.y))*2.3;if(window.vcB5DrawFurniture)window.vcB5DrawFurniture(x,item.type,xx,yy,.72);else{x.font='25px Arial';x.fillText(icons[item.type],xx,yy)}});
   x.fillStyle='#09152b';x.fillRect(rx+122,i<5?ry+rh-5:ry-7,65,13);x.fillStyle='#7bf9ff';x.fillRect(rx+128,i<5?ry+rh-4:ry-6,53,7);
