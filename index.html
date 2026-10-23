@@ -1416,48 +1416,32 @@ setWelcomeMode=function(mode){
 })();
 </script>
 <script>
-/* Movie library lives in a same-origin iframe; style its actual poster tiles after rendering. */
+/* Apply the same animated neon frame as the Games icons to real movie cards. */
 (function(){
  const frame=document.getElementById('movies');if(!frame)return;
- let observer=null,queued=false;
- function decorate(){
+ let watcher;
+ function apply(){
   let doc;try{doc=frame.contentDocument;if(!doc||!doc.body)return}catch(e){return}
-  if(!doc.getElementById('bcaPosterNeonStyle')){
-   const style=doc.createElement('style');style.id='bcaPosterNeonStyle';
+  if(!doc.getElementById('bcaMovieCardNeon')){
+   const style=doc.createElement('style');style.id='bcaMovieCardNeon';
    style.textContent=`
-@property --bcaPosterAngle{syntax:"<angle>";initial-value:0deg;inherits:false}
-@keyframes bcaPosterSpin{to{--bcaPosterAngle:360deg}}
-.bca-neon-movie-tile{position:relative!important;border:3px solid transparent!important;border-radius:14px!important;background:linear-gradient(#140d24,#140d24) padding-box,conic-gradient(from var(--bcaPosterAngle),#a855f7,#22d3ee,#ec4899,#7c3aed,#a855f7) border-box!important;animation:bcaPosterSpin 5s linear infinite!important;box-shadow:0 0 12px #a855f777,0 0 22px #7c3aed44!important;overflow:hidden!important;transform:scale(.94);transform-origin:center top;transition:box-shadow .2s ease!important}
-.bca-neon-movie-tile:hover{box-shadow:0 0 24px #a855f7bb!important}
-.bca-neon-movie-tile img{max-width:100%;display:block}
-@media(prefers-reduced-motion:reduce){.bca-neon-movie-tile{animation:none!important}}
+@property --bcaMovieAngle{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes bcaMovieRotate{to{--bcaMovieAngle:360deg}}
+.grid{grid-template-columns:repeat(auto-fill,minmax(164px,1fr))!important;gap:18px!important}
+.grid .card{border:3px solid transparent!important;border-radius:16px!important;background:linear-gradient(#12161e,#12161e) padding-box,conic-gradient(from var(--bcaMovieAngle),#a855f7,#22d3ee,#f472b6,#7c3aed,#a855f7) border-box!important;animation:bcaMovieRotate 6s linear infinite!important;box-shadow:0 0 14px #a855f777,0 0 27px #7c3aed33!important;overflow:hidden!important;transition:box-shadow .2s!important}
+.grid .card:hover{box-shadow:0 0 24px #a855f7bb,0 0 35px #22d3ee55!important}
+@media(prefers-reduced-motion:reduce){.grid .card{animation:none!important}}
 `;
    doc.head.appendChild(style);
   }
-  const known=doc.querySelectorAll('.movie-card,.movieCard,.movie-tile,.movie-item,.film-card,.poster-card,.movie-poster-card,.movie-box,.movie,.card,.poster');
-  let count=0;
-  known.forEach(el=>{if(el.querySelector('img')&&el.getBoundingClientRect().width>55&&el.getBoundingClientRect().width<430){el.classList.add('bca-neon-movie-tile');count++}});
-  if(!count){
-   doc.querySelectorAll('img').forEach(img=>{
-    const r=img.getBoundingClientRect();if(r.width<65||r.width>400||r.height<75)return;
-    let el=img.parentElement;
-    for(let n=0;n<3&&el&&el!==doc.body;n++,el=el.parentElement){
-     const box=el.getBoundingClientRect();
-     if(box.width>=r.width&&box.width<=Math.max(430,r.width*1.45)&&box.height>=r.height&&box.height<=r.height+155){
-      el.classList.add('bca-neon-movie-tile');break;
-     }
-    }
-   });
-  }
  }
- function schedule(){if(queued)return;queued=true;setTimeout(()=>{queued=false;decorate()},200)}
- function init(){
-  if(observer)observer.disconnect();
-  decorate();
-  try{const doc=frame.contentDocument;if(doc?.body){observer=new MutationObserver(schedule);observer.observe(doc.body,{childList:true,subtree:true})}}catch(e){}
-  setTimeout(decorate,900);setTimeout(decorate,2500);
+ function start(){
+  if(watcher)watcher.disconnect();apply();
+  try{const doc=frame.contentDocument;if(doc?.body){watcher=new MutationObserver(apply);watcher.observe(doc.body,{childList:true,subtree:true})}}catch(e){}
+  setTimeout(apply,700);
  }
- frame.addEventListener('load',init);if(frame.contentDocument?.readyState==='complete')init();
+ frame.addEventListener('load',start);
+ if(frame.contentDocument?.readyState==='complete')start();
 })();
 </script>
 </body></html>
