@@ -1369,16 +1369,33 @@ syncProfile();
 
 
 document.getElementById("profileSaveName").onclick=async()=>{
- const field=document.getElementById("profileUsername"),name=field.value.trim(),info=document.getElementById("profileInfo");
- if(!/^[a-zA-Z0-9_ ]{3,24}$/.test(name)){info.textContent="Use 3–24 letters, numbers, spaces or underscores.";return;}
- const local=bcaGuestMode?bcaLocalProfile():null;
- if(local){local.name=name;localStorage.setItem(bcaLocalKey,JSON.stringify(local));info.textContent="Username saved!";document.getElementById("profileName").textContent=name;bcaPublishPresence().catch(()=>{});return;}
- const {data,error}=await sb.auth.updateUser({data:{display_name:name}});
- if(error){info.textContent=error.message;return;}
- info.textContent="Username updated!";document.getElementById("profileName").textContent=name;
- bcaPublishPresence().catch(()=>{});
- document.getElementById("cWho").textContent="Signed in as "+name;
+ const field=document.getElementById("profileUsername"),name=field.value.trim(),info=document.getElementById("profileInfo"),button=document.getElementById("profileSaveName");
+ if(!/^[a-zA-Z0-9_ ]{3,24}$/.test(name)){info.textContent="Use 3–24 letters, numbers, spaces or underscores.";return}
+ button.disabled=true;button.textContent="Saving…";
+ try{
+  const local=bcaLocalProfile();
+  if(local&&(bcaGuestMode||!bcaProfileKey||bcaProfileKey==="bca-player-"+local.id)){
+   const updated={...local,name};
+   localStorage.setItem(bcaLocalKey,JSON.stringify(updated));
+   if(bcaLocalProfile()?.name!==name)throw Error("Unable to verify saved username.");
+   document.getElementById("profileName").textContent=name;
+   document.getElementById("cWho").textContent="Signed in as "+name;
+   const welcome=document.getElementById("savedProfileWelcome");
+   if(welcome)welcome.textContent="Welcome back, "+name+"!";
+   info.textContent="✓ Username saved to this browser!";
+   Promise.resolve(bcaPublishPresence()).catch(()=>{});
+  }else{
+   const {data,error}=await sb.auth.updateUser({data:{display_name:name}});
+   if(error)throw error;
+   document.getElementById("profileName").textContent=name;
+   document.getElementById("cWho").textContent="Signed in as "+name;
+   info.textContent="✓ Username saved!";
+   Promise.resolve(bcaPublishPresence()).catch(()=>{});
+  }
+ }catch(e){info.textContent="Could not save: "+(e?.message||"Please try again.");}
+ finally{button.disabled=false;button.textContent="Save"}
 };
+document.getElementById("profileUsername").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();document.getElementById("profileSaveName").click()}});
 
 /* Separate returning-member sign-in from new-account creation. */
 let welcomeMode="choices";
