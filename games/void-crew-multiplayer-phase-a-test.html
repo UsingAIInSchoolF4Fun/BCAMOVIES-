@@ -1657,7 +1657,7 @@ window.addEventListener('DOMContentLoaded',()=>{
 </style>
 <div id="mpHud"><b id="mpHudTitle">VOID CREW ONLINE</b><div id="mpHudStatus" style="margin:7px 0"></div><div style="font-size:11px;color:#b5d2e5">WASD move • SPACE task/kill • R report • V vent • Q sabotage • M map</div><button onclick="mpAction('task')">USE / TASK</button><button onclick="mpAction('kill')">KILL</button><button onclick="mpAction('report')">REPORT</button><button onclick="mpAction('vent')">VENT</button><button onclick="openMPSabotage()">SABOTAGE</button><div id="mpTaskList" style="font-size:11px;color:#c1f0d0;max-height:120px;overflow:auto;margin-top:8px"></div></div>
 <div id="mpSabMenu" style="display:none;position:fixed;inset:0;z-index:355;background:#03101aee;color:white;align-items:center;justify-content:center;font:16px Arial"><div style="padding:28px;border:2px solid #f17b87;border-radius:16px;background:#152333"><h2>SABOTAGE SHIP</h2><button onclick="mpSab('LIGHTS')">LIGHTS</button><button onclick="mpSab('DOORS')">DOORS</button><button onclick="mpSab('REACTOR')">REACTOR</button><button onclick="mpSab('OXYGEN')">OXYGEN</button><button onclick="document.getElementById('mpSabMenu').style.display='none'">CANCEL</button></div></div>
-<div id="mpMeeting"><div class="inner"><h2>EMERGENCY MEETING</h2><p id="mpMeetReason"></p><p id="mpMeetClock"></p><div id="mpVoteOptions"></div><p id="mpVoteStatus"></p><div id="mpChatLog" style="max-height:150px;overflow:auto;background:#061420;padding:10px;border-radius:8px;font-size:13px;margin-top:10px"></div><div style="display:flex"><input id="mpChatInput" maxlength="160" placeholder="Discuss with your crew" style="flex:1;background:#091e30;color:white;border:1px solid #587d95;padding:10px"><button onclick="mpChat()">SEND</button></div></div></div>
+<div id="mpMeeting"><div class="inner"><h2>EMERGENCY MEETING</h2><p id="mpMeetReason"></p><p id="mpMeetClock"></p><div id="mpVoteOptions"></div><p id="mpVoteStatus"></p><p id="mpVoteCount" style="font-weight:800;color:#a8f4ff">0 / 0 votes cast</p><div id="mpChatLog" style="max-height:150px;overflow:auto;background:#061420;padding:10px;border-radius:8px;font-size:13px;margin-top:10px"></div><div style="display:flex"><input id="mpChatInput" maxlength="160" placeholder="Discuss with your crew" style="flex:1;background:#091e30;color:white;border:1px solid #587d95;padding:10px"><button onclick="mpChat()">SEND</button></div></div></div>
 <script>
 (function(){
 'use strict';
@@ -1755,11 +1755,13 @@ function guestReceive(d){
   for(const p of d.players){const old=M.roster.get(p.id)||{};if(p.id!==M.id){const v=M.interpolated.get(p.id);if(v){v.tx=p.x;v.ty=p.y}else M.interpolated.set(p.id,{x:p.x,y:p.y,tx:p.x,ty:p.y});M.roster.set(p.id,{...old,...p})}else M.roster.set(p.id,{...old,...p});}
   const oldBots=new Map(bots.map(b=>[b.id,b]));bots=d.bots.map(b=>{const old=oldBots.get(b.id);return {...b,x:old?.x??b.x,y:old?.y??b.y,netX:b.x,netY:b.y,brain:{state:'TASK'},spawnHold:0}});
   bodies=d.bodies.map(b=>({...b}));M.taskDone=d.tasks;M.taskGoal=d.goal;M.gameEnded=d.ended;M.sabotage=d.sabotage||null;syncSabotageVisuals();
-  if(d.meeting&&!M.meeting)showMeeting(d.meeting);
+  if(d.meeting&&!M.meeting)showMeeting(d.meeting,d.meetingEnd);
+  if(d.meeting){M.meetingEnd=d.meetingEnd||M.meetingEnd;updateMPVoteCount(d.voteCount,d.voteTotal);}
   if(!d.meeting&&M.meeting)hideMeeting();
   if(d.ended)showMPEnd(d.ended)
   const me=M.roster.get(M.id);if(me&&!me.alive&&player.alive){player.alive=false;playerGhost=true}
  }else if(d.type==='meeting')showMeeting(d.reason,d.endsAt);
+ else if(d.type==='voteProgress')updateMPVoteCount(d.count,d.total);
  else if(d.type==='shuttleMove'){const p=M.roster.get(d.id);if(p){p.shuttleX=d.x;p.shuttleY=d.y}}
  else if(d.type==='meetingEnd'){hideMeeting();showMPEjection(d.text,d.color||'#7bb9c9');toastMsg(d.text)}
  else if(d.type==='chat')appendMPChat(d.name,d.text);
@@ -1895,12 +1897,13 @@ function showMPEnd(text){
 function startMPMeeting(reason){
  if(M.meeting||!M.active||Date.now()<(M.nextMeetingAllowed||0))return false;
  M.nextMeetingAllowed=Date.now()+45000;
- M.meeting=reason;M.meetingEnd=Date.now()+35000;M.votes.clear();showMeeting(reason,M.meetingEnd);broadcast({type:'meeting',reason,endsAt:M.meetingEnd});
+ M.meeting=reason;M.meetingEnd=Date.now()+45000;M.votes.clear();showMeeting(reason,M.meetingEnd);broadcast({type:'meeting',reason,endsAt:M.meetingEnd});broadcastVoteProgress();
  setTimeout(()=>{if(!M.meeting)return;const speakers=bots.filter(b=>b.alive).sort(()=>Math.random()-.5).slice(0,3);speakers.forEach((b,i)=>setTimeout(()=>{if(!M.meeting)return;const suspect=M.suspicions.get(b.id);const line=suspect?'I saw '+(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name+' near a kill!':'I was doing tasks. Anyone see anything?';appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})},i*2800));},2000);
  return true;
 }
 function showMeeting(reason,endsAt){
  M.meeting=reason;if(endsAt)M.meetingEnd=endsAt;
+ el('mpVoteOptions').style.pointerEvents='auto';updateMPVoteCount(0,[...M.roster.values()].filter(p=>p.alive).length);
  el('mpChatLog').replaceChildren();el('mpMeeting').style.display='flex';setTimeout(()=>el('mpChatInput').focus(),80);el('mpMeetReason').textContent=reason;
  el('mpVoteStatus').textContent='Choose someone to eject or skip.';
  const root=el('mpVoteOptions');root.replaceChildren();
@@ -1910,14 +1913,20 @@ function showMeeting(reason,endsAt){
  }
  const skip=document.createElement('button');skip.textContent='SKIP';skip.onclick=()=>castMPVote('SKIP');root.appendChild(skip);
 }
+function updateMPVoteCount(count,total){const node=el('mpVoteCount');if(node)node.textContent=Math.max(0,count||0)+' / '+Math.max(0,total||0)+' players voted';}
+function broadcastVoteProgress(){const count=M.votes.size,total=[...M.roster.values()].filter(p=>p.alive).length;updateMPVoteCount(count,total);broadcast({type:'voteProgress',count,total});}
 function castMPVote(choice){
+ if(!player?.alive)return;
  if(M.host)hostVote(M.id,choice);else send(M.hostConn,{type:'vote',choice});
  el('mpVoteStatus').textContent='Vote submitted';el('mpVoteOptions').style.pointerEvents='none';
 }
 function hostVote(id,choice){
- if(!M.meeting||M.votes.has(id))return;M.votes.set(id,choice);
+ if(!M.host||!M.meeting||M.votes.has(id))return;
+ const voter=M.roster.get(id);if(!voter?.alive)return;
+ const valid=choice==='SKIP'||[...M.roster.values(),...bots].some(p=>p.alive&&(p.id===choice||p.name===choice));if(!valid)return;
+ M.votes.set(id,choice);broadcastVoteProgress();
  const living=[...M.roster.values()].filter(p=>p.alive);
- if(living.every(p=>M.votes.has(p.id)))endMPMeeting();
+ if(living.every(p=>M.votes.has(p.id)))setTimeout(()=>{if(M.meeting&&living.every(p=>M.votes.has(p.id)))endMPMeeting()},1200);
 }
 function endMPMeeting(){
  if(!M.meeting)return;
@@ -1942,7 +1951,7 @@ function hideMeeting(){M.meeting=null;el('mpMeeting').style.display='none';el('m
 function broadcastSnapshot(){
  if(!M.host||!M.started)return;
  const players=[...M.roster.values()].map(p=>({id:p.id,name:p.name,c:p.c,x:p.x,y:p.y,alive:p.alive}));
- broadcast({type:'snap',seq:++M.seq,players,bots:bots.map(b=>({x:b.x,y:b.y,id:b.id,name:b.name,c:b.c,alive:b.alive,r:18,vx:b.vx||0,vy:b.vy||0})),bodies,meeting:M.meeting,tasks:M.taskDone,goal:M.taskGoal,ended:M.gameEnded,sabotage:M.sabotage});
+ broadcast({type:'snap',seq:++M.seq,players,bots:bots.map(b=>({x:b.x,y:b.y,id:b.id,name:b.name,c:b.c,alive:b.alive,r:18,vx:b.vx||0,vy:b.vy||0})),bodies,meeting:M.meeting,meetingEnd:M.meetingEnd,voteCount:M.votes.size,voteTotal:[...M.roster.values()].filter(p=>p.alive).length,tasks:M.taskDone,goal:M.taskGoal,ended:M.gameEnded,sabotage:M.sabotage});
 }
 // Route the original solo controls to multiplayer while preserving solo behavior.
 const soloUse=window.use,soloKill=window.killNearest,soloReport=window.report,soloVent=window.useVent,soloSabotage=window.openSabotage,soloChooseSabotage=window.chooseSabotageV110;
