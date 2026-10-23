@@ -480,7 +480,7 @@ let shuttlePlayer=null,shuttleBots=[],shuttleT=0,shuttleComputer={x:490,y:160},s
 function enterShuttle(){
  state='shuttle';menuEl.style.display='none';lobbyEl.style.display='none';gamehudEl.style.display='none';minimapEl.style.display='none';pingEl.style.display='none';
  document.getElementById('menuSpace').style.display='none';document.getElementById('shuttleHud').style.display='block';
- shuttlePlayer={x:490,y:410,r:17,c:selectedColor,name:(document.getElementById('name').value||'Player'),vx:0,vy:0};
+ shuttlePlayer={x:490,y:410,r:17,c:window.vcB3SavedColor?.()||selectedColor,name:(document.getElementById('name').value||'Player'),vx:0,vy:0};
  let pts=[[260,250],[355,310],[625,300],[720,250],[260,410],[720,410],[590,430]];
  shuttleBots=CREW_IDENTITIES.map((id,i)=>({x:pts[i][0],y:pts[i][1],tx:pts[i][0],ty:pts[i][1],r:17,c:id.color,name:id.name,vx:0,vy:0,think:Math.random()*2}));
  last=performance.now();
@@ -494,6 +494,7 @@ function updateShuttle(dt){
  shuttleBots.forEach((b,i)=>{b.think-=dt;if(b.think<=0||Math.hypot(b.tx-b.x,b.ty-b.y)<18){let zones=[[210,235],[770,235],[220,425],[760,425],[400,340],[580,350],[490,260]];let z=zones[Math.floor(Math.random()*zones.length)];b.tx=z[0]+(Math.random()-.5)*45;b.ty=z[1]+(Math.random()-.5)*40;b.think=2.5+Math.random()*4}let ax=b.tx-b.x,ay=b.ty-b.y,d=Math.hypot(ax,ay)||1;b.vx=ax/d*45;b.vy=ay/d*45;b.x+=b.vx*dt;b.y+=b.vy*dt});
 }
 function shuttleInteract(){
+ if(window.mpWaitingRoom){const roster=window.vcB3Roster?.()||[];const slot=roster.findIndex(p=>p.id===window.vcB3MyId?.());const home=vcB3Spawn(Math.max(0,slot));if(Math.hypot(shuttlePlayer.x-home.x,shuttlePlayer.y-home.y)<85){window.openVCLocker?.();return}toastMsg('Go to your quarters to open your Locker.');return}
  if(Math.hypot(shuttlePlayer.x-shuttleComputer.x,shuttlePlayer.y-shuttleComputer.y)<80){openShuttleCustom();return}
  if(Math.hypot(shuttlePlayer.x-shuttleDoor.x,shuttlePlayer.y-shuttleDoor.y)<75){startFromShuttle();return}
  toastMsg('Nothing to interact with here.');
@@ -1724,7 +1725,7 @@ function enterMPWaitingRoom(){
  el('minimap').style.display='none';
  if(typeof shuttlePlayer!=='undefined'){
   shuttlePlayer.c=window.vcB3SavedColor?.()||M.roster.get(M.id)?.c||myColor();
-  if(!window.vcB3SpawnedForCode||window.vcB3SpawnedForCode!==M.code){const slot=[...M.roster.keys()].indexOf(M.id);const sp=vcB3Spawn(Math.max(0,slot));shuttlePlayer.x=sp.x;shuttlePlayer.y=sp.y;window.vcB3SpawnedForCode=M.code;}
+  if(!window.vcB3SpawnedForCode||window.vcB3SpawnedForCode!==M.code){const slot=[...M.roster.keys()].indexOf(M.id);const sp=vcB3Spawn(Math.max(0,slot));shuttlePlayer.x=sp.x;shuttlePlayer.y=sp.y;window.vcB3SpawnedForCode=M.code;if(M.host){const self=M.roster.get(M.id);if(self){self.shuttleX=sp.x;self.shuttleY=sp.y}}else send(M.hostConn,{type:'shuttleMove',x:sp.x,y:sp.y});}
  }
  if(window.vcB3RoomChanged)window.vcB3RoomChanged();
 }
@@ -1739,7 +1740,7 @@ function rosterView(){
 function emitRoster(){const data={type:'roster',code:M.code,players:[...M.roster].map(([id,p])=>({id,name:p.name,c:p.c,shuttleX:p.shuttleX,shuttleY:p.shuttleY,room:p.room}))};broadcast(data);rosterView()}
 function resetNetwork(){
  el('mpRoomEntryActions').style.display='flex';el('code').style.display='';
- if(window.mpWaitingRoom){window.mpWaitingRoom=false;el('lobby').classList.remove('mpWaitingLobby')}
+ if(window.mpWaitingRoom){window.mpWaitingRoom=false;window.vcB3SpawnedForCode=null;el('lobby').classList.remove('mpWaitingLobby')}
  if(M.peer){try{M.peer.destroy()}catch(e){}}
  M.peer=null;M.hostConn=null;M.conns.clear();M.roster.clear();M.active=false;M.started=false;M.meeting=null;M.gameEnded=false;M.botAI.clear();M.suspicions.clear();M.votes.clear();
  el('mpHud').style.display='none';el('mpMeeting').style.display='none';el('mpStart').style.display='none';el('mpShareCode').style.display='none';
@@ -2202,7 +2203,7 @@ requestAnimationFrame(tick);
 #mpHud.mpCompact button,#mpHud.mpCompact #mpTaskList{display:none}
 #mpHud.mpCompact{opacity:.82}
  .mpWaitingLobby{position:fixed!important;top:12px!important;right:12px!important;left:auto!important;transform:none!important;width:min(330px,40vw)!important;max-height:90vh;overflow:auto;z-index:300;background:#07141dea!important;padding:15px!important;border:2px solid #69b9d3!important;border-radius:16px!important}
- .mpWaitingLobby::after{content:'WASD: move around the shuttle • SPACE near the computer: change color';display:block;color:#b1e5ec;font-size:12px;margin-top:10px}
+ .mpWaitingLobby::after{content:'WASD: explore crew quarters • E / SPACE in your room: open locker';display:block;color:#b1e5ec;font-size:12px;margin-top:10px}
 #mpEjectScene{display:none;position:fixed;inset:0;z-index:95000;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;background:radial-gradient(ellipse at center,#11273f 0%,#030815 70%);color:#f0faff;font:20px Arial}
 #mpEjectScene::before{content:'✦    ·    ✧     ·      ✦      ·      ✧     ·     ✦';position:absolute;top:20%;left:0;width:100%;font-size:35px;letter-spacing:24px;color:#d3f2ff88;animation:mpStarDrift 3.5s linear}
 #mpEjectAstronaut{position:relative;width:92px;height:118px;background:var(--eject-color);border:5px solid #243b52;border-radius:42px 42px 30px 30px;box-shadow:inset -14px -10px #0004,0 0 25px #ffffff44;transform:translateX(-120vw) rotate(-90deg)}
@@ -2251,12 +2252,12 @@ document.addEventListener('DOMContentLoaded',()=>{const hud=document.getElementB
 (function(){
 'use strict';
 const KEY='voidcrew.crewquarters.v1';
-const colors=['#ff5964','#ffd75a','#7cf29a','#bf78ff','#ff9f50','#f66fe1','#eeeeee','#60aaff','#b9ff60'];
+const colors=['#55d7ff','#ff5964','#ffd75a','#7cf29a','#bf78ff','#ff9f50','#f66fe1','#eeeeee'];
 const rewards=[{id:'dum',name:'DUM Visor Sticker',need:15,stat:'tasks',kind:'hat',emoji:'🟨'},{id:'robot',name:'Mini Robot',need:20,stat:'tasks',kind:'pet',emoji:'🤖'},{id:'crown',name:'Golden Crown',need:3,stat:'wins',kind:'hat',emoji:'👑'},{id:'alien',name:'Alien Buddy',need:60,stat:'tasks',kind:'pet',emoji:'👽'},{id:'star',name:'Star Helm',need:100,stat:'tasks',kind:'hat',emoji:'🌟'},{id:'dragon',name:'Tiny Dragon',need:10,stat:'wins',kind:'pet',emoji:'🐉'}];
 const furniture={bed:'🛏️',plant:'🪴',trophy:'🏆',lamp:'💡',console:'🕹️',star:'🌟'};
 const decorUnlocks={bed:null,plant:{tasks:5},trophy:{wins:1},lamp:{tasks:12},console:{tasks:30},star:{wins:5}};
 const decorAvailable=type=>!decorUnlocks[type]||Object.entries(decorUnlocks[type]).every(([k,v])=>state[k]>=v);
-const defaults=()=>({tasks:0,wins:0,claimed:[],color:colors[3],pet:'none',hat:'none',theme:'violet',furniture:[{id:'bed-1',type:'bed',x:14,y:55}],version:1});
+const defaults=()=>({tasks:0,wins:0,claimed:[],color:colors[4],pet:'none',hat:'none',theme:'violet',furniture:[{id:'bed-1',type:'bed',x:14,y:55}],version:1});
 let state=defaults(),prevView=null,wonMatch=false;
 try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(raw&&typeof raw==='object'){state={...defaults(),...raw};state.tasks=Math.max(0,Math.floor(Number(state.tasks)||0));state.wins=Math.max(0,Math.floor(Number(state.wins)||0));state.claimed=Array.isArray(state.claimed)?state.claimed.filter(x=>typeof x==='string'):[];state.furniture=Array.isArray(state.furniture)?state.furniture.slice(0,24).filter(f=>f&&furniture[f.type]&&Number.isFinite(f.x)&&Number.isFinite(f.y)):defaults().furniture;}}
 catch(e){}
@@ -2290,6 +2291,7 @@ function renderIfOpen(){claimEarned();if($('vcLocker').style.display==='block')r
 window.vcB2State=()=>({tasks:state.tasks,wins:state.wins,claimed:[...state.claimed],color:state.color,pet:state.pet,hat:state.hat,theme:state.theme,furniture:state.furniture.map(f=>({...f}))});
 window.vcB3RoomData=()=>({theme:state.theme,furniture:state.furniture.map(f=>({type:f.type,x:f.x,y:f.y})),hat:state.hat,pet:state.pet});
 window.vcB3SavedColor=()=>state.color;
+window.addEventListener('load',()=>{if(window.vcB2ApplyColor)window.vcB2ApplyColor(state.color)});
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('vcLocker').style.display==='block')window.closeVCLocker()});
 })();
 </script></body></html>
