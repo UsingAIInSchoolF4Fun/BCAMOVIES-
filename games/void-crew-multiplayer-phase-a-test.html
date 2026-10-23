@@ -1854,10 +1854,10 @@ function hostAction(id,action){
   broadcastSnapshot();
   checkMPWin();
  }else if(action==='report'){
-  const b=bodies.find(b=>dist(b,p)<95);if(b)startMPMeeting(p.name+' reported '+b.name+'!');
+  const b=bodies.find(b=>dist(b,p)<145);if(b){if(!startMPMeeting(p.name+' reported '+b.name+'!')&&id===M.id)toastMsg('Meeting cooldown — report again shortly.')}else if(id===M.id)toastMsg('No body close enough to report.');
  }else if(action==='meeting'){
   const cafe=rooms.find(r=>r.n==='Cafeteria'),button={x:cafe.x+cafe.w/2,y:cafe.y+120};
-  if(dist(p,button)<78&&now-(M.cooldowns.get('meeting')||0)>60000){M.cooldowns.set('meeting',now);startMPMeeting(p.name+' called an emergency meeting!')}
+  if(dist(p,button)<125&&now-(M.cooldowns.get('meeting')||0)>60000){if(startMPMeeting(p.name+' called an emergency meeting!'))M.cooldowns.set('meeting',now)}else if(id===M.id)toastMsg('Move closer to the emergency table or wait for cooldown.');
  }else if(typeof action==='string'&&action.startsWith('sabotage:')){
   if(p.role!=='INFILTRATOR'||M.sabotage||now<(M.cooldowns.get('sabotage')||0))return;
   const type=action.split(':')[1];if(!['LIGHTS','DOORS','REACTOR','OXYGEN'].includes(type))return;
@@ -1893,10 +1893,11 @@ function showMPEnd(text){
  const p=el('mpEndScreen');setTimeout(()=>p.style.display='flex',el('mpEjectScene').style.display==='flex'?3500:0);el('mpEndTitle').textContent=/CREW won/i.test(text)?'CREW VICTORY':'INFILTRATOR VICTORY';el('mpEndTitle').style.color=/CREW won/i.test(text)?'#80ffb1':'#ff8190';el('mpEndText').textContent=text;
 }
 function startMPMeeting(reason){
- if(M.meeting||!M.active||Date.now()<(M.nextMeetingAllowed||0))return;
+ if(M.meeting||!M.active||Date.now()<(M.nextMeetingAllowed||0))return false;
  M.nextMeetingAllowed=Date.now()+45000;
  M.meeting=reason;M.meetingEnd=Date.now()+35000;M.votes.clear();showMeeting(reason,M.meetingEnd);broadcast({type:'meeting',reason,endsAt:M.meetingEnd});
  setTimeout(()=>{if(!M.meeting)return;const speakers=bots.filter(b=>b.alive).sort(()=>Math.random()-.5).slice(0,3);speakers.forEach((b,i)=>setTimeout(()=>{if(!M.meeting)return;const suspect=M.suspicions.get(b.id);const line=suspect?'I saw '+(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name+' near a kill!':'I was doing tasks. Anyone see anything?';appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})},i*2800));},2000);
+ return true;
 }
 function showMeeting(reason,endsAt){
  M.meeting=reason;if(endsAt)M.meetingEnd=endsAt;
@@ -1954,13 +1955,14 @@ window.chooseSabotageV110=function(type){if(M.active){document.getElementById('s
 const mpSoloKeyHandler=e=>{if(!M.active||M.meeting||typingInUI()||e.repeat)return;const k=e.key.toLowerCase();if(k==='e'){e.preventDefault();window.mpAction('task')}else if(k==='r'){e.preventDefault();window.mpAction('report')}else if(k==='v'){e.preventDefault();window.mpAction('vent')}else if(k==='q'){e.preventDefault();window.openSabotage()}else if(e.code==='Space'){e.preventDefault();if(role==='INFILTRATOR')window.mpAction('kill');else window.mpAction('task')}else if(k==='c'){toggleCams()}};
 window.addEventListener('keydown',mpSoloKeyHandler);
 window.mpAction=function(action){
- if(!M.active||M.meeting||(!player?.alive&&!playerGhost))return;
+ if(!M.active||M.meeting||!player?.alive)return;
+ if(action==='report'&&!bodies.some(b=>dist(b,player)<145)){toastMsg('Move closer to a body to report it.');return;}
  if(action==='task'&&M.sabotage&&role==='CREW'){
   const station=V10_SAB_STATIONS[M.sabotage.type];if(station&&dist(player,station)<85){openSabotageFix(station);return}
  }
  if(action==='task'){
   const cafe=rooms.find(r=>r.n==='Cafeteria'),btn={x:cafe.x+cafe.w/2,y:cafe.y+120};
-  if(dist(player,btn)<78)action='meeting';
+  if(dist(player,btn)<125)action='meeting';
   else if(role==='CREW'||playerGhost){const t=tasks.find(t=>!t.done&&dist(player,t)<78);if(t){openTask(t);return}toastMsg('Find a glowing task marker on the map.');return}
   else {toastMsg('Infiltrators can fake tasks.');return}
  }
@@ -1976,10 +1978,10 @@ addEventListener('keydown',e=>{
   if(role==='INFILTRATOR'&&player&&player.alive){
     const nearTask=tasks.find(t=>!t.done&&dist(player,t)<78);
     const cafe=rooms.find(r=>r.n==='Cafeteria'),btn={x:cafe.x+cafe.w/2,y:cafe.y+120};
-    if(nearTask||dist(player,btn)<78)mpAction('task');
+    if(nearTask||dist(player,btn)<125)mpAction('task');
     else mpAction('kill');
   }else mpAction('task');
- }if(k==='r')mpAction('report');if(k==='k')mpAction('kill');if(k==='v')mpAction('vent');if(k==='q')openMPSabotage();
+ }if(k==='r'){e.preventDefault();mpAction('report');}if(k==='k')mpAction('kill');if(k==='v')mpAction('vent');if(k==='q')openMPSabotage();
 });
 
 window.openMPSabotage=function(){
@@ -2008,20 +2010,20 @@ window.v10RepairSabotage=function(){
  toastMsg('Repair controls activated');
 };
 function appendMPChat(name,text){
- const div=document.createElement('div');div.className='mpChatBubble';const strong=document.createElement('strong');strong.textContent=cleanName(name);div.append(strong,document.createTextNode('  '+String(text).slice(0,160)));
+ const div=document.createElement('div');div.className='mpChatBubble';div.style.margin='5px 0';div.style.padding='7px 10px';div.style.borderRadius='9px';div.style.background=name===ownName()?'#16475b':'#152b39';const strong=document.createElement('strong');strong.textContent=cleanName(name);div.append(strong,document.createTextNode('  '+String(text).slice(0,160)));
  el('mpChatLog').appendChild(div);el('mpChatLog').scrollTop=el('mpChatLog').scrollHeight;
 }
 function hostChat(id,text){
  if(!M.meeting||typeof text!=='string'||!text.trim())return;
- const now=Date.now();M.chatTimes=M.chatTimes||new Map();if(now-(M.chatTimes.get(id)||0)<2500)return;M.chatTimes.set(id,now);
+ const now=Date.now();M.chatTimes=M.chatTimes||new Map();if(now-(M.chatTimes.get(id)||0)<900){if(id===M.id)el('mpVoteStatus').textContent='Chat cooldown: wait a moment.';return;}M.chatTimes.set(id,now);
  const p=M.roster.get(id);if(!p||!p.alive)return;
  const safe=text.replace(/[<>]/g,'').trim().slice(0,160);
- appendMPChat(p.name,safe);broadcast({type:'chat',name:p.name,text:safe});
+ appendMPChat(p.name,safe);for(const [peerId,c] of M.conns)if(peerId!==id)send(c,{type:'chat',name:p.name,text:safe});
 }
 window.mpChat=function(){
  const input=el('mpChatInput'),value=input.value.trim();input.value='';
  if(!value||!M.meeting||!player?.alive)return;
- if(M.host)hostChat(M.id,value);else send(M.hostConn,{type:'chat',text:value});
+ if(M.host)hostChat(M.id,value);else{send(M.hostConn,{type:'chat',text:value});appendMPChat(ownName(),value);}
 };
 el('mpChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();mpChat()}});
 
@@ -2040,7 +2042,7 @@ function tick(t){
     let brain=M.botAI.get(b.id);if(!brain||!brain.target||brain.until<t||M.sabotage&&brain.target!==V10_SAB_STATIONS[M.sabotage.type]&&!b.evil){const goal=M.sabotage&&!b.evil?V10_SAB_STATIONS[M.sabotage.type]:TASK_POOL[Math.floor(Math.random()*TASK_POOL.length)];brain={target:goal,until:t+6000+Math.random()*4000,work:0};M.botAI.set(b.id,brain)}
     const distance=dist(b,brain.target);if(distance<50){b.working=true;brain.work+=dt;if(brain.work>9){if(M.sabotage&&!b.evil&&brain.target===V10_SAB_STATIONS[M.sabotage.type]){/* Multiplayer bots cannot automatically repair sabotage. */}else if(!b.evil&&M.taskDone<M.taskGoal){M.taskDone++;b.working=false;if(M.taskDone>=M.taskGoal)finishGame('CREW won — tasks completed')}brain.until=0;brain.work=0}continue}else b.working=false;
     botGo(b,brain.target,dt,95);
-    if(b.evil){const targets=[...M.roster.values(),...bots].filter(q=>q.alive&&q!==b&&q.role!=='INFILTRATOR'&&!q.evil);const v=targets.sort((a,c)=>dist(a,b)-dist(c,b))[0];if(v){const dd=Math.max(1,dist(v,b));if(dd>62)botGo(b,v,dt,112);if(dd<62&&t>(M.cooldowns.get(b.id)||0)){if(!brain.killWindup||brain.killTarget!==v.id){brain.killWindup=t+1800;brain.killTarget=v.id;}if(t<brain.killWindup)continue;brain.killWindup=0;v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true;toastMsg('YOU DIED — finish your tasks as a ghost.');}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});killAnim={x:v.x,y:v.y,t:.42,c:v.c};recordWitnesses(b,v);M.cooldowns.set(b.id,t+15000);broadcastSnapshot();checkMPWin()}}}
+    if(b.evil){const targets=[...M.roster.values(),...bots].filter(q=>q.alive&&q!==b&&q.role!=='INFILTRATOR'&&!q.evil);const v=targets.sort((a,c)=>dist(a,b)-dist(c,b))[0];if(v){const dd=Math.max(1,dist(v,b));if(dd>62&&dd<330)botGo(b,v,dt,95);if(dd<62&&t>(M.cooldowns.get(b.id)||0)){if(!brain.killWindup||brain.killTarget!==v.id){brain.killWindup=t+1800;brain.killTarget=v.id;}if(t<brain.killWindup)continue;brain.killWindup=0;v.alive=false;if(v.id===M.id){player.alive=false;playerGhost=true;toastMsg('YOU DIED — finish your tasks as a ghost.');}bodies.push({x:v.x,y:v.y,c:v.c,name:v.name});killAnim={x:v.x,y:v.y,t:.42,c:v.c};recordWitnesses(b,v);M.cooldowns.set(b.id,t+25000);brain.until=0;broadcastSnapshot();checkMPWin()}}}
     // Living crew bots notice nearby bodies and report them after approaching.
     if(!b.evil&&!M.meeting){const body=bodies.find(body=>dist(b,body)<135);if(body){brain.reportSince=brain.reportSince||t;if(t-brain.reportSince>3200&&Date.now()>=(M.nextMeetingAllowed||0)){startMPMeeting(b.name+' reported '+body.name+'!');break}}else brain.reportSince=0;}
     // botGo uses the existing room/corridor pathfinding.
