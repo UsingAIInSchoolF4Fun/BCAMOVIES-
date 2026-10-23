@@ -265,21 +265,49 @@ kbd{background:#222f43;padding:2px 6px;border-radius:4px}
 @media(max-width:1100px){#buttons{right:20px!important;bottom:245px!important}}
 #minimap:not(.expanded){width:min(285px,25vw)!important;height:185px!important;right:12px!important;bottom:12px!important;opacity:.83!important}#minimap.expanded{z-index:95!important}
 </style>
-<!-- Multiplayer beta accessible by link; private rooms require invite code. --></head>
+<!-- Multiplayer beta accessible by link; private rooms require invite code. --><style id="vcB3MenuPolish">
+#menu.vcMainMenu{width:min(640px,94vw);max-height:95vh;overflow:auto;padding:27px 32px 23px;border:1px solid #b680ffb5;border-radius:26px;background:radial-gradient(circle at 95% 0%,#52238299,transparent 43%),linear-gradient(150deg,#14102af5,#111a35f4 75%,#100b22f5);box-shadow:0 30px 110px #000b,0 0 65px #ac56ff40,inset 0 1px #ffffff25;text-align:left;animation:vcMenuIn .6s cubic-bezier(.2,.8,.2,1) both}
+#menu.vcMainMenu .vcMenuEyebrow{text-align:center;color:#7ef3ff;font-size:11px;letter-spacing:.27em;font-weight:900;text-shadow:0 0 13px #55ddff}
+#menu.vcMainMenu .logo{text-align:center;font-size:clamp(43px,8vw,74px);line-height:1.1;margin:7px 0 0;background:linear-gradient(110deg,#fff,#c997ff 42%,#85f6ff 78%,#fff);background-size:220%;background-clip:text;-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 0 14px #ba73ff77);animation:vcTitleShine 7s linear infinite}
+#menu.vcMainMenu .logo span{color:inherit}
+#menu.vcMainMenu .vcMenuTagline{text-align:center;color:#c6b9e4;letter-spacing:.17em;font-size:11px;font-weight:750;margin:4px 0 18px}
+#menu.vcMainMenu .vcMenuPreview{height:93px;position:relative;display:flex;align-items:center;gap:18px;padding:15px 22px;margin-bottom:18px;border:1px solid #8e70cb77;border-radius:16px;overflow:hidden;background:linear-gradient(110deg,#341b63,#182e53,#321750);box-shadow:inset 0 0 28px #9b63ff26}
+#menu.vcMainMenu .vcMenuPreview:after{content:'';position:absolute;inset:-100% -40%;background:linear-gradient(100deg,transparent 42%,#ffffff12 50%,transparent 58%);transform:rotate(12deg);animation:vcSweep 6s linear infinite;pointer-events:none}
+#menu.vcMainMenu .vcMenuCrew{width:57px;height:57px;flex:none;border:5px solid #152a38;border-radius:45% 45% 39% 39%;background:linear-gradient(140deg,#83fbff,#2392d5);box-shadow:0 0 24px #42dfff77;color:#e3ffff;font-size:40px;text-align:center;line-height:42px;animation:vcFloatMenu 3s ease-in-out infinite}
+#menu.vcMainMenu .vcMenuOrbit{position:absolute;right:35px;top:12px;color:#ffb2eb;font-size:22px;animation:vcTwinkle 2s infinite}
+#menu.vcMainMenu .vcMenuPreviewText{display:flex;flex-direction:column;gap:7px;min-width:0}#menu.vcMainMenu .vcMenuPreviewText strong{font-size:16px;letter-spacing:.11em}#menu.vcMainMenu .vcMenuPreviewText small{color:#b8cce9;font-size:11px}
+#menu.vcMainMenu .vcMenuActions{display:grid;gap:10px}
+#menu.vcMainMenu .vcMenuAction{width:100%;display:grid;grid-template-columns:46px 1fr 20px;gap:12px;align-items:center;text-align:left;padding:13px 15px;border-radius:14px;border:1px solid #ffffff50;color:#fff;background:linear-gradient(100deg,#3c2566,#50348b);box-shadow:inset 0 1px #ffffff28,0 7px 20px #0003;transition:transform .2s,filter .2s,box-shadow .2s}
+#menu.vcMainMenu .vcMenuAction:hover{transform:translateY(-3px) scale(1.015);filter:brightness(1.17);box-shadow:0 10px 28px #ac64ff66}
+#menu.vcMainMenu .vcMenuPrimary{background:linear-gradient(105deg,#6933ae,#9744d0,#8c3eaa);border-color:#d59bff}
+#menu.vcMainMenu .vcMenuSolo{background:linear-gradient(105deg,#124c74,#167b9c,#2d66a6);border-color:#5ce5ff}
+#menu.vcMainMenu .vcMenuLocker{background:linear-gradient(105deg,#753061,#a63e84,#88398b);border-color:#ff98db}
+#menu.vcMainMenu .vcMenuActionIcon{font-size:28px;text-align:center;filter:drop-shadow(0 0 10px #fff7)}
+#menu.vcMainMenu .vcMenuAction strong{display:block;letter-spacing:.075em;font-size:15px}#menu.vcMainMenu .vcMenuAction small{display:block;font-weight:500;color:#f0e5ffcc;margin-top:5px;font-size:11px}
+#menu.vcMainMenu .vcMenuArrow{font-size:30px;font-weight:400;opacity:.8}
+#menu.vcMainMenu .vcMenuFooter{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:17px;color:#a9a2c7;font-size:10px;letter-spacing:.04em}
+#menu.vcMainMenu .vcMenuFooter button{background:#ffffff0b;border:1px solid #8d79ad;border-radius:10px;padding:8px 11px;color:#e3d9f6;font-size:11px}
+@keyframes vcMenuIn{from{opacity:0;transform:translate(-50%,-45%) scale(.95)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}@keyframes vcTitleShine{to{background-position:220%}}@keyframes vcSweep{to{transform:translateX(100%) rotate(12deg)}}@keyframes vcFloatMenu{50%{transform:translateY(-6px)}}@keyframes vcTwinkle{50%{opacity:.3;transform:scale(.75)}}
+@media(max-width:560px){#menu.vcMainMenu{padding:17px}#menu.vcMainMenu .vcMenuPreview{padding:12px;height:78px}#menu.vcMainMenu .vcMenuAction{padding:10px}#menu.vcMainMenu .vcMenuFooter{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){#menu.vcMainMenu,#menu.vcMainMenu *{animation:none!important;transition:none!important}}
+</style></head>
 <body>
 <canvas id="c"></canvas>
 <div id="menuSpace"><div id="stars"></div><div class="menuShip"><div style="position:absolute;right:210px;top:45px;width:150px;height:3px;background:linear-gradient(90deg,transparent,rgba(85,190,255,.65));filter:blur(2px)"></div><div class="menuWing"></div><div class="menuShipBody"></div><div class="menuEngine"></div></div></div><div id="shuttleHud" style="display:none;position:fixed;inset:0;z-index:25;pointer-events:none;color:white;font-family:Arial">
  <div style="position:absolute;left:22px;top:20px;background:#071018dd;border:1px solid #4f6b79;border-radius:10px;padding:10px 14px"><b>TRANSFER SHUTTLE</b><br><small>WASD to move • E/SPACE to interact</small></div>
  <button id="shuttleStartBtn" class="btn green" onclick="startFromShuttle()" style="pointer-events:auto;position:absolute;right:25px;bottom:25px">START MISSION</button>
 </div><div id="ui">
- <div id="menu" class="panel">
-  <div class="logo">VOID<br>CREW</div>
-  <div class="sub">ONLINE MULTIPLAYER BETA • PRIVATE ROOMS • UP TO 10 PLAYERS</div>
-  <div style="height:1px;background:linear-gradient(90deg,transparent,#60798f,transparent);margin:0 0 18px"></div><div class="menurow">
-   <button class="btn green" onclick="enterShuttle()">PLAY SOLO + BOTS</button>
-   <button class="btn" onclick="openLobby()">MULTIPLAYER LOBBY</button><button class="btn" onclick="openVCLocker()">LOCKER + QUARTERS</button><button class="btn" onclick="openSettings()">SETTINGS</button>
+ <div id="menu" class="panel vcMainMenu">
+  <div class="vcMenuEyebrow">✦ CREW QUARTERS UPDATE ✦</div>
+  <div class="logo">VOID <span>CREW</span></div>
+  <div class="vcMenuTagline">YOUR SHIP. YOUR CREW. YOUR LEGACY.</div>
+  <div class="vcMenuPreview"><div class="vcMenuOrbit">✦</div><div class="vcMenuCrew">◕</div><div class="vcMenuPreviewText"><strong>WELCOME ABOARD</strong><small>Explore rooms • unlock cosmetics • survive together</small></div></div>
+  <div class="vcMenuActions">
+   <button class="vcMenuAction vcMenuPrimary" onclick="openLobby()"><span class="vcMenuActionIcon">🚀</span><span><strong>MULTIPLAYER</strong><small>Create or join a private crew lobby</small></span><span class="vcMenuArrow">›</span></button>
+   <button class="vcMenuAction vcMenuSolo" onclick="enterShuttle()"><span class="vcMenuActionIcon">⚡</span><span><strong>SOLO PRACTICE</strong><small>Play with bots, learn the ship</small></span><span class="vcMenuArrow">›</span></button>
+   <button class="vcMenuAction vcMenuLocker" onclick="openVCLocker()"><span class="vcMenuActionIcon">🎨</span><span><strong>MY LOCKER + ROOM</strong><small>Colors, pets, decorations and rewards</small></span><span class="vcMenuArrow">›</span></button>
   </div>
-  <div class="small">WASD / Arrow Keys to move • SPACE for tasks • R to report • SPACE eliminates when infiltrator<br>Online transport is scaffolded for a later relay/server connection.</div>
+  <div class="vcMenuFooter"><span>WASD TO MOVE · E / SPACE TO INTERACT</span><button onclick="openSettings()">⚙ SETTINGS</button></div>
  </div>
  <div id="lobby" class="panel">
 <h2>VOID CREW • PRIVATE ONLINE ROOM</h2>
@@ -344,9 +372,9 @@ const rooms=[
 ], world={w:2320,h:1480};
 function openLobby(){menuEl.style.display='none';lobbyEl.style.display='block';minimapEl.style.display='none';pingEl.style.display='none'} function backMenu(){let ctb=document.getElementById('crewTaskBar');if(ctb)ctb.style.display='none';let ka=document.getElementById('killerActions');if(ka)ka.style.display='none';lobbyEl.style.display='none';menuEl.style.setProperty('display','block','important');menuEl.style.visibility='visible';menuEl.style.pointerEvents='auto';minimapEl.style.display='none';pingEl.style.display='none';document.getElementById('menuSpace').style.display='block'}
 function openCustom(){menu.style.display='none';custom.style.display='block';swatches.innerHTML=colors.map((c,i)=>'<button class="swatch" aria-label="color '+(i+1)+'" style="background:'+c+'" onclick="pickColor('+i+')"></button>').join('')}
-window.vcB2ApplyColor=function(c){if(/^#[0-9a-f]{6}$/i.test(c)){selectedColor=c;if(player)player.c=c;if(typeof shuttlePlayer!=='undefined')shuttlePlayer.c=c;if(typeof window.mpSetColor==='function')window.mpSetColor(c)}};
-function pickColor(i){selectedColor=colors[i];if(window.mpWaitingRoom){if(typeof window.mpSetColor==='function')window.mpSetColor(selectedColor);if(typeof shuttlePlayer!=='undefined')shuttlePlayer.c=selectedColor}[...swatches.children].forEach((e,j)=>e.style.outline=j===i?'4px solid white':'none');tone(520,.05)}
-function closeCustom(){custom.style.display='none';if(state==='shuttle'){menu.style.display='none';shuttlePlayer.c=selectedColor;document.getElementById('shuttleHud').style.display='block'}else menu.style.display='block'}
+window.vcB2ApplyColor=function(c){if(/^#[0-9a-f]{6}$/i.test(c)){selectedColor=c;if(player)player.c=c;if(typeof shuttlePlayer!=='undefined'&&shuttlePlayer)shuttlePlayer.c=c;if(typeof window.mpSetColor==='function')window.mpSetColor(c)}};
+function pickColor(i){selectedColor=colors[i];if(window.mpWaitingRoom){if(typeof window.mpSetColor==='function')window.mpSetColor(selectedColor);if(typeof shuttlePlayer!=='undefined'&&shuttlePlayer)shuttlePlayer.c=selectedColor}[...swatches.children].forEach((e,j)=>e.style.outline=j===i?'4px solid white':'none');tone(520,.05)}
+function closeCustom(){custom.style.display='none';if(state==='shuttle'){menu.style.display='none';if(shuttlePlayer)shuttlePlayer.c=selectedColor;document.getElementById('shuttleHud').style.display='block'}else menu.style.display='block'}
 function openSettings(){menu.style.display='none';settings.style.display='block'}function closeSettings(){moveSpeed=+speedRange.value;settings.style.display='none';menu.style.display='block'}
 let sharedAudioContext=null;function tone(freq=300,d=.08){if(!soundOn?.checked)return;try{let A=sharedAudioContext||(sharedAudioContext=new (window.AudioContext||window.webkitAudioContext)()),o=A.createOscillator(),g=A.createGain();if(A.state==='suspended')A.resume();o.frequency.value=freq;o.type='sine';g.gain.setValueAtTime(.05,A.currentTime);g.gain.exponentialRampToValueAtTime(.001,A.currentTime+d);o.connect(g);g.connect(A.destination);o.start();o.stop(A.currentTime+d)}catch(e){}}
 function sendChat(){let v=chatinput.value.trim();if(!v)return;chatlog.innerHTML+='<div><b>'+player.name+':</b> '+v.replace(/[<>]/g,'')+'</div>';chatinput.value='';chatlog.scrollTop=chatlog.scrollHeight}
@@ -500,7 +528,7 @@ function shuttleInteract(){
  toastMsg('Nothing to interact with here.');
 }
 function openShuttleCustom(){openCustom();document.getElementById('shuttleHud').style.display='none'}
-function returnToShuttle(){custom.style.display='none';menu.style.display='none';state='shuttle';shuttlePlayer.c=selectedColor;document.getElementById('shuttleHud').style.display='block'}
+function returnToShuttle(){custom.style.display='none';menu.style.display='none';state='shuttle';if(shuttlePlayer)shuttlePlayer.c=selectedColor;document.getElementById('shuttleHud').style.display='block'}
 function startFromShuttle(){if(state!=='shuttle')return;document.getElementById('shuttleHud').style.display='none';quickPlay()}
 function drawShuttle(){
  x.clearRect(0,0,W,H);const sc=Math.min(W/980,H/620),ox=(W-980*sc)/2,oy=(H-620*sc)/2;
