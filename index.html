@@ -1371,23 +1371,48 @@ setWelcomeMode=function(mode){
 })();
 </script>
 <script>
-/* Style movie poster tiles inside the same-origin movie library iframe. */
+/* Movie library lives in a same-origin iframe; style its actual poster tiles after rendering. */
 (function(){
  const frame=document.getElementById('movies');if(!frame)return;
+ let observer=null,queued=false;
  function decorate(){
   let doc;try{doc=frame.contentDocument;if(!doc||!doc.body)return}catch(e){return}
   if(!doc.getElementById('bcaPosterNeonStyle')){
    const style=doc.createElement('style');style.id='bcaPosterNeonStyle';
-   style.textContent='@property --bcaPosterAngle{syntax:"<angle>";initial-value:0deg;inherits:false}@keyframes bcaPosterSpin{to{--bcaPosterAngle:360deg}}.bca-neon-movie-tile{border:2px solid transparent!important;border-radius:13px!important;background:linear-gradient(#130d20,#130d20) padding-box,conic-gradient(from var(--bcaPosterAngle),#a855f7,#22d3ee,#d946ef,#7c3aed,#a855f7) border-box!important;animation:bcaPosterSpin 7s linear infinite!important;box-shadow:0 0 13px #a855f755!important;overflow:hidden;transition:transform .2s ease!important}.bca-neon-movie-tile:hover{transform:translateY(-3px);box-shadow:0 0 25px #a855f799!important}@media(prefers-reduced-motion:reduce){.bca-neon-movie-tile{animation:none!important}}';
+   style.textContent=`
+@property --bcaPosterAngle{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes bcaPosterSpin{to{--bcaPosterAngle:360deg}}
+.bca-neon-movie-tile{position:relative!important;border:3px solid transparent!important;border-radius:14px!important;background:linear-gradient(#140d24,#140d24) padding-box,conic-gradient(from var(--bcaPosterAngle),#a855f7,#22d3ee,#ec4899,#7c3aed,#a855f7) border-box!important;animation:bcaPosterSpin 5s linear infinite!important;box-shadow:0 0 12px #a855f777,0 0 22px #7c3aed44!important;overflow:hidden!important;transform:scale(.94);transform-origin:center top;transition:box-shadow .2s ease!important}
+.bca-neon-movie-tile:hover{box-shadow:0 0 24px #a855f7bb!important}
+.bca-neon-movie-tile img{max-width:100%;display:block}
+@media(prefers-reduced-motion:reduce){.bca-neon-movie-tile{animation:none!important}}
+`;
    doc.head.appendChild(style);
   }
-  const known=doc.querySelectorAll('.movie-card,.movieCard,.movie-tile,.movie-item,.film-card,.poster-card,.movie-poster-card');
-  if(known.length){known.forEach(el=>el.classList.add('bca-neon-movie-tile'));return}
-  /* Fallback for custom movie markup: only card containers with poster-like images. */
-  doc.querySelectorAll('img').forEach(img=>{const card=img.closest('article,[class*=movie],[class*=poster],[class*=film]');if(card&&card!==doc.body&&card.querySelector('img')&&card.getBoundingClientRect().width<400)card.classList.add('bca-neon-movie-tile')});
+  const known=doc.querySelectorAll('.movie-card,.movieCard,.movie-tile,.movie-item,.film-card,.poster-card,.movie-poster-card,.movie-box,.movie,.card,.poster');
+  let count=0;
+  known.forEach(el=>{if(el.querySelector('img')&&el.getBoundingClientRect().width>55&&el.getBoundingClientRect().width<430){el.classList.add('bca-neon-movie-tile');count++}});
+  if(!count){
+   doc.querySelectorAll('img').forEach(img=>{
+    const r=img.getBoundingClientRect();if(r.width<65||r.width>400||r.height<75)return;
+    let el=img.parentElement;
+    for(let n=0;n<3&&el&&el!==doc.body;n++,el=el.parentElement){
+     const box=el.getBoundingClientRect();
+     if(box.width>=r.width&&box.width<=Math.max(430,r.width*1.45)&&box.height>=r.height&&box.height<=r.height+155){
+      el.classList.add('bca-neon-movie-tile');break;
+     }
+    }
+   });
+  }
  }
- frame.addEventListener('load',()=>{decorate();setTimeout(decorate,700);setTimeout(decorate,2500)});
- if(frame.contentDocument?.readyState==='complete')decorate();
+ function schedule(){if(queued)return;queued=true;setTimeout(()=>{queued=false;decorate()},200)}
+ function init(){
+  if(observer)observer.disconnect();
+  decorate();
+  try{const doc=frame.contentDocument;if(doc?.body){observer=new MutationObserver(schedule);observer.observe(doc.body,{childList:true,subtree:true})}}catch(e){}
+  setTimeout(decorate,900);setTimeout(decorate,2500);
+ }
+ frame.addEventListener('load',init);if(frame.contentDocument?.readyState==='complete')init();
 })();
 </script>
 </body></html>
