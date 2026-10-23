@@ -1949,7 +1949,7 @@ function showMeeting(reason,endsAt){
   const isBot=String(p.id||'').startsWith('bot');
   card.innerHTML='<i class="mpVoteDot" style="background:'+(p.c||'#69d7e8')+'"></i><span class="mpVoteMeta"><b></b><span></span></span>';
   card.querySelector('b').textContent=p.name||'Unknown';
-  card.querySelector('span').textContent=isBot?'Bot':'Player';
+  card.querySelector('.mpVoteMeta span').textContent=isBot?'Crewmate':'Player';
   card.onclick=()=>selectMPVote(card.dataset.voteId);
   if(!(player&&player.alive)){card.disabled=true;card.style.opacity='.45';card.style.cursor='default'}
   root.appendChild(card);
