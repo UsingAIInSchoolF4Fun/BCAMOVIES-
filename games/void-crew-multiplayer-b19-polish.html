@@ -2925,6 +2925,25 @@ else{ctx.fillStyle="#aaf";ctx.beginPath();ctx.arc(0,-8,12,0,7);ctx.fill()}
 ctx.restore();
 }
 window.vcB19HatArt=b19DrawHat;
+// Keep actionable error details visible if a browser or PeerJS crashes.
+(function(){
+ let lastError='',lastAt=0;
+ function report(message){
+  const msg=String(message||'Unknown error').slice(0,400),now=Date.now();
+  if(now-lastAt<2500&&msg===lastError)return;lastAt=now;lastError=msg;
+  console.error('[VOID CREW]',msg);
+  let panel=document.getElementById('vcRuntimeError');
+  if(!panel){panel=document.createElement('div');panel.id='vcRuntimeError';panel.style.cssText='position:fixed;left:12px;bottom:12px;z-index:999999;max-width:min(520px,90vw);background:#1d1020;color:#ffe8e8;border:1px solid #f2789b;border-radius:12px;padding:12px;font:12px system-ui;box-shadow:0 6px 24px #0009';document.body.appendChild(panel)}
+  panel.replaceChildren();
+  const label=document.createElement('div');label.textContent='VOID CREW ERROR · '+msg;panel.appendChild(label);
+  const button=document.createElement('button');button.textContent='COPY ERROR DETAILS';button.style.cssText='margin:8px 8px 0 0;padding:6px;background:#f6c2d4;border:0;border-radius:5px;color:#281323;cursor:pointer';
+  button.onclick=()=>navigator.clipboard?.writeText('Void Crew v29 | '+msg+' | '+navigator.userAgent);panel.appendChild(button);
+  const close=document.createElement('button');close.textContent='DISMISS';close.style.cssText='padding:6px;border:1px solid #f6c2d4;background:transparent;border-radius:5px;color:white;cursor:pointer';close.onclick=()=>panel.remove();panel.appendChild(close);
+ }
+ window.addEventListener('error',e=>{report((e.message||'Script error')+' ('+(e.filename||'inline')+':'+(e.lineno||'?')+':'+(e.colno||'?')+')')});
+ window.addEventListener('unhandledrejection',e=>report('Promise rejection: '+(e.reason?.stack||e.reason?.message||String(e.reason))));
+})();
+
 function b19ShopOutfit(item){
  const cfg={color:'#7c9da9',hat:'none',pet:'none',suit:'none',visor:'none',accessory:'none',effect:'none',nameplate:'none'};
  if(item&&Object.prototype.hasOwnProperty.call(cfg,item.kind))cfg[item.kind]=item.id;
