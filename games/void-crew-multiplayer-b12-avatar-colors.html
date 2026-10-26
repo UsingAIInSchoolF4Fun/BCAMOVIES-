@@ -1493,8 +1493,9 @@ function drawCrewShape(p,alpha=1,ghost=false,me=false){x.save();x.globalAlpha=al
  // dimensional visor
  let vg=x.createLinearGradient(-5,-20,18,-4);vg.addColorStop(0,'#efffff');vg.addColorStop(.38,'#a5e9f3');vg.addColorStop(1,'#285565');x.fillStyle=vg;x.strokeStyle='#183943';x.lineWidth=2.5;x.beginPath();x.roundRect(-4,-19,25,14,7);x.fill();x.stroke();x.fillStyle='rgba(255,255,255,.75)';x.beginPath();x.roundRect(1,-16,9,3,2);x.fill();
  // Unlockable DUM sticky-note visor, inspired by the supplied green crewmate image.
- const equippedDum=(me||p===player)&&window.vcB2State?.().hat==='dum'||p.hat==='dum';
+ const equippedHat=p.hat||((me||p===player)?window.vcB2State?.().hat:null);const equippedDum=equippedHat==='dum';
  if(equippedDum){x.save();x.translate(5,-22);x.rotate(-.13);x.fillStyle='#f2cf56';x.strokeStyle='#9b7421';x.lineWidth=1;x.beginPath();x.moveTo(-14,-8);x.lineTo(20,-8);x.lineTo(24,12);x.lineTo(-13,11);x.closePath();x.fill();x.stroke();x.fillStyle='#423109';x.font='bold 12px Arial';x.textAlign='center';x.fillText('DUM',5,5);x.restore()}
+ if(equippedHat==='crown'||equippedHat==='star'){x.save();x.textAlign='center';x.font='bold 25px Arial';x.fillText(equippedHat==='crown'?'👑':'🌟',0,-26);x.restore()}
  // chest utility light
  x.fillStyle='#0d171c';x.beginPath();x.roundRect(7,5,8,10,3);x.fill();x.fillStyle='#70efae';x.beginPath();x.arc(11,9,2,0,7);x.fill();
  if(ghost){x.fillStyle=c;x.globalAlpha=alpha*.7;x.beginPath();x.moveTo(-19,10);x.quadraticCurveTo(-13,34,-3,20);x.quadraticCurveTo(6,36,18,12);x.lineTo(18,23);x.quadraticCurveTo(6,43,-4,30);x.quadraticCurveTo(-14,42,-20,23);x.closePath();x.fill();x.globalAlpha=alpha}
@@ -1504,7 +1505,8 @@ window.vcB12DrawPreview=function(config){
  const prev=x;x=pc;pc.save();pc.translate(170,176);pc.scale(2.05,2.05);drawCrewShape({x:0,y:0,c:config.color,name:'',hat:config.hat,vx:0,vy:0},1,false,false);pc.restore();x=prev;
  const pet={robot:'🤖',alien:'👽',dragon:'🐉'}[config.pet];if(pet){pc.font='64px Arial';pc.textAlign='center';pc.fillText(pet,267,252)}
 };
-function drawGuy(p,me=false){if(!p)return;if(p===player&&playerGhost){drawCrewShape(p,.46,true,true);return}if(!p.alive)return;drawCrewShape(p,1,false,me)}
+function vcDrawPet(p,me){const pet=p.pet||((me||p===player)?window.vcB2State?.().pet:null);const emoji={robot:'🤖',alien:'👽',dragon:'🐉'}[pet];if(!emoji)return;x.save();x.font='25px Arial';x.textAlign='center';x.shadowColor='#000';x.shadowBlur=6;x.fillText(emoji,p.x+29,p.y+19+Math.sin(performance.now()/450)*3);x.restore()}
+function drawGuy(p,me=false){if(!p)return;if(p===player&&playerGhost){drawCrewShape(p,.46,true,true);vcDrawPet(p,me);return}if(!p.alive)return;drawCrewShape(p,1,false,me);vcDrawPet(p,me)}
 function drawBody(b){x.save();x.translate(b.x,b.y);x.shadowColor='#000';x.shadowBlur=14;x.fillStyle='#10191e';x.beginPath();x.roundRect(-27,-7,13,17,5);x.fill();x.fillStyle=b.c;x.beginPath();x.ellipse(-5,2,23,13,-.12,0,7);x.fill();x.strokeStyle='rgba(255,255,255,.2)';x.lineWidth=2;x.stroke();x.fillStyle='#e5ece9';x.beginPath();x.roundRect(8,-16,8,20,3);x.fill();x.fillStyle='#bcc7c4';x.fillRect(11,-23,3,9);x.restore()}
 function toggleShipMap(){const el=document.getElementById('minimap');if(state==='game'&&!meeting)el.classList.toggle('expanded')}
 function drawMini(){
