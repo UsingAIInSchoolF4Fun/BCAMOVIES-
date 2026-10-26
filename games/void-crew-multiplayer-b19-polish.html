@@ -348,7 +348,7 @@ kbd{background:#222f43;padding:2px 6px;border-radius:4px}
   <div class="vcMenuActions"><button class="vcMenuAction vcMenuLocker" onclick="window.openVCShop?.()"><span class="vcMenuActionIcon"><svg width="29" height="29" viewBox="0 0 32 32" fill="none"><path d="M5 11h22l-2 16H7L5 11Z" stroke="#e9eaff" stroke-width="2.5"/><path d="M11 13V9a5 5 0 0 1 10 0v4" stroke="#8cefff" stroke-width="2.5"/><path d="m16 17 2 4-2 4-2-4 2-4Z" fill="#9bf4ff"/></svg></span><span><strong>COSMETIC SHOP</strong><small>Preview pets, hats and prices</small></span><span class="vcMenuArrow">›</span></button>
    <button class="vcMenuAction vcMenuPrimary" onclick="openLobby()"><span class="vcMenuActionIcon">◇</span><span><strong>MULTIPLAYER</strong><small>Create or join a private crew lobby</small></span><span class="vcMenuArrow">›</span></button>
    <button class="vcMenuAction vcMenuSolo" onclick="enterShuttle()"><span class="vcMenuActionIcon">✧</span><span><strong>SOLO PRACTICE</strong><small>Play with bots, learn the ship</small></span><span class="vcMenuArrow">›</span></button>
-   <button class="vcMenuAction vcMenuLocker" onclick="openVCLocker()"><span class="vcMenuActionIcon">▣</span><span><strong>MY LOCKER + ROOM</strong><small>Colors, pets, decorations and rewards</small></span><span class="vcMenuArrow">›</span></button>
+   <button class="vcMenuAction vcMenuLocker" onclick="openVCLocker()"><span class="vcMenuActionIcon">▣</span><span><strong>MY LOCKER</strong><small>Colors, cosmetics and rewards</small></span><span class="vcMenuArrow">›</span></button>
   </div>
   <div class="vcMenuFooter"><span>WASD TO MOVE · E / SPACE TO INTERACT</span></div>
  </div>
@@ -408,12 +408,12 @@ function resize(){W=c.width=innerWidth*devicePixelRatio;H=c.height=innerHeight*d
 const colors=['#55d7ff','#ff5964','#ffd75a','#7cf29a','#bf78ff','#ff9f50','#f66fe1','#eee'];
 let state='menu',keys={},player=null,bots=[],bodies=[],tasks=[],role='CREW',meeting=false,last=0,killCD=0,taskActive=null,doneOrder=0,selectedColor=colors[0],moveSpeed=145,sabotageTimer=0,camPos={x:0,y:0},particles=[],doors=[],vents=[],ghosts=[],sabotageType='',visionRadius=188,walkPhase=0,cameraMode=false,emergencyCD=0,screenShake=0,killAnim=null,ventAnim=null,taskBurst=0,taskMode='',wirePick=null,holdTimer=null,botTaskClock=0,gameZoom=1.36,roundAge=0,meetingLock=12,playerGhost=false,deathFreeze=0;
 const rooms=[
- {n:'Cafeteria',x:740,y:40,w:720,h:410},{n:'Reactor',x:35,y:480,w:360,h:360},{n:'Med Bay',x:445,y:440,w:350,h:280},
- {n:'Security',x:435,y:880,w:390,h:310},{n:'Electrical',x:35,y:1105,w:385,h:290},{n:'Storage',x:855,y:990,w:515,h:410},
- {n:'Admin',x:1460,y:470,w:405,h:325},{n:'Oxygen',x:1570,y:950,w:325,h:275},{n:'Shields',x:1925,y:1145,w:310,h:260},
- {n:'Navigation',x:1905,y:355,w:325,h:325}
+ {n:'Cafeteria',x:740,y:40,w:720,h:410},{n:'Reactor',x:35,y:480,w:360,h:360},{n:'Med Bay',x:445,y:490,w:350,h:280},
+ {n:'Security',x:455,y:900,w:390,h:310},{n:'Electrical',x:35,y:1155,w:365,h:290},{n:'Storage',x:915,y:1010,w:515,h:410},
+ {n:'Admin',x:1520,y:470,w:405,h:325},{n:'Oxygen',x:1570,y:950,w:325,h:275},{n:'Shields',x:1925,y:1145,w:310,h:260},
+ {n:'Navigation',x:1990,y:355,w:290,h:325}
 ], world={w:2320,h:1480};
-rooms.forEach(r=>{const cx=r.x+r.w/2,cy=r.y+r.h/2;r.w=Math.min(r.w*1.42,world.w-28);r.h=Math.min(r.h*1.40,world.h-28);r.x=Math.max(14,Math.min(world.w-r.w-14,cx-r.w/2));r.y=Math.max(14,Math.min(world.h-r.h-14,cy-r.h/2))});
+rooms.forEach(r=>{const cx=r.x+r.w/2,cy=r.y+r.h/2;r.w=Math.min(r.w,world.w-28);r.h=Math.min(r.h,world.h-28);r.x=Math.max(14,Math.min(world.w-r.w-14,cx-r.w/2));r.y=Math.max(14,Math.min(world.h-r.h-14,cy-r.h/2))});
 function openLobby(){menuEl.style.display='none';lobbyEl.style.display='block';minimapEl.style.display='none';pingEl.style.display='none'} function backMenu(){let ctb=document.getElementById('crewTaskBar');if(ctb)ctb.style.display='none';let ka=document.getElementById('killerActions');if(ka)ka.style.display='none';lobbyEl.style.display='none';menuEl.style.setProperty('display','block','important');menuEl.style.visibility='visible';menuEl.style.pointerEvents='auto';minimapEl.style.display='none';pingEl.style.display='none';document.getElementById('menuSpace').style.display='block'}
 function openCustom(){menu.style.display='none';custom.style.display='block';swatches.innerHTML=colors.map((c,i)=>'<button class="swatch" aria-label="color '+(i+1)+'" style="background:'+c+'" onclick="pickColor('+i+')"></button>').join('')}
 window.vcB2ApplyColor=function(c){if(/^#[0-9a-f]{6}$/i.test(c)){selectedColor=c;if(player)player.c=c;if(typeof shuttlePlayer!=='undefined'&&shuttlePlayer)shuttlePlayer.c=c;if(typeof window.mpSetColor==='function')window.mpSetColor(c)}};
@@ -468,7 +468,7 @@ function renderSecurity(){
  hallwayCurves().forEach(h=>{q.lineCap='round';q.strokeStyle='#0b1013';q.lineWidth=HALL_W+14;q.beginPath();q.moveTo(h.a.x,h.a.y);q.quadraticCurveTo(h.c.x,h.c.y,h.b.x,h.b.y);q.stroke();q.strokeStyle='#293a42';q.lineWidth=HALL_W;q.beginPath();q.moveTo(h.a.x,h.a.y);q.quadraticCurveTo(h.c.x,h.c.y,h.b.x,h.b.y);q.stroke()});
  rooms.forEach(r=>{q.fillStyle='#1c282e';q.strokeStyle='#526b76';q.lineWidth=4;q.beginPath();roomOutline(r,q);q.fill();q.stroke();q.fillStyle='#a9bec7';q.font='bold 12px Arial';q.fillText(r.n.toUpperCase(),r.x+18,r.y+28)});
  let old=x;x=q;
- rooms.forEach((r,i)=>{drawRoomIdentity(r,i);drawRoomPolish(r);vcDrawArchitecture(r)});drawPhysicalCameras();rooms.forEach(drawAmbient);
+ rooms.forEach((r,i)=>{drawRoomIdentity(r,i);drawRoomPolish(r);vcDrawArchitecture(r);vcDrawArchitecture(r)});drawPhysicalCameras();rooms.forEach(drawAmbient);
  tasks.filter(t=>!t.done&&Math.hypot(t.x-cam.x,t.y-cam.y)<360).forEach(t=>{x.fillStyle='#ffd84f';x.beginPath();x.arc(t.x,t.y,9,0,7);x.fill()});
  bodies.filter(b=>Math.hypot(b.x-cam.x,b.y-cam.y)<390).forEach(drawBody);
  [player,...bots].filter(p=>p&&p.alive&&Math.hypot(p.x-cam.x,p.y-cam.y)<390).forEach(p=>{drawGuy(p,p===player);if(p!==player)drawBotWorkEffect(p)});
@@ -484,7 +484,9 @@ function fakeRoom(){toastMsg('Online rooms need the relay server. Starting local
 
 function roomTask(roomName,rx,ry,id,n,type){
  let r=rooms.find(q=>q.n===roomName);
- return {id,n,type,room:roomName,x:Math.round(r.x+r.w*rx),y:Math.round(r.y+r.h*ry)};
+ let px=Math.round(r.x+r.w*rx),py=Math.round(r.y+r.h*ry);
+ if(!valid(px,py,12)){let cx=r.x+r.w/2,cy=r.y+r.h/2;for(let f=.92;f>=0;f-=.08){let tx=Math.round(cx+(px-cx)*f),ty=Math.round(cy+(py-cy)*f);if(valid(tx,ty,12)){px=tx;py=ty;break}}}
+ return {id,n,type,room:roomName,x:px,y:py};
 }
 const TASK_POOL=[
  roomTask('Admin',.18,.30,'card','Swipe Access Card','card'),
@@ -676,7 +678,7 @@ document.getElementById('menuSpace').style.display='none';state='game';roundAge=
  if(role==='CREW') bots[Math.floor(Math.random()*bots.length)].evil=true;
  assignCrewTasks();
  doors=[];
- vents=[{x:165,y:745,id:0},{x:705,y:1115,id:1},{x:1225,y:1290,id:2},{x:2075,y:620,id:3},{x:1710,y:1120,id:4},{x:1050,y:380,id:5}];
+ vents=[{x:165,y:745,id:0},{x:705,y:1115,id:1},{x:1225,y:1290,id:2},{x:2075,y:620,id:3},{x:1710,y:1120,id:4},{x:1050,y:380,id:5}];vcValidateVents();vcValidateVents();
  emergencyCD=0;document.getElementById('sabotageChoiceV110').style.display='none';document.getElementById('minimap').style.display='none';
  updateHUD();showRoleReveal();setTimeout(()=>{if(state==='game'){gamehudEl.style.display='block';minimapEl.style.display='block';pingEl.style.display='block'}},2450);toastMsg(role==='INFILTRATOR'?'You are the INFILTRATOR. Eliminate the crew.':'You are CREW. Finish tasks and find the infiltrator.');
 }
@@ -766,6 +768,18 @@ function moveEnt(e,dx,dy){
  else if(free(ox,oy+dy)){e.y=oy+dy}
  else {for(const factor of [.65,.35]){if(free(ox+dx*factor,oy+dy*factor)){e.x=ox+dx*factor;e.y=oy+dy*factor;break}}}
  return Math.hypot(e.x-ox,e.y-oy)>0.15;
+}
+function vcValidateVents(){
+ vents.forEach(v=>{
+  if(valid(v.x,v.y,14))return;
+  const ox=v.x,oy=v.y;
+  for(let rad=20;rad<=230;rad+=20){
+   let found=false;
+   for(let i=0;i<24;i++){const a=i*Math.PI/12,px=Math.round(ox+Math.cos(a)*rad),py=Math.round(oy+Math.sin(a)*rad);
+    if(valid(px,py,14)){v.x=px;v.y=py;found=true;break}}
+   if(found)break;
+  }
+ });
 }
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
 function openTask(t){if(!t||t.done||taskCompleteLock||meeting)return;taskActive=t;taskMode=t.type||'sequence';doneOrder=0;wirePick=null;renderTaskGame()}
@@ -1685,7 +1699,7 @@ function drawCrewShape(p,alpha=1,ghost=false,me=false){x.save();x.globalAlpha=al
  // chest utility light
  x.fillStyle='#0d171c';x.beginPath();x.roundRect(7,5,8,10,3);x.fill();x.fillStyle='#70efae';x.beginPath();x.arc(11,9,2,0,7);x.fill();
  if(ghost){x.fillStyle=c;x.globalAlpha=alpha*.7;x.beginPath();x.moveTo(-19,10);x.quadraticCurveTo(-13,34,-3,20);x.quadraticCurveTo(6,36,18,12);x.lineTo(18,23);x.quadraticCurveTo(6,43,-4,30);x.quadraticCurveTo(-14,42,-20,23);x.closePath();x.fill();x.globalAlpha=alpha}
- x.shadowBlur=0;x.fillStyle='#eef8ff';x.font='bold 11px Arial';x.textAlign='center';if(loadout&&loadout.nameplate&&loadout.nameplate!=='none'&&p.name){x.save();x.fillStyle='#2b2846';x.strokeStyle='#e8c66a';x.lineWidth=1.4;x.beginPath();x.roundRect(-35,-53,70,19,6);x.fill();x.stroke();x.restore()}x.fillText(p.name||'',0,-38);x.restore()}
+ x.shadowBlur=0;x.fillStyle='#eef8ff';x.font='bold 11px Arial';x.textAlign='center';if(loadout&&loadout.nameplate&&loadout.nameplate!=='none'&&p.name){x.save();x.fillStyle='#2b2846';x.strokeStyle='#e8c66a';x.lineWidth=1.4;x.beginPath();x.roundRect(-35,-53,70,19,6);x.fill();x.stroke();x.restore()}x.restore();x.save();x.fillStyle='#eef8ff';x.font='bold 9px Arial';x.textAlign='center';x.fillText(p.name||'',p.x,p.y-30);x.restore()}
 function vcPetArt(ctx,type,px,py,size=1,time=performance.now()/1000){
  if(!type||type==='none')return;ctx.save();ctx.translate(px,py+Math.sin(time*3)*4*size);ctx.scale(size,size);
  ctx.shadowColor=type==='robot'?'#66eaff':type==='alien'?'#b5ff74':'#ff8de4';ctx.shadowBlur=16;
@@ -2828,7 +2842,7 @@ const $=id=>document.getElementById(id);
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('VOID CREW save unavailable',e)}if(window.vcB3RoomChanged)window.vcB3RoomChanged()}
 function claimEarned(){}
 function owned(id){return id==='none'||state.claimed.includes(id)}
-function redeemCode(){const input=$('vcRedeemCode'),status=$('vcRedeemStatus');const code=input.value.trim().toUpperCase();if(code==='JONATHANP67'){const all=rewards.map(r=>r.id);const before=state.claimed.length;state.claimed=[...new Set([...state.claimed,...all])];save();render();status.textContent=state.claimed.length>before?'OWNER CODE ACCEPTED · Every cosmetic unlocked!':'OWNER CODE ALREADY REDEEMED · All cosmetics are unlocked!';status.style.color='#7df7c4';input.value=''}else{status.textContent='Code not recognized. Check spelling and try again.';status.style.color='#ff9da6'}}
+function redeemCode(){const input=$('vcRedeemCode'),status=$('vcRedeemStatus');const code=input.value.trim().toUpperCase();if(code==='DADDY'){if(state.daddyRedeemed){status.textContent='DADDY already redeemed on this save.';status.style.color='#ffce83';input.value='';return}state.daddyRedeemed=true;state.credits+=250;save();render();status.textContent='DADDY ACCEPTED · +250 CREW CREDITS!';status.style.color='#7df7c4';input.value=''}else if(code==='JONATHANP67'){const all=rewards.map(r=>r.id);const before=state.claimed.length;state.claimed=[...new Set([...state.claimed,...all])];save();render();status.textContent=state.claimed.length>before?'OWNER CODE ACCEPTED · Every cosmetic unlocked!':'OWNER CODE ALREADY REDEEMED · All cosmetics are unlocked!';status.style.color='#7df7c4';input.value=''}else{status.textContent='Code not recognized. Check spelling and try again.';status.style.color='#ff9da6'}}
 $('vcRedeemButton').addEventListener('click',redeemCode);$('vcRedeemCode').addEventListener('keydown',e=>{if(e.key==='Enter')redeemCode()});
 function button(parent,label,fn,active,disabled){const b=document.createElement('button');b.textContent=label;b.className=active?'vcActive':'';b.disabled=!!disabled;b.onclick=fn;parent.appendChild(b);return b}
 function render(){
