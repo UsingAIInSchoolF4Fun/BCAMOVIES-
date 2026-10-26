@@ -2061,7 +2061,7 @@ window.mpCreate=function(){
   conn.on('data',d=>{
    if(!d||typeof d!=='object')return;
    if(d.type==='shuttleMove'){hostReceive(conn.peer,d);return;}
-   if(d.type==='roomDecor'){const p=M.roster.get(conn.peer);if(p){p.room={hat:d.room?.hat||'none',pet:d.room?.pet||'none'};broadcast({type:'roomDecor',id:conn.peer,room:p.room})}return;}
+   if(d.type==='roomDecor'){const p=M.roster.get(conn.peer);if(p){p.room={hat:d.room?.hat||'none',pet:d.room?.pet||'none',suit:d.room?.suit||'none',visor:d.room?.visor||'none',accessory:d.room?.accessory||'none',effect:d.room?.effect||'none',nameplate:d.room?.nameplate||'none'};broadcast({type:'roomDecor',id:conn.peer,room:p.room})}return;}
    if(d.type==='hello'){
     if(M.started||M.roster.size>=MAX)return send(conn,{type:'reject',reason:'Room unavailable.'});
     const id=conn.peer;if(M.roster.has(id))return;
@@ -2286,8 +2286,10 @@ window.vcB7DrawLineup=function(result){
  const lineup=winners.length?winners:[...M.roster.values()].slice(0,8);
  lineup.forEach((p,i)=>{
   const member=document.createElement('div');member.className='vcB7Winner';
-  const astronaut=document.createElement('div');astronaut.className='vcB7Astronaut';astronaut.style.setProperty('--crewColor',p.c||'#80dfff');
-  const visor=document.createElement('div');visor.className='vcB7Visor';astronaut.append(visor);
+  const astronaut=document.createElement('canvas');astronaut.className='vcB7AvatarCanvas';astronaut.width=150;astronaut.height=165;astronaut.style.cssText='display:block;width:130px;height:145px;max-width:100%;margin:0 auto;object-fit:contain';
+  const outfit={color:p.c||'#80dfff',hat:p.room?.hat||p.hat||'none',pet:p.room?.pet||p.pet||'none',suit:p.room?.suit||'none',visor:p.room?.visor||'none',accessory:p.room?.accessory||'none',effect:p.room?.effect||'none',nameplate:p.room?.nameplate||'none'};
+  if(p.id===M.id&&window.vcB2State){Object.assign(outfit,window.vcB2State());outfit.color=p.c||outfit.color}
+  window.vcB19DrawAvatar?.(astronaut.getContext('2d'),outfit,73,91,1.22);
   const label=document.createElement('span');label.textContent=(p.name||'CREW').slice(0,14);
   member.append(astronaut,label);wrap.append(member);
  });
@@ -2850,7 +2852,7 @@ window.vcB2MatchStart=function(){wonMatch=false;window.vcB4RoundTasks=0};
 window.vcB2MatchEnd=function(text){if(wonMatch)return;wonMatch=true;const crewWin=/CREW won/i.test(text),evilWin=/INFILTRATOR won/i.test(text);const victory=(crewWin&&window.vcB2PlayerRole==='CREW')||(evilWin&&window.vcB2PlayerRole==='INFILTRATOR');if(victory)state.wins++;const tasks=Math.max(0,Math.min(10,window.vcB4RoundTasks||0));const pay=10+tasks*6+(victory?35:0)+(tasks>=4?15:0);state.credits+=pay;window.vcB4LastPayout=pay;save();renderIfOpen()};
 function renderIfOpen(){if($('vcLocker').style.display==='block')render()}
 window.vcB2State=()=>({tasks:state.tasks,wins:state.wins,credits:state.credits,claimed:[...state.claimed],color:state.color,pet:state.pet,hat:state.hat,suit:state.suit||'none',visor:state.visor||'none',accessory:state.accessory||'none',effect:state.effect||'none',nameplate:state.nameplate||'none',theme:state.theme,furniture:state.furniture.map(f=>({...f}))});
-window.vcB3RoomData=()=>({hat:state.hat,pet:state.pet});
+window.vcB3RoomData=()=>({hat:state.hat,pet:state.pet,suit:state.suit||'none',visor:state.visor||'none',accessory:state.accessory||'none',effect:state.effect||'none',nameplate:state.nameplate||'none'});
 window.vcB3SavedColor=()=>state.color;
 window.vcB12SyncColor=function(c){if(!/^#[0-9a-f]{6}$/i.test(c))return;state.color=c;save();window.vcB2ApplyColor?.(c);renderIfOpen()};
 window.vcB5DrawFurniture=drawFurniture;
