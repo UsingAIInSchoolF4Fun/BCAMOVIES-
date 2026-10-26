@@ -682,7 +682,7 @@ document.getElementById('menuSpace').style.display='none';state='game';roundAge=
  emergencyCD=0;document.getElementById('sabotageChoiceV110').style.display='none';document.getElementById('minimap').style.display='none';
  updateHUD();showRoleReveal();setTimeout(()=>{if(state==='game'){gamehudEl.style.display='block';minimapEl.style.display='block';pingEl.style.display='block'}},2450);toastMsg(role==='INFILTRATOR'?'You are the INFILTRATOR. Eliminate the crew.':'You are CREW. Finish tasks and find the infiltrator.');
 }
-function showRoleReveal(){let rr=document.getElementById('roleReveal'),rb=document.getElementById('roleBig'),rd=document.getElementById('roleDesc');rb.textContent=role;rb.className=role==='INFILTRATOR'?'roleBad':'roleCrew';rd.textContent=role==='INFILTRATOR'?'Blend in. Sabotage the ship. Eliminate the crew.':'Complete tasks. Find the infiltrator. Survive.';rr.style.display='flex';setTimeout(()=>rr.style.display='none',2400);tone(role==='INFILTRATOR'?95:440,.25)}
+function showRoleReveal(){let rr=document.getElementById('roleReveal'),rb=document.getElementById('roleBig'),rd=document.getElementById('roleDesc');rb.textContent=role;rb.className=role==='INFILTRATOR'?'roleBad':'roleCrew';rd.textContent=role==='INFILTRATOR'?'Blend in. Sabotage the ship. Eliminate the crew.':'Complete tasks. Find the infiltrator. Survive.';window.vcRoleRevealAt=performance.now();rr.style.display='flex';setTimeout(()=>rr.style.display='none',2400);tone(role==='INFILTRATOR'?95:440,.25)}
 function updateHUD(){updateCrewTaskBar();
  roleEl=roleElNode;roleEl.innerHTML='<b>'+(playerGhost?'GHOST • '+role:role)+'</b>';roleEl.style.color=playerGhost?'#a9efff':(role==='INFILTRATOR'?'#ff6670':'#6fe7ff');let gb=document.getElementById('ghostBadge');if(gb)gb.style.display=playerGhost?'block':'none';
  let d=tasks.filter(t=>t.done).length;tasksEl=tasksElNode;tasksEl.innerHTML='<div style="font-size:10px;color:#91a49a;margin-bottom:7px">MOVE: WASD / ARROWS • TASK: SPACE • REPORT: R • CHAT: T</div><b>YOUR RANDOM TASKS '+d+'/'+tasks.length+'</b><div style="height:8px;background:#24344b;border-radius:8px;margin:8px 0"><div style="width:'+(d/tasks.length*100)+'%;height:100%;background:#74e6a4;border-radius:8px"></div></div>'+tasks.map(t=>'<div style="display:flex;gap:7px;align-items:center;margin:4px 0;opacity:'+(t.done?.55:1)+'"><span style="width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;background:'+(t.done?'#3a7753':'#27352f')+'">'+(t.done?'✓':'•')+'</span><span>'+t.n+'</span></div>').join('');
@@ -2989,7 +2989,20 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('vcLocker').style.d
 @keyframes vcRoleEnter{from{opacity:0;transform:scale(.75)}to{opacity:1;transform:scale(1)}}
 </style>
 <div id="vcB4Role"><div class="roleCard"><strong>MISSION ASSIGNMENT</strong><h1 id="vcB4RoleName">CREWMATE</h1><p id="vcB4RoleInfo">Complete your tasks and survive.</p></div></div>
-<script>window.vcB4ShowRole=function(role){const el=document.getElementById('vcB4Role');document.getElementById('vcB4RoleName').textContent=role==='INFILTRATOR'?'INFILTRATOR':'CREWMATE';document.getElementById('vcB4RoleName').style.color=role==='INFILTRATOR'?'#ff6f8c':'#8affcf';document.getElementById('vcB4RoleInfo').textContent=role==='INFILTRATOR'?'Sabotage the ship without being caught.':'Complete tasks, watch for danger, and survive.';el.style.display='flex';setTimeout(()=>el.style.display='none',3200)}</script><style id="vcB8KillStyle">
+<script>
+(function(){
+ // Fail-safe: role reveals cannot cover an active match indefinitely.
+ const dismiss=()=>{for(const id of ['vcB4Role','roleReveal']){const el=document.getElementById(id);if(el)el.style.display='none'}};
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'||e.key==='Enter'||e.code==='Space'){const a=document.getElementById('vcB4Role');const b=document.getElementById('roleReveal');if(a?.style.display==='flex'||b?.style.display==='flex')dismiss()}});
+ document.addEventListener('pointerdown',e=>{if(e.target.closest?.('#vcB4Role,#roleReveal'))dismiss()});
+ setInterval(()=>{
+  const a=document.getElementById('vcB4Role'),b=document.getElementById('roleReveal');
+  if(a?.style.display==='flex'&&Date.now()-Number(a.dataset.shownAt||0)>4300)a.style.display='none';
+  if(b?.style.display==='flex'&&typeof state!=='undefined'&&(state==='game'||state==='mp')&&performance.now()-(window.vcRoleRevealAt||0)>4300)b.style.display='none';
+ },650);
+})();
+</script>
+<script>window.vcB4ShowRole=function(role){const el=document.getElementById('vcB4Role');document.getElementById('vcB4RoleName').textContent=role==='INFILTRATOR'?'INFILTRATOR':'CREWMATE';document.getElementById('vcB4RoleName').style.color=role==='INFILTRATOR'?'#ff6f8c':'#8affcf';document.getElementById('vcB4RoleInfo').textContent=role==='INFILTRATOR'?'Sabotage the ship without being caught.':'Complete tasks, watch for danger, and survive.';el.style.display='flex';el.dataset.shownAt=String(Date.now());setTimeout(()=>{el.style.display='none';el.dataset.shownAt='0'},3200)}</script><style id="vcB8KillStyle">
 #vcB8Kill{display:none;position:fixed;inset:0;z-index:96000;pointer-events:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#6d1027bb 0%,#0a0508f2 75%);overflow:hidden}
 #vcB8Kill .vcB8Slash{position:absolute;width:130vw;height:12px;transform:rotate(-19deg);background:#fff3e0;box-shadow:0 0 15px 9px #ff1c4a,0 0 65px 28px #f20c35;animation:vcB8Slash .85s ease-out forwards}
 #vcB8Kill .vcB8Scene{text-align:center;animation:vcB8Pop .35s ease-out;z-index:1}
