@@ -2155,7 +2155,7 @@ window.mpShuttlePlayers=()=>[...M.roster.values()].filter(p=>p.id!==M.id);
 window.vcB3Roster=()=>[...M.roster.values()];window.vcB3MyId=()=>M.id;
 window.vcB3RoomChanged=()=>{if(!M.code)return;const room=window.vcB3RoomData?.();const p=M.roster.get(M.id);if(p)p.room=room;if(M.host){broadcast({type:'roomDecor',id:M.id,room});emitRoster()}else send(M.hostConn,{type:'roomDecor',room})};
 window.vcB9MeetingButtonScreen=function(){if(!M.active||!player)return null;const cafe=rooms.find(r=>r.n==='Cafeteria');const xx=cafe.x+cafe.w/2,yy=cafe.y+120;return {x:(xx-camPos.x)*gameZoom,y:(yy-camPos.y)*gameZoom}};
-window.VCMP={get active(){return M.active},get nextMeetingAllowed(){return Math.max(M.nextMeetingAllowed||0,M.cooldowns.get('meeting')||0)},get roster(){return M.roster},get sabotage(){return M.sabotage},get tasksDone(){return M.taskDone},get tasksGoal(){return M.taskGoal},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
+window.VCMP={get active(){return M.active},get host(){return M.host},get nextMeetingAllowed(){return Math.max(M.nextMeetingAllowed||0,M.cooldowns.get('meeting')||0)},get roster(){return M.roster},get sabotage(){return M.sabotage},get tasksDone(){return M.taskDone},get tasksGoal(){return M.taskGoal},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
 const el=id=>document.getElementById(id);
 const cleanName=s=>String(s||'Player').replace(/[^\w -]/g,'').slice(0,12)||'Player';
 const send=(c,d)=>{if(c&&c.open)try{c.send(d)}catch(e){}};
