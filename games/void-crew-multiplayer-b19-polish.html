@@ -468,7 +468,7 @@ function renderSecurity(){
  hallwayCurves().forEach(h=>{q.lineCap='round';q.strokeStyle='#0b1013';q.lineWidth=HALL_W+14;q.beginPath();q.moveTo(h.a.x,h.a.y);q.quadraticCurveTo(h.c.x,h.c.y,h.b.x,h.b.y);q.stroke();q.strokeStyle='#293a42';q.lineWidth=HALL_W;q.beginPath();q.moveTo(h.a.x,h.a.y);q.quadraticCurveTo(h.c.x,h.c.y,h.b.x,h.b.y);q.stroke()});
  rooms.forEach(r=>{q.fillStyle='#1c282e';q.strokeStyle='#526b76';q.lineWidth=4;q.beginPath();roomOutline(r,q);q.fill();q.stroke();q.fillStyle='#a9bec7';q.font='bold 12px Arial';q.fillText(r.n.toUpperCase(),r.x+18,r.y+28)});
  let old=x;x=q;
- rooms.forEach((r,i)=>{drawRoomIdentity(r,i);drawRoomPolish(r)});drawPhysicalCameras();rooms.forEach(drawAmbient);
+ rooms.forEach((r,i)=>{drawRoomIdentity(r,i);drawRoomPolish(r);vcDrawArchitecture(r)});drawPhysicalCameras();rooms.forEach(drawAmbient);
  tasks.filter(t=>!t.done&&Math.hypot(t.x-cam.x,t.y-cam.y)<360).forEach(t=>{x.fillStyle='#ffd84f';x.beginPath();x.arc(t.x,t.y,9,0,7);x.fill()});
  bodies.filter(b=>Math.hypot(b.x-cam.x,b.y-cam.y)<390).forEach(drawBody);
  [player,...bots].filter(p=>p&&p.alive&&Math.hypot(p.x-cam.x,p.y-cam.y)<390).forEach(p=>{drawGuy(p,p===player);if(p!==player)drawBotWorkEffect(p)});
@@ -1484,6 +1484,103 @@ function drawRoomPolish(r){
  // A subtle central identity plate without blocking task stations.
  x.fillStyle='rgba(4,14,24,.38)';x.beginPath();x.roundRect(rx+rw/2-64,ry+rh/2-15,128,30,9);x.fill();
  x.fillStyle=tint;x.globalAlpha=.68;x.font='bold 12px Arial';x.textAlign='center';x.fillText(n.toUpperCase(),rx+rw/2,ry+rh/2+5);x.globalAlpha=1;
+ x.restore();
+}
+
+// B23 architectural detail pass: decorative, deterministic and non-colliding.
+// Kept off the navigation mesh so all tasks, vents and AI routes remain usable.
+function vcDrawArchitecture(r){
+ const {x:rx,y:ry,w,h,n}=r,cx=rx+w/2,cy=ry+h/2;
+ const accents={Cafeteria:'#7ce8f3',Reactor:'#f66c58','Med Bay':'#8be9e4',Security:'#72c5ff',Electrical:'#f1ca5a',Storage:'#e0ae70',Admin:'#9cb5ff',Oxygen:'#7be9b6',Shields:'#6dd4ff',Navigation:'#7ebaff'};
+ const ac=accents[n]||'#9edbea';
+ x.save();roomOutline(r,x);x.clip();
+ // Structural edge ribs, spaced at actual room scale rather than screen scale.
+ for(let i=0;i<Math.ceil(w/95);i++){
+  const px=rx+38+i*95;
+  x.fillStyle='#08131d';x.fillRect(px,ry+12,13,27);x.fillRect(px,ry+h-35,13,24);
+  x.fillStyle=ac;x.globalAlpha=.32;x.fillRect(px+3,ry+17,7,4);x.fillRect(px+3,ry+h-28,7,4);x.globalAlpha=1;
+ }
+ // Floor hatches and numbered deck panels: readable detail without obstacles.
+ x.strokeStyle='rgba(185,219,234,.15)';x.lineWidth=2;
+ for(let px=rx+60;px<rx+w-45;px+=130)for(let py=ry+83;py<ry+h-45;py+=120){
+  x.beginPath();x.roundRect(px,py,90,72,8);x.stroke();
+  x.fillStyle='rgba(6,16,27,.24)';x.fillRect(px+8,py+9,14,5);
+  x.fillStyle='rgba(156,202,219,.23)';x.fillRect(px+66,py+52,11,3);
+ }
+ const panel=(px,py,pw,ph,color=ac)=>{
+  x.fillStyle='#09121d';x.beginPath();x.roundRect(px+6,py+9,pw,ph,10);x.fill();
+  x.fillStyle='#233747';x.beginPath();x.roundRect(px,py,pw,ph,10);x.fill();
+  x.strokeStyle='#7795a6';x.lineWidth=3;x.stroke();
+  x.fillStyle=color;x.globalAlpha=.62;x.fillRect(px+10,py+10,pw-20,5);x.globalAlpha=1;
+ };
+ const consoleUnit=(px,py,pw=110)=>{
+  panel(px,py,pw,55);
+  x.fillStyle='#061c2b';x.fillRect(px+12,py+19,pw-24,25);
+  x.strokeStyle=ac;x.lineWidth=2;x.beginPath();
+  for(let j=0;j<9;j++){let xx=px+15+j*(pw-30)/8,yy=py+31+Math.sin(j*1.25+px*.01)*7;j?x.lineTo(xx,yy):x.moveTo(xx,yy)}x.stroke();
+ };
+ const circular=(px,py,rad,color=ac)=>{
+  x.fillStyle='#07111a';x.strokeStyle='#7996a5';x.lineWidth=7;
+  x.beginPath();x.arc(px,py,rad,0,Math.PI*2);x.fill();x.stroke();
+  x.strokeStyle=color;x.lineWidth=4;x.globalAlpha=.7;x.beginPath();x.arc(px,py,rad*.75,.2,Math.PI*1.75);x.stroke();x.globalAlpha=1;
+  x.fillStyle='#1d3544';x.beginPath();x.arc(px,py,rad*.49,0,Math.PI*2);x.fill();
+ };
+ if(n==='Cafeteria'){
+  // Long shared tables with seats, food-service counters and central meeting dais.
+  for(let i=-1;i<=1;i++){const px=cx+i*185,py=cy+80;
+   panel(px-59,py-24,118,48,'#9bdef2');
+   for(let side of [-1,1])for(let j of [-1,0,1]){
+    x.fillStyle='#3e5b69';x.beginPath();x.roundRect(px+j*34-12,py+side*48-11,24,22,7);x.fill();
+   }
+  }
+  panel(cx-155,ry+70,310,45);circular(cx,cy-92,45,'#f5d78b');
+ }else if(n==='Reactor'){
+  circular(cx,cy,Math.min(110,h*.27),'#fa795a');
+  for(let i=0;i<6;i++){const a=i*Math.PI/3,px=cx+Math.cos(a)*145,py=cy+Math.sin(a)*125;
+   circular(px,py,23,'#f18c65');
+   x.strokeStyle='#8d554f';x.lineWidth=9;x.beginPath();x.moveTo(px,py);x.lineTo(cx+Math.cos(a)*83,cy+Math.sin(a)*83);x.stroke();
+  }
+  consoleUnit(cx-65,ry+63,130);
+ }else if(n==='Med Bay'){
+  for(let i=-1;i<=1;i++){const px=cx+i*133,py=cy+33;panel(px-40,py-76,80,155,'#89f0df');
+   x.fillStyle='#9ed2db';x.beginPath();x.roundRect(px-26,py-52,52,28,9);x.fill();
+   x.strokeStyle='#b8f7ed';x.lineWidth=2;x.strokeRect(px-26,py-13,52,45);
+  }
+  consoleUnit(cx-58,ry+66,116);
+ }else if(n==='Security'){
+  panel(cx-180,cy-105,360,80);
+  for(let i=0;i<4;i++)consoleUnit(cx-166+i*85,cy-93,76);
+  circular(cx,cy+105,45,'#80cfff');
+ }else if(n==='Electrical'){
+  for(let i=0;i<4;i++){panel(rx+65+i*96,ry+70,75,112,'#f5ce6d');
+   for(let j=0;j<3;j++){x.fillStyle=j===1?'#e8b65b':'#142f3e';x.fillRect(rx+76+i*96,ry+96+j*24,52,12)}
+  }
+  x.strokeStyle='#b8874b';x.lineWidth=10;x.beginPath();x.moveTo(cx-155,cy+80);x.lineTo(cx+150,cy+80);x.stroke();
+ }else if(n==='Storage'){
+  for(let i=0;i<3;i++)for(let j=0;j<2;j++){
+   let px=rx+78+i*135,py=ry+86+j*155;
+   panel(px,py,105,87,j?'#a5a0a0':'#e0ad6b');
+   x.strokeStyle='#d0b18b';x.lineWidth=3;x.beginPath();x.moveTo(px+15,py+25);x.lineTo(px+90,py+72);x.moveTo(px+90,py+25);x.lineTo(px+15,py+72);x.stroke();
+  }
+ }else if(n==='Admin'){
+  circular(cx,cy+25,74,'#91baff');
+  for(let i=0;i<3;i++)consoleUnit(cx-185+i*128,ry+70,113);
+  panel(cx-145,ry+h-113,290,52);
+ }else if(n==='Oxygen'){
+  for(let i=-1;i<=1;i++){let px=cx+i*113;circular(px,cy,48,'#7ce6b1');consoleUnit(px-43,cy+76,86)}
+  panel(cx-125,ry+55,250,47);
+ }else if(n==='Shields'){
+  circular(cx,cy,104,'#75d4ff');
+  for(let i=0;i<4;i++){let a=i*Math.PI/2;consoleUnit(cx+Math.cos(a)*125-42,cy+Math.sin(a)*108-26,84)}
+ }else if(n==='Navigation'){
+  panel(cx-156,cy-110,312,105,'#89d6ff');
+  for(let i=0;i<3;i++)consoleUnit(cx-144+i*99,cy-97,89);
+  circular(cx,cy+100,65,'#6cb9f5');
+ }
+ // Architectural safety lighting stays fixed, so it doesn't create flicker or lag.
+ x.strokeStyle=ac;x.lineWidth=4;x.globalAlpha=.5;
+ x.beginPath();x.moveTo(rx+45,ry+51);x.lineTo(rx+Math.min(w*.34,240),ry+51);
+ x.moveTo(rx+w-45,ry+h-53);x.lineTo(rx+w-Math.min(w*.34,240),ry+h-53);x.stroke();
  x.restore();
 }
 function drawAmbient(r){let c={Reactor:'255,76,48','Med Bay':'70,195,235',Electrical:'225,186,63',Navigation:'66,164,215',Oxygen:'80,190,145',Security:'65,145,185'}[r.n];if(!c)return;let flick=r.n==='Electrical'?(Math.sin(performance.now()/83)>.65?.045:.09):.085;let g=x.createRadialGradient(r.x+r.w/2,r.y+r.h/2,10,r.x+r.w/2,r.y+r.h/2,Math.max(r.w,r.h)*.58);g.addColorStop(0,`rgba(${c},${flick})`);g.addColorStop(1,`rgba(${c},0)`);x.fillStyle=g;x.fillRect(r.x,r.y,r.w,r.h)}
