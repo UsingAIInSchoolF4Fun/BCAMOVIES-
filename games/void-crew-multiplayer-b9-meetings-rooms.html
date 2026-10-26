@@ -556,15 +556,18 @@ function enterShuttle(){
  shuttleBots=CREW_IDENTITIES.map((id,i)=>({x:pts[i][0],y:pts[i][1],tx:pts[i][0],ty:pts[i][1],r:17,c:id.color,name:id.name,vx:0,vy:0,think:Math.random()*2}));
  last=performance.now();
 }
+window.vcB9EnterPrivateShip=function(){if(window.VCMP?.active){toastMsg('Finish the match before exploring your room.');return}window.mpWaitingRoom=false;enterShuttle();shuttlePlayer.x=200;shuttlePlayer.y=215;document.getElementById('shuttleHud').style.display='none';document.getElementById('vcB9ExploreHint').style.display='block';window.vcB9Private=true};
 function vcB3Spawn(i){return {x:200+(i%5)*315,y:i<5?215:790}}
 function shuttleValid(px,py){return px>65&&px<1735&&py>70&&py<1050}
 function updateShuttle(dt){
+ if(window.vcB9Private&&keys.Escape){window.vcB9Private=false;document.getElementById('vcB9ExploreHint').style.display='none';backMenu();return}
  shuttleT+=dt;let dx=((keys.d||keys.KeyD||keys.ArrowRight)?1:0)-((keys.a||keys.KeyA||keys.ArrowLeft)?1:0),dy=((keys.s||keys.KeyS||keys.ArrowDown)?1:0)-((keys.w||keys.KeyW||keys.ArrowUp)?1:0),m=Math.hypot(dx,dy)||1;
  if(dx||dy){walkPhase+=dt*12;shuttlePlayer.vx=dx/m*145;shuttlePlayer.vy=dy/m*145}else{shuttlePlayer.vx*=.75;shuttlePlayer.vy*=.75}
  let nx=shuttlePlayer.x+dx/m*145*dt,ny=shuttlePlayer.y+dy/m*145*dt;if(shuttleValid(nx,shuttlePlayer.y))shuttlePlayer.x=nx;if(shuttleValid(shuttlePlayer.x,ny))shuttlePlayer.y=ny;
  shuttleBots.forEach((b,i)=>{b.think-=dt;if(b.think<=0||Math.hypot(b.tx-b.x,b.ty-b.y)<18){let zones=[[650,510],[820,520],[970,520],[1150,530],[670,740],[1140,740],[900,610]];let z=zones[Math.floor(Math.random()*zones.length)];b.tx=z[0]+(Math.random()-.5)*45;b.ty=z[1]+(Math.random()-.5)*40;b.think=2.5+Math.random()*4}let ax=b.tx-b.x,ay=b.ty-b.y,d=Math.hypot(ax,ay)||1;b.vx=ax/d*45;b.vy=ay/d*45;b.x+=b.vx*dt;b.y+=b.vy*dt});
 }
 function shuttleInteract(){
+ if(window.vcB9Private){window.openVCLocker?.();return}
  if(window.mpWaitingRoom){const roster=window.vcB3Roster?.()||[];const slot=roster.findIndex(p=>p.id===window.vcB3MyId?.());const home=vcB3Spawn(Math.max(0,slot));if(Math.hypot(shuttlePlayer.x-home.x,shuttlePlayer.y-home.y)<125){window.openVCLocker?.();return}toastMsg('Go to your quarters to open your Locker.');return}
  if(Math.hypot(shuttlePlayer.x-shuttleComputer.x,shuttlePlayer.y-shuttleComputer.y)<80){openShuttleCustom();return}
  if(Math.hypot(shuttlePlayer.x-shuttleDoor.x,shuttlePlayer.y-shuttleDoor.y)<75){startFromShuttle();return}
@@ -1785,7 +1788,7 @@ window.mpSetColor=function(c){const p=M.roster.get(M.id);if(!p||!/^#[0-9a-f]{6}$
 window.mpShuttlePlayers=()=>[...M.roster.values()].filter(p=>p.id!==M.id);
 window.vcB3Roster=()=>[...M.roster.values()];window.vcB3MyId=()=>M.id;
 window.vcB3RoomChanged=()=>{if(!M.code||M.started)return;const room=window.vcB3RoomData?.();const p=M.roster.get(M.id);if(p)p.room=room;if(M.host)broadcast({type:'roomDecor',id:M.id,room});else send(M.hostConn,{type:'roomDecor',room})};
-window.VCMP={get active(){return M.active},get sabotage(){return M.sabotage},get tasksDone(){return M.taskDone},get tasksGoal(){return M.taskGoal},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
+window.VCMP={get active(){return M.active},get nextMeetingAllowed(){return Math.max(M.nextMeetingAllowed||0,M.cooldowns.get('meeting')||0)},get roster(){return M.roster},get sabotage(){return M.sabotage},get tasksDone(){return M.taskDone},get tasksGoal(){return M.taskGoal},others:()=>[...M.roster].filter(([id])=>id!==M.id).map(([id,p])=>{const v=M.interpolated.get(id);return v?{...p,x:v.x,y:v.y}:p})};
 const el=id=>document.getElementById(id);
 const cleanName=s=>String(s||'Player').replace(/[^\w -]/g,'').slice(0,12)||'Player';
 const send=(c,d)=>{if(c&&c.open)try{c.send(d)}catch(e){}};
@@ -2470,6 +2473,7 @@ function render(){
  const showcase=$('vcShowcase');showcase.replaceChildren();const p=document.createElement('p');p.textContent=state.claimed.length?state.claimed.map(id=>rewards.find(r=>r.id===id)?.emoji||'').join('  '):'Complete tasks and win matches to fill your trophy shelf.';showcase.append(p);
 }
 window.openVCLocker=function(){const panel=$('vcLocker');prevView=document.activeElement;panel.style.display='block';render()};
+const explore=document.createElement('button');explore.id='vcB9ExploreBtn';explore.textContent='🚀 EXPLORE MY ROOM · NO MATCH NEEDED';explore.onclick=()=>window.vcB9ExploreRoom?.();$('vcRoom').insertAdjacentElement('beforebegin',explore);
 window.closeVCLocker=function(){$('vcLocker').style.display='none';prevView?.focus?.()};
 window.vcB2TaskComplete=function(){state.tasks++;window.vcB4RoundTasks=(window.vcB4RoundTasks||0)+1;save();renderIfOpen()};
 window.vcB2MatchStart=function(){wonMatch=false;window.vcB4RoundTasks=0};
