@@ -737,8 +737,8 @@ function roomOutline(r,ctx=x,margin=0){
  ctx.beginPath();ctx.moveTo(...pts[0]);for(let i=1;i<pts.length;i++)ctx.lineTo(...pts[i]);ctx.closePath();return pts;
 }
 function inRoomOutline(px,py,r){
- if(px<r.x-10||px>r.x+r.w+10||py<r.y-10||py>r.y+r.h+10)return false;
- const pts=roomOutline(r,x,10);let inside=false;
+ if(px<r.x+4||px>r.x+r.w-4||py<r.y+4||py>r.y+r.h-4)return false;
+ const pts=roomOutline(r,x,-4);let inside=false;
  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
   let a=pts[i],b=pts[j];if(((a[1]>py)!==(b[1]>py))&&(px<(b[0]-a[0])*(py-a[1])/(b[1]-a[1])+a[0]))inside=!inside;
  }return inside;
