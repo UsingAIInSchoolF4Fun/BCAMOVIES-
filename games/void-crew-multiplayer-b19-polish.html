@@ -1650,8 +1650,7 @@ window.vcB19DrawAvatar=function(ctx,config,cx,cy,scale){
 };
 window.vcB12DrawPreview=function(config){
  const cv=document.getElementById('vcAvatarCanvas');if(!cv)return;const pc=cv.getContext('2d');pc.clearRect(0,0,cv.width,cv.height);
- const prev=x;x=pc;pc.save();pc.translate(170,176);pc.scale(2.05,2.05);drawCrewShape({x:0,y:0,c:config.color,name:'',hat:config.hat,vx:0,vy:0},1,false,false);pc.restore();x=prev;
- vcPetArt(pc,config.pet,265,225,1.35);
+ window.vcB19DrawAvatar(pc,config,cv.width*.47,cv.height*.54,3.75);
 };
 function vcDrawPet(p,me){const pet=(me||p===player)?window.vcB2State?.().pet:(p.pet||p.room?.pet);vcPetArt(x,pet,p.x+32,p.y+14,.65)}
 
@@ -2575,9 +2574,9 @@ document.addEventListener('DOMContentLoaded',()=>{const hud=document.getElementB
  <div class="vcWrap"><div class="vcTop"><div><h1>CREW LOCKER</h1><p class="vcSubtitle">COLORS • PETS • ACCESSORIES • REDEEM CODES</p></div><button onclick="closeVCLocker()">RETURN TO GAME</button></div>
  <div class="vcStats"><div class="vcStat"><b id="vcCredits">0</b>CREW CREDITS</div><div class="vcStat"><b id="vcTasks">0</b>LIFETIME TASKS</div><div class="vcStat"><b id="vcWins">0</b>MULTIPLAYER WINS</div><div class="vcStat"><b id="vcUnlockCount">0</b>REWARDS UNLOCKED</div></div>
  <div class="vcGrid">
-  <section class="vcCard"><h2>YOUR LOCKER</h2><div id="vcAvatar" class="vcAstronaut" style="width:170px;height:165px;animation:none;filter:none"><canvas id="vcAvatarCanvas" width="340" height="330" style="width:170px;height:165px;display:block;margin:auto"></canvas></div><p class="vcNote" style="text-align:center">Live in-game astronaut preview · equipped hat and pet</p><div class="vcButtons vcPalette" id="vcColors"></div><h2 style="margin-top:18px">COMPANION PET</h2><div class="vcButtons" id="vcPets"></div><h2 style="margin-top:18px">HELMET / ACCESSORY</h2><div class="vcButtons" id="vcHats"></div></section>
+  <section class="vcCard"><h2>YOUR LOCKER</h2><p class="vcNote">Equip items you own here. To buy new cosmetics, use the separate Cosmetic Shop on the main menu.</p><div id="vcAvatar" class="vcAstronaut" style="width:300px;height:295px;max-width:100%;animation:none;filter:none"><canvas id="vcAvatarCanvas" width="600" height="590" style="width:300px;height:295px;max-width:100%;display:block;margin:auto"></canvas></div><p class="vcNote" style="text-align:center">Live in-game astronaut preview · equipped hat and pet</p><div class="vcButtons vcPalette" id="vcColors"></div><h2 style="margin-top:18px">COMPANION PET</h2><div class="vcButtons" id="vcPets"></div><h2 style="margin-top:18px">HELMET / ACCESSORY</h2><div class="vcButtons" id="vcHats"></div></section>
   <section class="vcCard"><h2>REDEEM A CODE</h2><p class="vcNote">Enter a cosmetic unlock code here. More codes may be added later.</p><div style="display:flex;gap:9px;flex-wrap:wrap"><input id="vcRedeemCode" maxlength="32" autocomplete="off" spellcheck="false" placeholder="Enter code" style="flex:1;min-width:150px;padding:12px;border-radius:10px;background:#10152e;color:white;border:2px solid #8771c8"><button id="vcRedeemButton" type="button" style="padding:12px 18px;border-radius:10px;background:#49348a;color:white;border:2px solid #ac90ff;font-weight:900">REDEEM</button></div><p id="vcRedeemStatus" aria-live="polite" class="vcNote"></p></section>
-  <section class="vcCard"><h2>COSMETIC SHOP · CREW CREDITS</h2><div id="vcRewards"></div></section>
+  
   <section class="vcCard"><h2>ACHIEVEMENT SHOWCASE</h2><div id="vcShowcase"></div><p class="vcNote">Earn 10 credits for playing, 6 per task (up to 10), 35 for a win, and 15 for finishing 4 tasks. Purchases are one-time and saved in this browser. Clearing site data or using another device will not transfer them. Offline saves can be edited, so rewards are for fun rather than secure competitive rankings.</p></section>
  </div></div>
 </div>
@@ -2693,7 +2692,7 @@ function render(){
  const ps=$('vcPets');ps.replaceChildren();button(ps,'No Pet',()=>{state.pet='none';save();render()},state.pet==='none');
  const hs=$('vcHats');hs.replaceChildren();button(hs,'No Hat',()=>{state.hat='none';save();render()},state.hat==='none');
  rewards.forEach(r=>{if(r.kind==='pet')button(ps,r.name+(owned(r.id)?'':' [LOCKED]'),()=>{state.pet=r.id;save();render()},state.pet===r.id,!owned(r.id));else if(r.kind==='hat')button(hs,r.name+(owned(r.id)?'':' [LOCKED]'),()=>{state.hat=r.id;save();render()},state.hat===r.id,!owned(r.id))});
- const list=$('vcRewards');list.replaceChildren();rewards.forEach(r=>{const row=document.createElement('div');row.className='vcReward';const label=document.createElement('div'),name=document.createElement('b'),sub=document.createElement('small');name.textContent=r.name;sub.textContent=r.price+' credits · one-time purchase';label.append(name,sub);const buy=document.createElement('button');buy.textContent=owned(r.id)?'OWNED':'BUY '+r.price;buy.disabled=owned(r.id)||state.credits<r.price;buy.onclick=()=>{if(owned(r.id)||state.credits<r.price)return;state.credits-=r.price;state.claimed.push(r.id);save();render()};row.append(label,buy);list.append(row)});
+ 
  const showcase=$('vcShowcase');showcase.replaceChildren();const p=document.createElement('p');p.textContent=state.claimed.length?state.claimed.map(id=>rewards.find(r=>r.id===id)?.name||'').join('  '):'Complete tasks and win matches to fill your trophy shelf.';showcase.append(p);
 }
 
@@ -2730,7 +2729,7 @@ window.vcB19HatArt=b19DrawHat;
 function b19DrawThumb(item,cv,w,h){
 var ctx=cv.getContext("2d");ctx.clearRect(0,0,w,h);ctx.fillStyle="#081018";ctx.fillRect(0,0,w,h);
 var cfg={...state};if(item.kind in cfg)cfg[item.kind]=item.id;
-if(typeof window.vcB19DrawAvatar==='function')window.vcB19DrawAvatar(ctx,cfg,w/2,h*.60,.83);
+if(typeof window.vcB19DrawAvatar==='function')window.vcB19DrawAvatar(ctx,cfg,w/2,h*.59,.96);
 }
 window.openVCShop=function(){
 var panel=document.getElementById("vcB18Shop");if(!panel)return;
@@ -2772,7 +2771,7 @@ function b19UpdateBigPreview(item){
 var cv=document.getElementById("b19BigPreview");if(!cv)return;
 var ctx=cv.getContext("2d");ctx.clearRect(0,0,260,280);ctx.fillStyle="#081018";ctx.fillRect(0,0,260,280);
 var st=state||{};var cfg={...st};if(item&&item.kind in cfg)cfg[item.kind]=item.id;
-if(typeof window.vcB19DrawAvatar==='function')window.vcB19DrawAvatar(ctx,cfg,130,155,1.7);
+if(typeof window.vcB19DrawAvatar==='function')window.vcB19DrawAvatar(ctx,cfg,130,155,2.05);
 var nm=document.getElementById("b19SelName"),meta=document.getElementById("b19SelMeta"),btn=document.getElementById("b19BuyBtn");
 if(!item){nm.textContent="Your current loadout";meta.textContent="Select a cosmetic to preview and purchase.";btn.disabled=true;btn.textContent="SELECT AN ITEM";return}
 nm.textContent=item.name;
