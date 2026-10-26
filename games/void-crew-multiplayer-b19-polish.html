@@ -2292,7 +2292,12 @@ window.mpStart=function(){
  const botNames=['Nova','Byte','Echo','Moss','Juno','Pip','Ace','Rex','Luna'];
  const botColors=['#ff5964','#ffd75a','#7cf29a','#bf78ff','#ff9f50','#f66fe1','#eeeeee','#60aaff','#b9ff60'];
  const crewBots=Array.from({length:botCount},(_,i)=>{const p=spawnFor(ids.length+i);return {...p,id:'bot'+i,name:botNames[i],c:botColors[i],alive:true,evil:false,r:18,vx:0,vy:0,spawnHold:0,brain:{state:'TASK'}}});
- const target=Math.floor(Math.random()*MAX);
+ // Fair selection across the full ten-seat lobby; never force the room creator to infiltrator.
+ // Avoid consecutive creator assignments while keeping every real player eligible.
+ const rand=(n)=>{try{const v=new Uint32Array(1);crypto.getRandomValues(v);return v[0]%n}catch(e){return Math.floor(Math.random()*n)}};
+ let target=rand(MAX);
+ if(ids.length>1&&target===0&&M.lastHostInfiltrator)target=1+rand(MAX-1);
+ M.lastHostInfiltrator=(target===0);
  ids.forEach((id,i)=>{const p=M.roster.get(id),sp=spawnFor(i);Object.assign(p,sp,{alive:true,role:i===target?'INFILTRATOR':'CREW'})});
  if(target>=ids.length)crewBots[target-ids.length].evil=true;
  if(window.vcB2MatchStart)window.vcB2MatchStart();M.started=true;M.taskGoal=4*(MAX-1);M.taskDone=0;M.cooldowns.clear();M.votes.clear();M.suspicions.clear();M.interpolated.clear();
