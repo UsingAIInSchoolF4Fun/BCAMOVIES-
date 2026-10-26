@@ -1679,7 +1679,7 @@ function drawCrewShape(p,alpha=1,ghost=false,me=false){x.save();x.globalAlpha=al
    if(suit.includes('galaxy')||suit.includes('neon')||suit.includes('cyber')){x.fillStyle='#c9efff';for(let k=0;k<5;k++)x.fillRect(-12+(k*7)%25,-12+(k*11)%26,2,2)}
    x.restore();
   }
-  if(visor!=='none'){x.save();x.globalAlpha*=.52;x.fillStyle=visor.includes('red')?'#ff6b88':visor.includes('gold')?'#ffd77b':visor.includes('green')?'#8fffa5':'#b09cff';x.beginPath();x.ellipse(9,-12,12,5,-.15,0,Math.PI*2);x.fill();x.restore()}
+  if(visor!=='none'&&!equippedDum){x.save();x.globalAlpha*=.40;x.fillStyle=visor.includes('red')?'#ff6b88':visor.includes('gold')?'#ffd77b':visor.includes('green')?'#8fffa5':'#b09cff';x.beginPath();x.roundRect(-2,-18,21,11,5);x.fill();x.restore()}
   if(gear!=='none'){x.save();x.strokeStyle='#c2e9ff';x.lineWidth=3;if(gear.includes('wing')){x.beginPath();x.moveTo(-22,-12);x.lineTo(-34,-22);x.lineTo(-30,7);x.moveTo(22,-12);x.lineTo(34,-22);x.lineTo(30,7);x.stroke()}else{x.fillStyle='#75cfe7';x.beginPath();x.roundRect(-29,2,9,13,3);x.fill()}x.restore()}
  }
  // chest utility light
@@ -2872,15 +2872,20 @@ else{ctx.fillStyle="#aaf";ctx.beginPath();ctx.arc(0,-8,12,0,7);ctx.fill()}
 ctx.restore();
 }
 window.vcB19HatArt=b19DrawHat;
+function b19ShopOutfit(item){
+ const cfg={color:'#7c9da9',hat:'none',pet:'none',suit:'none',visor:'none',accessory:'none',effect:'none',nameplate:'none'};
+ if(item&&Object.prototype.hasOwnProperty.call(cfg,item.kind))cfg[item.kind]=item.id;
+ return cfg;
+}
 function b19DrawThumb(item,cv,w,h){
 var ctx=cv.getContext("2d");ctx.clearRect(0,0,w,h);ctx.fillStyle="#081018";ctx.fillRect(0,0,w,h);
-var cfg={...state};if(item.kind in cfg)cfg[item.kind]=item.id;
-if(typeof window.vcB19DrawAvatar==='function')window.vcB19DrawAvatar(ctx,cfg,w/2,h*.59,.96);
+var cfg=b19ShopOutfit(item);
+if(typeof window.vcB19DrawAvatar==='function')window.vcB19DrawAvatar(ctx,cfg,item.kind==='pet'?w*.39:w/2,h*.59,.96);
 }
 window.openVCShop=function(){
 var panel=document.getElementById("vcB18Shop");if(!panel)return;
 if(!panel.querySelector(".b19wrap")){
-panel.innerHTML="<div class=b19wrap><div class=b19head><h1 class=b19title>VOID CREW COSMETIC SHOP</h1><div style=\"display:flex;align-items:center;gap:12px;flex-wrap:wrap\"><div class=b19wallet id=vcB18Wallet><svg width=22 height=22 viewBox=\"0 0 24 24\"><path fill=#69e5f5 d=\"M12 1 21 12 12 23 3 12Z\"/><path fill=#12394f d=\"m12 6 5 6-5 6-5-6Z\"/></svg> <span id=b19Credits>0</span> CREW CREDITS</div><button class=b19close onclick=\"window.closeVCShop()\">CLOSE</button></div></div><div class=b19layout><div class=b19preview><h3>EQUIP PREVIEW</h3><canvas id=b19BigPreview width=260 height=280></canvas><div class=b19itemname id=b19SelName>Select an item</div><div class=b19meta id=b19SelMeta>Click any cosmetic to preview.</div><button class=b19buy id=b19BuyBtn disabled>SELECT AN ITEM</button></div><div><div class=b19feat><h3>FEATURED</h3><div class=b19grid id=b19Featured></div></div><div class=b19tabs id=b19Tabs></div><div class=b19tools><input id=b19Search placeholder=\"Search cosmetics...\" type=search /><select id=b19Rarity><option value=all>All rarities</option><option value=common>Common</option><option value=uncommon>Uncommon</option><option value=rare>Rare</option><option value=epic>Epic</option><option value=legendary>Legendary</option></select></div><div class=b19grid id=vcB18ShopGrid></div></div></div></div>";
+panel.innerHTML="<div class=b19wrap><div class=b19head><h1 class=b19title>VOID CREW COSMETIC SHOP</h1><div style=\"display:flex;align-items:center;gap:12px;flex-wrap:wrap\"><div class=b19wallet id=vcB18Wallet><svg width=22 height=22 viewBox=\"0 0 24 24\"><path fill=#69e5f5 d=\"M12 1 21 12 12 23 3 12Z\"/><path fill=#12394f d=\"m12 6 5 6-5 6-5-6Z\"/></svg> <span id=b19Credits>0</span> CREW CREDITS</div><button class=b19close onclick=\"window.closeVCShop()\">CLOSE</button></div></div><div class=b19layout><div class=b19preview><h3>ITEM PREVIEW</h3><canvas id=b19BigPreview width=260 height=280></canvas><div class=b19itemname id=b19SelName>Select an item</div><div class=b19meta id=b19SelMeta>Click any cosmetic to preview.</div><button class=b19buy id=b19BuyBtn disabled>SELECT AN ITEM</button></div><div><div class=b19feat><h3>FEATURED</h3><div class=b19grid id=b19Featured></div></div><div class=b19tabs id=b19Tabs></div><div class=b19tools><input id=b19Search placeholder=\"Search cosmetics...\" type=search /><select id=b19Rarity><option value=all>All rarities</option><option value=common>Common</option><option value=uncommon>Uncommon</option><option value=rare>Rare</option><option value=epic>Epic</option><option value=legendary>Legendary</option></select></div><div class=b19grid id=vcB18ShopGrid></div></div></div></div>";
 document.getElementById("b19Search").oninput=function(e){window._b19ShopQ=e.target.value.toLowerCase();window._b19RenderShopGrid()};
 document.getElementById("b19Rarity").onchange=function(e){window._b19ShopRarity=e.target.value;window._b19RenderShopGrid()};
 }
@@ -2916,10 +2921,10 @@ return card;
 function b19UpdateBigPreview(item){
 var cv=document.getElementById("b19BigPreview");if(!cv)return;
 var ctx=cv.getContext("2d");ctx.clearRect(0,0,260,280);ctx.fillStyle="#081018";ctx.fillRect(0,0,260,280);
-var st=state||{};var cfg={...st};if(item&&item.kind in cfg)cfg[item.kind]=item.id;
-if(typeof window.vcB19DrawAvatar==='function')window.vcB19DrawAvatar(ctx,cfg,130,155,2.05);
+var cfg=b19ShopOutfit(item);
+if(typeof window.vcB19DrawAvatar==='function')window.vcB19DrawAvatar(ctx,cfg,item?.kind==='pet'?105:130,155,2.05);
 var nm=document.getElementById("b19SelName"),meta=document.getElementById("b19SelMeta"),btn=document.getElementById("b19BuyBtn");
-if(!item){nm.textContent="Your current loadout";meta.textContent="Select a cosmetic to preview and purchase.";btn.disabled=true;btn.textContent="SELECT AN ITEM";return}
+if(!item){nm.textContent="Select a cosmetic";meta.textContent="Each preview uses a standard crewmate and shows only the selected item.";btn.disabled=true;btn.textContent="SELECT AN ITEM";return}
 nm.textContent=item.name;
 meta.textContent=(item.rarity||"common").toUpperCase()+" · "+item.kind.toUpperCase()+" · "+item.price+" credits"+(owned(item.id)?" · OWNED":"");
 if(owned(item.id)){
