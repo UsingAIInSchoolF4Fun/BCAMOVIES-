@@ -413,7 +413,7 @@ const rooms=[
  {n:'Admin',x:1460,y:470,w:405,h:325},{n:'Oxygen',x:1570,y:950,w:325,h:275},{n:'Shields',x:1925,y:1145,w:310,h:260},
  {n:'Navigation',x:1905,y:355,w:325,h:325}
 ], world={w:2320,h:1480};
-rooms.forEach(r=>{const cx=r.x+r.w/2,cy=r.y+r.h/2;r.w=Math.min(r.w*1.20,world.w-28);r.h=Math.min(r.h*1.20,world.h-28);r.x=Math.max(14,Math.min(world.w-r.w-14,cx-r.w/2));r.y=Math.max(14,Math.min(world.h-r.h-14,cy-r.h/2))});
+rooms.forEach(r=>{const cx=r.x+r.w/2,cy=r.y+r.h/2;r.w=Math.min(r.w*1.42,world.w-28);r.h=Math.min(r.h*1.40,world.h-28);r.x=Math.max(14,Math.min(world.w-r.w-14,cx-r.w/2));r.y=Math.max(14,Math.min(world.h-r.h-14,cy-r.h/2))});
 function openLobby(){menuEl.style.display='none';lobbyEl.style.display='block';minimapEl.style.display='none';pingEl.style.display='none'} function backMenu(){let ctb=document.getElementById('crewTaskBar');if(ctb)ctb.style.display='none';let ka=document.getElementById('killerActions');if(ka)ka.style.display='none';lobbyEl.style.display='none';menuEl.style.setProperty('display','block','important');menuEl.style.visibility='visible';menuEl.style.pointerEvents='auto';minimapEl.style.display='none';pingEl.style.display='none';document.getElementById('menuSpace').style.display='block'}
 function openCustom(){menu.style.display='none';custom.style.display='block';swatches.innerHTML=colors.map((c,i)=>'<button class="swatch" aria-label="color '+(i+1)+'" style="background:'+c+'" onclick="pickColor('+i+')"></button>').join('')}
 window.vcB2ApplyColor=function(c){if(/^#[0-9a-f]{6}$/i.test(c)){selectedColor=c;if(player)player.c=c;if(typeof shuttlePlayer!=='undefined'&&shuttlePlayer)shuttlePlayer.c=c;if(typeof window.mpSetColor==='function')window.mpSetColor(c)}};
@@ -703,11 +703,11 @@ function inside(px,py,r){return px>r.x+20&&px<r.x+r.w-20&&py>r.y+20&&py<r.y+r.h-
 // Distinct room silhouettes. The bounds and equipment stay in their original locations.
 function roomOutline(r,ctx=x,margin=0){
  const X=r.x-margin,Y=r.y-margin,W=r.w+2*margin,H=r.h+2*margin;
- const style={Cafeteria:'octagon',Reactor:'circle','Med Bay':'oval',Security:'notch',Electrical:'bevel',Storage:'hangar',Admin:'octagon',Oxygen:'oval',Shields:'octagon',Navigation:'nose'}[r.n]||'octagon';
+ const style={Cafeteria:'octagon',Reactor:'circle','Med Bay':'capsule',Security:'notch',Electrical:'bevel',Storage:'hangar',Admin:'notch',Oxygen:'oval',Shields:'octagon',Navigation:'nose'}[r.n]||'octagon';
  let pts;
  if(style==='circle'||style==='oval'){const cx=X+W/2,cy=Y+H/2,rx=W/2,ry=H/2;pts=Array.from({length:40},(_,i)=>{let a=i*Math.PI*2/40;return[cx+Math.cos(a)*rx,cy+Math.sin(a)*ry]})}
- else if(style==='octagon'){let a=Math.min(50,W*.13,H*.18);pts=[[X+a,Y],[X+W-a,Y],[X+W,Y+a],[X+W,Y+H-a],[X+W-a,Y+H],[X+a,Y+H],[X,Y+H-a],[X,Y+a]]}
- else if(style==='bevel'){let a=Math.min(35,W*.10,H*.14);pts=[[X+a,Y],[X+W,Y],[X+W,Y+H-a],[X+W-a,Y+H],[X,Y+H],[X,Y+a]]}
+ else if(style==='octagon'){let a=Math.min(100,W*.20,H*.26);pts=[[X+a,Y],[X+W-a,Y],[X+W,Y+a],[X+W,Y+H-a],[X+W-a,Y+H],[X+a,Y+H],[X,Y+H-a],[X,Y+a]]}
+ else if(style==='bevel'){let a=Math.min(75,W*.16,H*.22);pts=[[X+a,Y],[X+W,Y],[X+W,Y+H-a],[X+W-a,Y+H],[X,Y+H],[X,Y+a]]}
  else if(style==='capsule'){let a=Math.min(65,W*.19);pts=[[X+a,Y],[X+W-a,Y],[X+W,Y+H*.27],[X+W,Y+H*.73],[X+W-a,Y+H],[X+a,Y+H],[X,Y+H*.73],[X,Y+H*.27]]}
  else if(style==='notch'){let a=34;pts=[[X+a,Y],[X+W-a,Y],[X+W,Y+a],[X+W,Y+H*.38],[X+W-18,Y+H*.5],[X+W,Y+H*.62],[X+W,Y+H-a],[X+W-a,Y+H],[X+a,Y+H],[X,Y+H-a],[X,Y+a]]}
  else if(style==='hangar'){let a=50;pts=[[X+a,Y],[X+W-a,Y],[X+W,Y+H*.23],[X+W,Y+H*.78],[X+W-a,Y+H],[X+a,Y+H],[X,Y+H*.78],[X,Y+H*.23]]}
@@ -1343,6 +1343,7 @@ function botKill(k,v){
  for(let i=0;i<20;i++)particles.push({x:bx,y:by,vx:(Math.random()-.5)*140,vy:(Math.random()-.5)*140,t:.7,c:'#d94747'});
  if(v===player)tone(75,.09);
  if(v===player){
+   window.vcB8ShowKill?.({killer:k.name||'an infiltrator',victim:v.name,color:v.c});
    player.alive=false;
    if(role==='CREW'){
      playerGhost=true;deathFreeze=.65;
@@ -2922,4 +2923,20 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('vcLocker').style.d
 #vcB18Shop .b19feat{margin-bottom:16px;padding:14px;border-radius:14px;background:linear-gradient(120deg,#1a2f4a88,#3a1a5a55);border:1px solid #6a5a9a}
 #vcB18Shop .b19feat h3{margin:0 0 10px;font-size:13px;letter-spacing:1px;color:#c9b0ff}
 </style>
-</body></html>
+<button id="vcLeaveMatch" type="button" onclick="window.vcLeaveActiveMatch()" style="display:none;position:fixed;right:15px;top:14px;z-index:8100;padding:9px 14px;border:1px solid #8ba9bd;border-radius:10px;background:#0b1728e8;color:#e5f3ff;font:800 12px Arial;cursor:pointer;box-shadow:0 4px 18px #0008">LEAVE MATCH</button>
+<div id="vcLeaveConfirm" style="display:none;position:fixed;inset:0;z-index:98000;align-items:center;justify-content:center;background:#020611dc;padding:20px"><div style="width:min(410px,94vw);background:#142238;border:1px solid #79bde0;border-radius:18px;padding:24px;color:#eaf7ff;font:15px Arial;text-align:center"><h2 style="margin-top:0">Leave this match?</h2><p>You can return to the main menu. Leaving an online game will disconnect you from the room.</p><div style="display:flex;justify-content:center;gap:12px"><button onclick="document.getElementById('vcLeaveConfirm').style.display='none'" style="padding:11px 18px;border-radius:10px;background:#28425d;color:white;border:0;cursor:pointer">CANCEL</button><button onclick="window.vcConfirmLeaveMatch()" style="padding:11px 18px;border-radius:10px;background:#9e3447;color:white;border:0;cursor:pointer">LEAVE</button></div></div></div>
+<script>
+(function(){
+ const btn=document.getElementById('vcLeaveMatch'),dialog=document.getElementById('vcLeaveConfirm');
+ window.vcLeaveActiveMatch=function(){dialog.style.display='flex'};
+ window.vcConfirmLeaveMatch=function(){
+  dialog.style.display='none';
+  if(window.VCMP?.active||window.VCMP?.started){window.mpLeave?.();return}
+  document.querySelectorAll('#meeting,#taskmodal,#end,#roleReveal,#vcB8Kill,#ventNavV10,#sabotageFixV10,#v10Transition,#ejectScene').forEach(e=>e.style.display='none');
+  if(typeof v10ForceExitVent==='function')v10ForceExitVent();
+  if(typeof backMenu==='function'){state='menu';meeting=false;backMenu()}
+  document.getElementById('gamehud').style.display='none';
+ };
+ setInterval(()=>{const active=(typeof state!=='undefined'&&state==='game')||!!window.VCMP?.active;btn.style.display=active?'block':'none'},450);
+})();
+</script></body></html>
