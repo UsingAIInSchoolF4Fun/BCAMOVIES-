@@ -1283,7 +1283,7 @@ function ai(dt){roundAge+=dt;observeBots(dt);bots.forEach(b=>{
   b.floorCheck=(b.floorCheck||0)-dt;
   if(b.floorCheck<=0){b.floorCheck=.8;recoverBotToFloor(b)}
 if(!b.alive)return;
-if(b.spawnHold>0){b.spawnHold=Math.max(0,b.spawnHold-dt);return;}b.step=(b.step||0)+dt*7;if(!b.brain)b.brain={state:b.evil?'FAKE_TASK':'TASK',target:null,wait:0,think:0,kill:15+Math.random()*8,report:0};let q=b.brain;q.kill=Math.max(0,q.kill-dt);q.report=Math.max(0,q.report-dt);q.think-=dt;if(!b.evil){let body=bodies.find(z=>dist(b,z)<145&&hasLineOfSight(b,z));if(body&&q.report<=0&&roundAge>6){q.state='BODY';q.target=body}if(q.state==='BODY'&&q.target){if(dist(b,q.target)<58){q.report=28;startMeeting(b.name+' reported '+q.target.name+"'s body!");q.target=null;q.state='TASK';return}botGo(b,q.target,dt,142);return}if(sabotageTimer>0&&['LIGHTS','REACTOR','OXYGEN'].includes(sabotageType)){q.state='SAB';q.target=V10_SAB_STATIONS[sabotageType]}if(q.state==='SAB'&&q.target){if(dist(b,q.target)<48){q.wait+=dt;if(q.wait>2.8){sabotageTimer=0;if(sabotageType==='LIGHTS')visionRadius=188;toastMsg(b.name+' repaired '+sabotageType+'.');doors.forEach(d=>d.closed=false);sabotageType='';q.wait=0;q.state='TASK';q.target=null}return}botGo(b,q.target,dt,145);return}let list=crewTaskLists.get(b.name)||[],todo=list.filter(t=>!t.done);if(q.wait>0){b.vx=0;b.vy=0;b.working=true;q.wait-=dt;if(q.wait<=0&&q.target&&q.target.id){q.target.done=true;q.target=null;b.working=false;q.state='TASK';updateCrewTaskBar();checkCrewTaskWin()}return}if(!q.target||q.target.done||q.think<=0){q.target=chooseCrewGoal(b);q.think=5+Math.random()*4}if(q.target&&q.target.id&&dist(b,q.target)<40){b.vx=0;b.vy=0;b.working=true;q.wait=4+Math.random()*4;return}botGo(b,q.target,dt,140)}else{if(q.state==='ESCAPE'){q.escapeT=(q.escapeT||0)-dt;if(botMaybeVent(b)||q.escapeT<=0){q.state='FAKE_TASK';q.wait=1+Math.random()*2;return}let rr=rooms[Math.floor(Math.random()*rooms.length)],away={x:rr.x+rr.w/2,y:rr.y+rr.h/2};botGo(b,away,dt,142);return}if(q.state==='FAKE_TASK'&&q.wait>0){b.vx=0;b.vy=0;b.working=true;q.wait-=dt;if(q.wait<=0){b.working=false;q.state='HUNT';q.target=null}return}if(q.state==='FAKE_TASK'&&(!q.target||q.think<=0)){q.target=TASK_POOL[Math.floor(Math.random()*TASK_POOL.length)];q.think=4}if(q.state==='FAKE_TASK'&&q.target){if(dist(b,q.target)<42){b.vx=0;b.vy=0;b.working=true;q.wait=3+Math.random()*4;return}else{botGo(b,q.target,dt,132);return}}if(sabotageTimer<=0&&roundAge>18&&Math.random()<dt*.008){triggerBotSabotage();q.state='HUNT'}let targets=[player,...bots.filter(o=>o.alive&&!o.evil)].filter(o=>o&&o.alive&&o!==b);if(!q.target||!q.target.alive||q.think<=0){q.state='HUNT';q.target=chooseEvilTarget(b);q.think=2.2+Math.random()*2.2}if(q.target){
+if(b.spawnHold>0){b.spawnHold=Math.max(0,b.spawnHold-dt);return;}b.step=(b.step||0)+dt*7;if(!b.brain)b.brain={state:b.evil?'FAKE_TASK':'TASK',target:null,wait:0,think:0,kill:15+Math.random()*8,report:0};let q=b.brain;q.kill=Math.max(0,q.kill-dt);q.report=Math.max(0,q.report-dt);q.think-=dt;if(!b.evil){let body=bodies.find(z=>dist(b,z)<145&&hasLineOfSight(b,z));if(body&&q.report<=0&&roundAge>6){q.state='BODY';q.target=body}if(q.state==='BODY'&&q.target){if(dist(b,q.target)<58){q.report=28;startMeeting(b.name+' reported '+q.target.name+"'s body!");q.target=null;q.state='TASK';return}botGo(b,q.target,dt,142);return}if(sabotageTimer>0&&['LIGHTS','REACTOR','OXYGEN'].includes(sabotageType)){q.state='SAB';q.target=V10_SAB_STATIONS[sabotageType]}if(q.state==='SAB'&&q.target){if(dist(b,q.target)<48){q.wait+=dt;if(q.wait>2.8){sabotageTimer=0;if(sabotageType==='LIGHTS')visionRadius=188;toastMsg(b.name+' repaired '+sabotageType+'.');doors.forEach(d=>d.closed=false);sabotageType='';q.wait=0;q.state='TASK';q.target=null}return}botGo(b,q.target,dt,145);return}let list=crewTaskLists.get(b.name)||[],todo=list.filter(t=>!t.done);if(q.wait>0){b.vx=0;b.vy=0;b.working=true;q.wait-=dt;if(q.wait<=0&&q.target&&q.target.id){q.target.done=true;q.target=null;b.working=false;q.state='TASK';updateCrewTaskBar();checkCrewTaskWin()}return}if(!q.target||q.target.done||q.think<=0){q.target=chooseCrewGoal(b);q.think=9+Math.random()*5}if(q.target&&q.target.id&&dist(b,q.target)<40){b.vx=0;b.vy=0;b.working=true;q.wait=4+Math.random()*4;return}botGo(b,q.target,dt,140)}else{if(q.state==='ESCAPE'){q.escapeT=(q.escapeT||0)-dt;if(botMaybeVent(b)||q.escapeT<=0){q.state='FAKE_TASK';q.wait=1+Math.random()*2;return}let rr=rooms[Math.floor(Math.random()*rooms.length)],away={x:rr.x+rr.w/2,y:rr.y+rr.h/2};botGo(b,away,dt,142);return}if(q.state==='FAKE_TASK'&&q.wait>0){b.vx=0;b.vy=0;b.working=true;q.wait-=dt;if(q.wait<=0){b.working=false;q.state='HUNT';q.target=null}return}if(q.state==='FAKE_TASK'&&(!q.target||q.think<=0)){q.target=TASK_POOL[Math.floor(Math.random()*TASK_POOL.length)];q.think=4}if(q.state==='FAKE_TASK'&&q.target){if(dist(b,q.target)<42){b.vx=0;b.vy=0;b.working=true;q.wait=3+Math.random()*4;return}else{botGo(b,q.target,dt,132);return}}if(sabotageTimer<=0&&roundAge>18&&Math.random()<dt*.008){triggerBotSabotage();q.state='HUNT'}let targets=[player,...bots.filter(o=>o.alive&&!o.evil)].filter(o=>o&&o.alive&&o!==b);if(!q.target||!q.target.alive||q.think<=0){q.state='HUNT';q.target=chooseEvilTarget(b);q.think=2.2+Math.random()*2.2}if(q.target){
  let sees=dist(b,q.target)<230&&hasLineOfSight(b,q.target);
  if(sees){q.lastSeen={x:q.target.x,y:q.target.y};q.chaseMemory=1.45}
  else q.chaseMemory=Math.max(0,(q.chaseMemory||0)-dt);
@@ -1320,19 +1320,19 @@ function navNeighbors(n,nodes){
 function buildBotRoute(from,to){
  let nodes=navNodes(),start=nearestNavNode(from,nodes),goal=nearestNavNode(to,nodes);if(!start||!goal)return [to];
  let open=[start],came=new Map(),g=new Map([[start.id,0]]),seen=new Set();
- while(open.length){open.sort((a,b)=>(g.get(a.id)||1e9)+Math.hypot(a.x-goal.x,a.y-goal.y)-(g.get(b.id)||1e9)-Math.hypot(b.x-goal.x,b.y-goal.y));let cur=open.shift();if(cur.id===goal.id){let path=[cur];while(came.has(path[0].id))path.unshift(came.get(path[0].id));return path.slice(1).map(p=>({x:p.x,y:p.y})).concat([to])}if(seen.has(cur.id))continue;seen.add(cur.id);for(let nb of navNeighbors(cur,nodes)){let ng=(g.get(cur.id)||0)+Math.hypot(cur.x-nb.x,cur.y-nb.y);if(ng<(g.get(nb.id)??1e9)){g.set(nb.id,ng);came.set(nb.id,cur);open.push(nb)}}}
+ while(open.length){open.sort((a,b)=>(g.get(a.id)??1e9)+Math.hypot(a.x-goal.x,a.y-goal.y)-(g.get(b.id)??1e9)-Math.hypot(b.x-goal.x,b.y-goal.y));let cur=open.shift();if(cur.id===goal.id){let path=[cur];while(came.has(path[0].id))path.unshift(came.get(path[0].id));return path.slice(1).map(p=>({x:p.x,y:p.y})).concat([to])}if(seen.has(cur.id))continue;seen.add(cur.id);for(let nb of navNeighbors(cur,nodes)){let ng=(g.get(cur.id)||0)+Math.hypot(cur.x-nb.x,cur.y-nb.y);if(ng<(g.get(nb.id)??1e9)){g.set(nb.id,ng);came.set(nb.id,cur);open.push(nb)}}}
  return [to];
 }
 function botGo(b,t,dt,sp){
  b.working=false;recoverBotToFloor(b);if(!t)return;
  if(!b.nav)b.nav={lx:b.x,ly:b.y,stuck:0,route:[],routeT:0,lastTX:0,lastTY:0};
  let n=b.nav,moved=Math.hypot(b.x-n.lx,b.y-n.ly);n.stuck=moved<.32?n.stuck+dt:Math.max(0,n.stuck-dt*2);n.lx=b.x;n.ly=b.y;n.routeT-=dt;
- if(n.routeT<=0||!n.route.length||Math.hypot(t.x-n.lastTX,t.y-n.lastTY)>90){n.route=buildBotRoute(b,t);n.routeT=2.2;n.lastTX=t.x;n.lastTY=t.y}
+ if(n.routeT<=0||!n.route.length||Math.hypot(t.x-n.lastTX,t.y-n.lastTY)>90){n.route=buildBotRoute(b,t);n.routeT=4.2;n.lastTX=t.x;n.lastTY=t.y}
  let goal=n.route[0]||t;if(Math.hypot(goal.x-b.x,goal.y-b.y)<22&&n.route.length){n.route.shift();goal=n.route[0]||t}
  let dx=goal.x-b.x,dy=goal.y-b.y,d=Math.hypot(dx,dy)||1;
  b.vx=(b.vx||0)+(dx/d*sp-(b.vx||0))*.16;b.vy=(b.vy||0)+(dy/d*sp-(b.vy||0))*.16;
  moveEnt(b,b.vx*dt,b.vy*dt);
- if(n.stuck>2.2){n.route=[];n.routeT=0;let p=nearestNavNode(b,navNodes());if(p&&Math.hypot(p.x-b.x,p.y-b.y)<170){b.x=p.x;b.y=p.y}n.stuck=0}
+ if(n.stuck>1.65){n.route=[];n.routeT=0;let p=nearestNavNode(b,navNodes());if(p&&Math.hypot(p.x-b.x,p.y-b.y)<170){b.x=p.x;b.y=p.y}n.stuck=0}
 }
 function botKill(k,v){
  if(!v||!v.alive||v.evil)return;witnessBotKill(k,v);
@@ -1497,13 +1497,34 @@ function drawPhysicalCameras(){SECURITY_CAMS.forEach(cam=>{x.save();x.translate(
 function drawShipMotion(cam){}
 function roomVisible(r,c){return r.x+r.w>c.x-40&&r.x<c.x+W/gameZoom+40&&r.y+r.h>c.y-40&&r.y<c.y+H/gameZoom+40}
 function drawVentEffectV112(){if(!ventAnim||!player)return;const v=ventAnim.phase==='up'?vents[v10VentIndex]:vents.find(q=>dist(q,player)<80);if(!v)return;const f=Math.min(1,ventAnim.t/.42),a=ventAnim.phase==='down'?f:1-f;x.save();x.translate(v.x,v.y);x.fillStyle='rgba(7,17,27,'+(.2+.55*a)+')';x.beginPath();x.ellipse(0,0,23+12*a,12+7*a,0,0,Math.PI*2);x.fill();x.strokeStyle='rgba(162,222,242,'+(.2+.8*a)+')';x.lineWidth=3;x.beginPath();x.ellipse(0,0,22+10*a,12+5*a,0,0,Math.PI*2);x.stroke();for(let j=0;j<5;j++){const xx=(j-2)*8;x.strokeStyle='rgba(161,214,238,'+(.3+.6*a)+')';x.beginPath();x.moveTo(xx,-6-13*a);x.lineTo(xx,6+13*a);x.stroke()}x.restore()}
+const vcVentEvidence=[];
+function vcAddVentEvidence(px,py,phase,color){
+ if(!Number.isFinite(px)||!Number.isFinite(py))return;
+ vcVentEvidence.push({x:px,y:py,phase:phase==='enter'?'enter':'exit',color:/^#[0-9a-f]{6}$/i.test(color||'')?color:'#89e8ff',start:performance.now()});
+ if(vcVentEvidence.length>18)vcVentEvidence.splice(0,vcVentEvidence.length-18);
+}
+function vcDrawVentEvidence(){
+ const now=performance.now();
+ for(let i=vcVentEvidence.length-1;i>=0;i--){
+  const f=vcVentEvidence[i],t=(now-f.start)/650;if(t>=1){vcVentEvidence.splice(i,1);continue}
+  x.save();x.translate(f.x,f.y);x.globalAlpha=1-t;
+  x.fillStyle='#07131f';x.strokeStyle='#9ddfff';x.lineWidth=3;
+  x.beginPath();x.roundRect(-24,-14,48,28,5);x.fill();x.stroke();
+  x.fillStyle=f.color;x.globalAlpha=(1-t)*.78;
+  const size=f.phase==='enter'?1-t:t;
+  x.beginPath();x.ellipse(0,-10-(1-size)*13,14*size+2,22*size+2,0,0,Math.PI*2);x.fill();
+  x.globalAlpha=1-t;x.strokeStyle='#b1f1ff';x.lineWidth=2;
+  for(let j=0;j<3;j++){x.beginPath();x.moveTo(-15,-8+j*7);x.lineTo(15,-8+j*7);x.stroke()}
+  x.restore();
+ }
+}
 function drawMap(cam){x.fillStyle='#050912';x.fillRect(0,0,W,H);x.save();let sh=screenShake>0?(Math.random()-.5)*screenShake:0;x.scale(gameZoom,gameZoom);x.translate(-cam.x+sh/gameZoom,-cam.y+sh/gameZoom);
  drawCleanCorridors();
  rooms.filter(r=>roomVisible(r,cam)).forEach(drawRoomShell);
  rooms.forEach((r,i)=>{if(roomVisible(r,cam)){drawRoomIdentity(r,i);drawRoomPolish(r)}});drawPhysicalCameras();
  rooms.filter(r=>roomVisible(r,cam)).forEach(drawAmbient);
 
- drawVentEffectV112();
+ drawVentEffectV112();vcDrawVentEvidence();
  // Clearly visible vent grates; only infiltrators can use them.
  vents.forEach(v=>{x.save();x.translate(v.x,v.y);x.fillStyle='#0c1922';x.strokeStyle='#9bb8c5';x.lineWidth=2.5;x.beginPath();x.roundRect(-19,-13,38,26,6);x.fill();x.stroke();x.strokeStyle='#668695';x.lineWidth=2.5;for(let j=-1;j<=1;j++){x.beginPath();x.moveTo(-12,j*6);x.lineTo(12,j*6);x.stroke()}if(role==='INFILTRATOR'&&player&&dist(player,v)<90){x.strokeStyle='#c594ff';x.lineWidth=2;x.beginPath();x.roundRect(-23,-17,46,34,8);x.stroke();x.fillStyle='#eed7ff';x.font='bold 9px Arial';x.textAlign='center';x.fillText('V TO VENT',0,-24)}x.restore()});
  tasks.forEach(t=>{if(t.done)return;let near=player&&dist(player,t)<72,phase=performance.now()/250+t.x*.03,rad=(near?13:10)+Math.sin(phase)*2;x.fillStyle=near?'#fff2a3':'#ffd84f';x.shadowColor='#ffd84f';x.shadowBlur=near?28:15;x.beginPath();x.arc(t.x,t.y,rad,0,Math.PI*2);x.fill();x.shadowBlur=0;x.strokeStyle='rgba(255,218,79,.45)';x.lineWidth=2;x.beginPath();x.arc(t.x,t.y,rad+7+Math.sin(phase)*3,0,Math.PI*2);x.stroke();if(near&&role==='CREW'){x.fillStyle='#fff';x.font='bold 10px Arial';x.textAlign='center';x.fillText('SPACE',t.x,t.y-23);x.textAlign='left'}});
@@ -1847,12 +1868,12 @@ function closeSabotageFix(){v10FixOpen=false;document.getElementById('sabotageFi
 function useVent(){
  if(role!=='INFILTRATOR'||!player.alive||meeting)return;
  let near=vents.find(v=>dist(player,v)<62);if(!near&&!v10VentHidden)return toastMsg('Move closer to a vent.');
- if(!v10VentHidden){v10VentHidden=true;v10VentIndex=near.id;ventAnim={phase:'down',t:0,from:{x:player.x,y:player.y},to:{x:player.x,y:player.y}};setTimeout(()=>{if(!v10VentHidden||meeting)return;document.getElementById('ventNavV10').style.display='flex';v10UpdateVentLabel()},460)}
+ if(!v10VentHidden){vcAddVentEvidence(near.x,near.y,'enter',player.c);v10VentHidden=true;v10VentIndex=near.id;ventAnim={phase:'down',t:0,from:{x:player.x,y:player.y},to:{x:player.x,y:player.y}};setTimeout(()=>{if(!v10VentHidden||meeting)return;document.getElementById('ventNavV10').style.display='flex';v10UpdateVentLabel()},460)}
  else exitSelectedVent();
 }
 function ventChoice(dir){if(!v10VentHidden)return;v10VentIndex=(v10VentIndex+dir+vents.length)%vents.length;v10UpdateVentLabel();tone(260,.04)}
 function v10UpdateVentLabel(){let v=vents[v10VentIndex];document.getElementById('ventNavName').textContent=(roomAt(v)||'SHIP')+' • VENT '+(v10VentIndex+1)}
-function exitSelectedVent(){if(!v10VentHidden)return;let v=vents[v10VentIndex];player.x=v.x;player.y=v.y;document.getElementById('ventNavV10').style.display='none';ventAnim={phase:'up',t:0,to:{x:v.x,y:v.y}};setTimeout(()=>{if(!meeting){v10VentHidden=false;ventAnim=null;tone(250,.08)}},460)}
+function exitSelectedVent(){if(!v10VentHidden)return;let v=vents[v10VentIndex];vcAddVentEvidence(v.x,v.y,'exit',player.c);player.x=v.x;player.y=v.y;document.getElementById('ventNavV10').style.display='none';ventAnim={phase:'up',t:0,to:{x:v.x,y:v.y}};setTimeout(()=>{if(!meeting){v10VentHidden=false;ventAnim=null;tone(250,.08)}},460)}
 function updateVentAnim(dt){if(!ventAnim)return;ventAnim.t=Math.min(.42,ventAnim.t+dt)}
 function botMaybeVent(b){
  if(!b.evil||!b.alive)return false;let q=b.brain;if(q.ventLock>0)return false;let v=vents.find(v=>dist(b,v)<65);if(!v||Math.random()>.035)return false;
@@ -2072,6 +2093,7 @@ function guestReceive(d){
  if(!d||typeof d!=='object')return;
  if(d.type==='reject'){info(d.reason);return}
  if(d.type==='killScene'){window.vcB8ShowKill?.(d);return}
+ if(d.type==='ventFX'){vcAddVentEvidence(d.x,d.y,d.phase,d.color);return}
  if(d.type==='rematchStatus'){const el=document.getElementById('vcB7RematchStatus');if(el)el.textContent=d.message;return}
  if(d.type==='returnLobby'){mpReturnToLobby(true);return}
  if(d.type==='roomDecor'){const p=M.roster.get(d.id);if(p)p.room=d.room;return}
@@ -2213,8 +2235,8 @@ function hostAction(id,action){
  }else if(action==='vent'||(typeof action==='string'&&action.startsWith('vent:'))){
   if(p.role!=='INFILTRATOR')return;
   let node=Number.isInteger(p.ventNode)?p.ventNode:-1;
-  if(action==='vent'){if(node>=0)return;node=vents.findIndex(v=>dist(v,p)<65);if(node<0)return;p.ventNode=node;p.vented=true;}
-  else if(action==='vent:exit'){if(node<0)return;p.ventNode=-1;p.vented=false;p.x=vents[node].x;p.y=vents[node].y;}
+  if(action==='vent'){if(node>=0)return;node=vents.findIndex(v=>dist(v,p)<65);if(node<0)return;p.ventNode=node;p.vented=true;vcAddVentEvidence(vents[node].x,vents[node].y,'enter',p.c);broadcast({type:'ventFX',x:vents[node].x,y:vents[node].y,phase:'enter',color:p.c});}
+  else if(action==='vent:exit'){if(node<0)return;p.ventNode=-1;p.vented=false;p.x=vents[node].x;p.y=vents[node].y;vcAddVentEvidence(p.x,p.y,'exit',p.c);broadcast({type:'ventFX',x:p.x,y:p.y,phase:'exit',color:p.c});}
   else{const dest=Number(action.slice(5));if(node<0||!vcVentLinks[node].includes(dest))return;node=dest;p.ventNode=node;p.x=vents[node].x;p.y=vents[node].y;}
   if(id===M.id){vcVentLocal(id,p.ventNode);player.x=p.x;player.y=p.y;camPos.x=Math.max(0,Math.min(world.w-W/gameZoom,p.x-W/gameZoom/2));camPos.y=Math.max(0,Math.min(world.h-H/gameZoom,p.y-H/gameZoom/2))}
   else send(M.conns.get(id),{type:'ventMove',x:p.x,y:p.y,node:p.ventNode});
