@@ -1878,7 +1878,7 @@ function enterMPWaitingRoom(){
   shuttlePlayer.c=window.vcB3SavedColor?.()||M.roster.get(M.id)?.c||myColor();
   if(!window.vcB3SpawnedForCode||window.vcB3SpawnedForCode!==M.code){const slot=[...M.roster.keys()].indexOf(M.id);const sp=vcB3Spawn(Math.max(0,slot));shuttlePlayer.x=sp.x;shuttlePlayer.y=sp.y;window.vcB3SpawnedForCode=M.code;if(M.host){const self=M.roster.get(M.id);if(self){self.shuttleX=sp.x;self.shuttleY=sp.y}}else send(M.hostConn,{type:'shuttleMove',x:sp.x,y:sp.y});}
  }
- if(window.vcB3RoomChanged)window.vcB3RoomChanged();
+ // Cosmetics are synced on actual changes, not every roster render.
 }
 function rosterView(){
  const share=el('mpShareCode');share.style.display=M.host&&M.code?'block':'none';el('mpShareCodeValue').textContent=M.host?M.code:'';
