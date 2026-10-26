@@ -560,8 +560,8 @@ function enterShuttle(){
  last=performance.now();
 }
 window.vcB9EnterPrivateShip=function(){if(window.VCMP?.active){toastMsg('Finish the match before exploring your room.');return}window.mpWaitingRoom=false;enterShuttle();shuttlePlayer.x=160;shuttlePlayer.y=240;document.getElementById('shuttleHud').style.display='none';document.getElementById('vcB9ExploreHint').style.display='block';document.getElementById('vcB9ExploreHint').textContent='YOUR OWN ROOM · WASD to move · E to decorate · ESC to exit';window.vcB9Private=true};
-function vcB3Spawn(i){return {x:200+(i%5)*315,y:i<5?215:790}}
-function shuttleValid(px,py){return px>65&&px<1735&&py>70&&py<1050}
+function vcB3Spawn(i){return {x:480+(i%5)*205,y:i<5?295:780}}
+function shuttleValid(px,py){if(window.mpWaitingRoom)return px>315&&px<1485&&py>190&&py<920;return px>65&&px<1735&&py>70&&py<1050}
 function updateShuttle(dt){
  if(window.vcB9Private&&keys.Escape){window.vcB9Private=false;document.getElementById('vcB9ExploreHint').style.display='none';state='menu';backMenu();return}
  shuttleT+=dt;let dx=((keys.d||keys.KeyD||keys.ArrowRight)?1:0)-((keys.a||keys.KeyA||keys.ArrowLeft)?1:0),dy=((keys.s||keys.KeyS||keys.ArrowDown)?1:0)-((keys.w||keys.KeyW||keys.ArrowUp)?1:0),m=Math.hypot(dx,dy)||1;
@@ -616,14 +616,34 @@ function drawVCWalkableLobby(){
  const cx=Math.max(vw/2,Math.min(mapW-vw/2,shuttlePlayer.x)),cy=Math.max(vh/2,Math.min(mapH-vh/2,shuttlePlayer.y));
  x.clearRect(0,0,W,H);x.save();x.scale(zoom,zoom);x.translate(-cx+vw/2,-cy+vh/2);
  x.fillStyle='#07111f';x.fillRect(0,0,mapW,mapH);
- x.fillStyle='#14283d';x.beginPath();x.roundRect(65,65,1670,990,70);x.fill();
+ x.fillStyle='#14283d';x.beginPath();x.roundRect(310,185,1180,750,55);x.fill();
  x.strokeStyle='#638ba8';x.lineWidth=13;x.stroke();
- x.strokeStyle='#294a60';x.lineWidth=2;for(let a=120;a<1700;a+=90){x.beginPath();x.moveTo(a,95);x.lineTo(a,1020);x.stroke()}for(let b=125;b<1030;b+=90){x.beginPath();x.moveTo(95,b);x.lineTo(1705,b);x.stroke()}
+ x.strokeStyle='#294a60';x.lineWidth=2;for(let a=360;a<1450;a+=85){x.beginPath();x.moveTo(a,205);x.lineTo(a,910);x.stroke()}for(let b=225;b<900;b+=85){x.beginPath();x.moveTo(335,b);x.lineTo(1465,b);x.stroke()}
  x.fillStyle='#0b1b2c';x.beginPath();x.roundRect(580,370,640,360,36);x.fill();x.strokeStyle='#54e4f2';x.lineWidth=5;x.stroke();
  x.fillStyle='#1e4961';x.beginPath();x.roundRect(740,445,320,215,24);x.fill();x.strokeStyle='#79eafa';x.stroke();
  x.fillStyle='#e2faff';x.textAlign='center';x.font='bold 38px Arial';x.fillText('LOCKER',900,520);x.font='22px Arial';x.fillText('Press E to customize',900,558);
- x.fillStyle='#b6e6f3';x.font='bold 35px Arial';x.fillText('VOID CREW  /  WAITING BAY',900,160);
- x.font='21px Arial';x.fillText('WASD / ARROWS TO MOVE     •     E AT LOCKER TO CUSTOMIZE',900,208);
+ x.fillStyle='#b6e6f3';x.font='bold 35px Arial';x.fillText('VOID CREW  /  WAITING BAY',900,255);
+ x.font='21px Arial';x.fillText('WASD TO MOVE     •     E AT LOCKER',900,290);
+ // Compact social waiting bay: benches, charging points, windows and soft indicator lights.
+ x.save();
+ for(const px of [435,1365]){
+  for(const py of [430,660]){
+   x.fillStyle='#081824';x.strokeStyle='#75afc8';x.lineWidth=3;
+   x.beginPath();x.roundRect(px-58,py-32,116,65,12);x.fill();x.stroke();
+   x.fillStyle='#2c4d61';x.beginPath();x.roundRect(px-48,py-21,96,45,9);x.fill();
+   x.fillStyle='#75d4eb';x.fillRect(px-38,py+15,76,4);
+  }
+ }
+ for(let i=0;i<7;i++){
+  let px=520+i*125;x.fillStyle='#0b1c2b';x.beginPath();x.roundRect(px,200,65,20,7);x.fill();
+  x.fillStyle=i%2?'#68e3aa':'#71c7f9';x.fillRect(px+9,206,47,6);
+ }
+ for(const px of [550,1250]){
+  x.fillStyle='#0a2536';x.strokeStyle='#78d7f3';x.lineWidth=4;
+  x.beginPath();x.roundRect(px-55,825,110,48,10);x.fill();x.stroke();
+  x.fillStyle='#9de8fb';x.font='bold 12px Arial';x.textAlign='center';x.fillText('READY BAY',px,855);
+ }
+ x.restore();
  const crew=window.vcB3Roster?.()||[];crew.forEach(p=>{if(p.id===window.vcB3MyId?.())return;if(!Number.isFinite(p.shuttleX)||!Number.isFinite(p.shuttleY))return;drawCrewShape({x:p.shuttleX,y:p.shuttleY,c:p.c,name:p.name,hat:p.room?.hat,vx:0,vy:0},1,false,false);vcPetArt(x,p.room?.pet,p.shuttleX+30,p.shuttleY+10,.8,performance.now()/1000)});
  drawCrewShape(shuttlePlayer,1,false,true);vcPetArt(x,window.vcB3RoomData?.().pet,shuttlePlayer.x+30,shuttlePlayer.y+10,.8,performance.now()/1000);
  x.restore();
@@ -1617,15 +1637,26 @@ function vcAddVentEvidence(px,py,phase,color){
 function vcDrawVentEvidence(){
  const now=performance.now();
  for(let i=vcVentEvidence.length-1;i>=0;i--){
-  const f=vcVentEvidence[i],t=(now-f.start)/650;if(t>=1){vcVentEvidence.splice(i,1);continue}
-  x.save();x.translate(f.x,f.y);x.globalAlpha=1-t;
-  x.fillStyle='#07131f';x.strokeStyle='#9ddfff';x.lineWidth=3;
-  x.beginPath();x.roundRect(-24,-14,48,28,5);x.fill();x.stroke();
-  x.fillStyle=f.color;x.globalAlpha=(1-t)*.78;
-  const size=f.phase==='enter'?1-t:t;
-  x.beginPath();x.ellipse(0,-10-(1-size)*13,14*size+2,22*size+2,0,0,Math.PI*2);x.fill();
-  x.globalAlpha=1-t;x.strokeStyle='#b1f1ff';x.lineWidth=2;
-  for(let j=0;j<3;j++){x.beginPath();x.moveTo(-15,-8+j*7);x.lineTo(15,-8+j*7);x.stroke()}
+  const f=vcVentEvidence[i],t=(now-f.start)/900;
+  if(t>=1){vcVentEvidence.splice(i,1);continue}
+  const lift=f.phase==='enter'?Math.max(0,1-t*1.35):Math.min(1,t*1.8);
+  const lid=Math.sin(Math.min(1,t*1.65)*Math.PI)*33;
+  x.save();x.translate(f.x,f.y);
+  x.shadowColor='#a5e8ff';x.shadowBlur=16;
+  x.fillStyle='#081522';x.strokeStyle='#8ddfff';x.lineWidth=3;
+  x.beginPath();x.roundRect(-30,-17,60,34,6);x.fill();x.stroke();
+  // Character visibly drops into or climbs out of the hatch.
+  x.save();x.beginPath();x.rect(-28,-72,56,85);x.clip();
+  x.translate(0,15-lift*48);x.globalAlpha=Math.min(1,.25+lift);
+  x.fillStyle=f.color;x.strokeStyle='#05111e';x.lineWidth=3;
+  x.beginPath();x.roundRect(-15,-31,30,41,13);x.fill();x.stroke();
+  x.fillStyle='#b9eaff';x.beginPath();x.ellipse(5,-18,12,8,-.2,0,Math.PI*2);x.fill();
+  x.restore();
+  // The sliding metal cover remains above the avatar and is easy to spot.
+  x.shadowBlur=0;x.fillStyle='#40596c';x.strokeStyle='#c3ecff';
+  x.beginPath();x.roundRect(-30+lid,-18,60,36,5);x.fill();x.stroke();
+  x.strokeStyle='#142a39';x.lineWidth=3;
+  for(let j=-1;j<=1;j++){x.beginPath();x.moveTo(-22+lid,j*7);x.lineTo(22+lid,j*7);x.stroke()}
   x.restore();
  }
 }
@@ -1635,7 +1666,7 @@ function drawMap(cam){x.fillStyle='#050912';x.fillRect(0,0,W,H);x.save();let sh=
  rooms.forEach((r,i)=>{if(roomVisible(r,cam)){drawRoomIdentity(r,i);drawRoomPolish(r)}});drawPhysicalCameras();
  rooms.filter(r=>roomVisible(r,cam)).forEach(drawAmbient);
 
- drawVentEffectV112();vcDrawVentEvidence();
+ drawVentEffectV112();
  // Clearly visible vent grates; only infiltrators can use them.
  vents.forEach(v=>{x.save();x.translate(v.x,v.y);x.fillStyle='#0c1922';x.strokeStyle='#9bb8c5';x.lineWidth=2.5;x.beginPath();x.roundRect(-19,-13,38,26,6);x.fill();x.stroke();x.strokeStyle='#668695';x.lineWidth=2.5;for(let j=-1;j<=1;j++){x.beginPath();x.moveTo(-12,j*6);x.lineTo(12,j*6);x.stroke()}if(role==='INFILTRATOR'&&player&&dist(player,v)<90){x.strokeStyle='#c594ff';x.lineWidth=2;x.beginPath();x.roundRect(-23,-17,46,34,8);x.stroke();x.fillStyle='#eed7ff';x.font='bold 9px Arial';x.textAlign='center';x.fillText('V TO VENT',0,-24)}x.restore()});
  tasks.forEach(t=>{if(t.done)return;let near=player&&dist(player,t)<72,phase=performance.now()/250+t.x*.03,rad=(near?13:10)+Math.sin(phase)*2;x.fillStyle=near?'#fff2a3':'#ffd84f';x.shadowColor='#ffd84f';x.shadowBlur=near?28:15;x.beginPath();x.arc(t.x,t.y,rad,0,Math.PI*2);x.fill();x.shadowBlur=0;x.strokeStyle='rgba(255,218,79,.45)';x.lineWidth=2;x.beginPath();x.arc(t.x,t.y,rad+7+Math.sin(phase)*3,0,Math.PI*2);x.stroke();if(near&&role==='CREW'){x.fillStyle='#fff';x.font='bold 10px Arial';x.textAlign='center';x.fillText('SPACE',t.x,t.y-23);x.textAlign='left'}});
@@ -1652,7 +1683,7 @@ if(role==='INFILTRATOR'&&player.alive&&!meeting&&killCD<=0){let near=bots.some(b
  if((role==='CREW'||playerGhost)&&tasks.length)tasks.filter(t=>!t.done).forEach(t=>{let p=3+Math.sin(performance.now()/210)*2;x.save();x.strokeStyle='#66ef8c';x.lineWidth=3;x.shadowColor='#66ef8c';x.shadowBlur=9;x.beginPath();x.arc(t.x,t.y,16+p,0,Math.PI*2);x.stroke();x.fillStyle='#8cffaa';x.beginPath();x.arc(t.x,t.y,5,0,Math.PI*2);x.fill();x.restore()});
 
  drawKillFeedback();drawVentAnim();
- bodies.forEach(b=>drawBody(b));if(playerGhost)ghosts.filter(g=>!g.isPlayer).forEach(g=>drawCrewShape(g,.30,true,false));bots.forEach(b=>{drawGuy(b);drawBotWorkEffect(b)});if(window.VCMP&&window.VCMP.active){window.VCMP.others().forEach(p=>drawGuy(p))}drawGuy(player,true);x.restore();
+ bodies.forEach(b=>drawBody(b));if(playerGhost)ghosts.filter(g=>!g.isPlayer).forEach(g=>drawCrewShape(g,.30,true,false));bots.forEach(b=>{drawGuy(b);drawBotWorkEffect(b)});if(window.VCMP&&window.VCMP.active){window.VCMP.others().forEach(p=>drawGuy(p))}drawGuy(player,true);vcDrawVentEvidence();x.restore();
  // Explore-Bunker-style darkness/vignette around the camera
  // Character-following vision: the light/darkness is anchored to the player's
  // actual screen position, not to the camera/viewport center.
