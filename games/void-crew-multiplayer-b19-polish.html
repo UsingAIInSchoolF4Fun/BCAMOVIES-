@@ -462,7 +462,7 @@ const rooms=[
 ], world={w:2320,h:1480};
 // Larger play spaces: expand room footprints around their original centers.
 const vcOriginalRoomSize=new Map(rooms.map(r=>[r.n,{x:r.x,y:r.y,w:r.w,h:r.h}]));
-rooms.forEach(r=>{const factor=r.n==='Cafeteria'?1.32:1.27;
+rooms.forEach(r=>{const factor=r.n==='Cafeteria'?1.28:1.22;
  const cx=r.x+r.w/2,cy=r.y+r.h/2;
  r.w=Math.round(r.w*factor);r.h=Math.round(r.h*factor);
  r.x=Math.round(cx-r.w/2);r.y=Math.round(cy-r.h/2);
@@ -805,7 +805,7 @@ function vcBlockedFurniture(px,py){
  const r=rooms.find(room=>room.n==='Cafeteria');
  if(!r||!inRoomOutline(px,py,r))return false;
  const tableCenters=[[184,145],[536,145],[184,302],[536,302],[360,222]];
- const radius=84; // includes chair edges and a walking clearance
+ const radius=59; // match the smaller illustrated tables, with clearance
  const u=(px-r.x)*720/r.w,v=(py-r.y)*410/r.h;
  return tableCenters.some(([cx,cy])=>Math.hypot(u-cx,v-cy)<radius);
 }
@@ -1433,6 +1433,20 @@ function botGo(b,t,dt,sp){
  let dx=goal.x-b.x,dy=goal.y-b.y,d=Math.hypot(dx,dy)||1;
  b.vx=(b.vx||0)+(dx/d*sp-(b.vx||0))*.16;b.vy=(b.vy||0)+(dy/d*sp-(b.vy||0))*.16;
  moveEnt(b,b.vx*dt,b.vy*dt);
+ if(n.stuck>.7&&rooms.some(r=>r.n==='Cafeteria'&&inRoomOutline(b.x,b.y,r))){
+  // Give bots a short tangential detour around the nearest table rather than
+  // repeatedly steering directly through furniture.
+  const cafe=rooms.find(r=>r.n==='Cafeteria');
+  const centers=[[184,145],[536,145],[184,302],[536,302],[360,222]];
+  const u=(b.x-cafe.x)*720/cafe.w,v=(b.y-cafe.y)*410/cafe.h;
+  const near=centers.map(([cx,cy])=>({cx,cy,d:Math.hypot(u-cx,v-cy)})).sort((a,z)=>a.d-z.d)[0];
+  if(near&&near.d<115){
+    const angle=Math.atan2(v-near.cy,u-near.cx),side=(b.name||'').length%2?1:-1;
+    const theta=angle+side*.85;
+    const waypoint={x:cafe.x+(near.cx+Math.cos(theta)*110)*cafe.w/720,y:cafe.y+(near.cy+Math.sin(theta)*110)*cafe.h/410};
+    if(valid(waypoint.x,waypoint.y,12)){n.route.unshift(waypoint);n.routeT=2;n.stuck=0;}
+  }
+ }
  if(n.stuck>1.65){n.route=[];n.routeT=0;let p=nearestNavNode(b,navNodes());if(p&&Math.hypot(p.x-b.x,p.y-b.y)<170){b.x=p.x;b.y=p.y}n.stuck=0}
 }
 function botKill(k,v){
@@ -1794,7 +1808,7 @@ const vcRoomArt={};
  const img=new Image();
  img.onload=()=>{vcRoomArt.Cafeteria=img;try{vcBuildDeck()}catch(err){console.warn('Room art redraw',err)}};
  img.onerror=()=>console.warn('Cafeteria art unavailable; keeping original playable floor');
- img.src='void-crew-art/cafeteria.svg?v=1';
+ img.src='void-crew-art/cafeteria.svg?v=2';
 })();
 function vcBuildDeck(){
  const saved=x,off=document.createElement('canvas');off.width=world.w;off.height=world.h;
