@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="410" viewBox="0 0 720 410">
+<defs>
+<pattern id="tile" width="52" height="52" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="52" height="52" fill="#9ba8a7"/><path d="M0 0H52V52H0Z" fill="none" stroke="#d1d8d2" stroke-width="2"/><path d="M0 26H52M26 0V52" stroke="#748a8b" stroke-width="1" opacity=".22"/></pattern>
+<linearGradient id="wall" x2="0" y2="1"><stop stop-color="#334854"/><stop offset=".45" stop-color="#5d727b"/><stop offset="1" stop-color="#172934"/></linearGradient>
+<linearGradient id="table" x2=".2" y2="1"><stop stop-color="#5f9ec5"/><stop offset=".55" stop-color="#3473a1"/><stop offset="1" stop-color="#1d476d"/></linearGradient>
+<radialGradient id="light"><stop stop-color="#fff" stop-opacity=".19"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="7"/></filter>
+<g id="tableUnit"><ellipse cy="12" rx="80" ry="71" fill="#07121a" opacity=".45" filter="url(#shadow)"/><circle r="73" fill="#0c2537" stroke="#172e3b" stroke-width="8"/><circle r="65" fill="url(#table)" stroke="#9bd1df" stroke-width="3"/><circle r="52" fill="none" stroke="#28608a" stroke-width="2" opacity=".65"/><path d="M-43-51Q0-72 43-51" stroke="#b0dce8" stroke-width="5" fill="none" opacity=".45"/><g fill="#2b5b7e" stroke="#16334b" stroke-width="4"><path d="M-90-33Q-119 0-90 33L-76 25Q-90 0-76-25Z"/><path d="M90-33Q119 0 90 33L76 25Q90 0 76-25Z"/><path d="M-36-88Q0-103 36-88L27-74Q0-83-27-74Z"/><path d="M-36 88Q0 103 36 88L27 74Q0 83-27 74Z"/></g></g>
+<g id="plant"><ellipse cy="25" rx="20" ry="9" fill="#111e24" opacity=".5"/><path d="M-17 4L-13 25H13L17 4Z" fill="#6a7e86" stroke="#1b3542" stroke-width="3"/><ellipse cy="4" rx="17" ry="6" fill="#344b52"/><path d="M0 7Q-37-23-16-38Q1-32 0 7M0 7Q30-40 37-29Q33-9 0 7M0 7Q-12-52 5-51Q19-39 0 7" fill="#3c986b" stroke="#1d634c" stroke-width="3"/></g>
+</defs>
+<path d="M38 5H682L714 37V360L669 405H51L5 360V45Z" fill="#152a34" stroke="#071620" stroke-width="9"/>
+<path d="M48 27H670L691 49V347L659 382H60L29 347V54Z" fill="url(#tile)" stroke="#6c858e" stroke-width="9"/>
+<path d="M40 49V28H680V49" fill="none" stroke="url(#wall)" stroke-width="29"/>
+<path d="M40 355V380H680V355" fill="none" stroke="#243b47" stroke-width="22"/>
+<path d="M32 80V326M688 80V326" stroke="#253c47" stroke-width="23"/>
+<path d="M125 20H560" stroke="#081923" stroke-width="32"/>
+<g fill="#0d2b47" stroke="#78a8bb" stroke-width="4"><rect x="134" y="7" width="120" height="44" rx="4"/><rect x="263" y="7" width="120" height="44" rx="4"/><rect x="392" y="7" width="160" height="44" rx="4"/></g>
+<g fill="#d6f4ff" opacity=".85"><circle cx="155" cy="17" r="2"/><circle cx="294" cy="29" r="2"/><circle cx="444" cy="17" r="2"/><circle cx="525" cy="38" r="2"/></g>
+<ellipse cx="360" cy="205" rx="330" ry="185" fill="url(#light)"/>
+<use href="#tableUnit" x="184" y="145"/><use href="#tableUnit" x="536" y="145"/><use href="#tableUnit" x="184" y="302"/><use href="#tableUnit" x="536" y="302"/>
+<g transform="translate(360 222)"><use href="#tableUnit"/><rect x="-27" y="-24" width="54" height="47" rx="8" fill="#d4b35c" stroke="#42342d" stroke-width="5"/><rect x="-20" y="-17" width="40" height="34" rx="4" fill="#812e2c"/><circle r="11" fill="#fa5c4f" stroke="#f4c4a2" stroke-width="4"/><text y="42" text-anchor="middle" fill="#f4f9f9" font-family="Arial" font-size="10" font-weight="bold" letter-spacing="2">EMERGENCY</text></g>
+<g transform="translate(84 69)"><use href="#plant"/></g><g transform="translate(637 69)"><use href="#plant"/></g>
+<g transform="translate(634 270)"><rect x="-30" y="-49" width="60" height="99" rx="6" fill="#1a344b" stroke="#071825" stroke-width="6"/><rect x="-22" y="-41" width="44" height="67" rx="3" fill="#24465d"/><g fill="#f1b763"><rect x="-15" y="-32" width="10" height="13"/><rect x="3" y="-32" width="10" height="13"/></g><g fill="#77d2d9"><rect x="-15" y="-12" width="10" height="13"/><rect x="3" y="-12" width="10" height="13"/></g><g fill="#d56d8b"><rect x="-15" y="8" width="10" height="12"/><rect x="3" y="8" width="10" height="12"/></g><rect x="-11" y="32" width="22" height="7" rx="3" fill="#b5d4d7"/></g>
+<g fill="#263e4b" stroke="#a0c5ce" stroke-width="3"><rect x="21" y="160" width="30" height="90" rx="6"/><rect x="669" y="160" width="30" height="90" rx="6"/></g>
+<g fill="#f7d883"><rect x="26" y="174" width="20" height="62" rx="4"/><rect x="674" y="174" width="20" height="62" rx="4"/></g>
+<g fill="#eaf4ef" font-family="Arial" font-weight="bold" font-size="14" letter-spacing="2"><text x="70" y="84">CAFETERIA</text></g>
+</svg>
