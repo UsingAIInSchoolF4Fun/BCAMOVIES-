@@ -632,40 +632,41 @@ function drawVCSleekLobby(){
  x.fillStyle='#91e4f4';x.font='bold 15px Arial';x.fillText(crew.length+' / 10 CREW  ·  '+Math.max(0,10-crew.length)+' OPEN / BOT SLOTS',0,high/2-25);x.restore();
 }
 function drawVCWalkableLobby(){
+ // USV Null Horizon hangar: an actual waiting room, not a large showroom.
  const mapW=1800,mapH=1120,zoom=Math.min(W/1050,H/720),vw=W/zoom,vh=H/zoom;
  const cx=Math.max(vw/2,Math.min(mapW-vw/2,shuttlePlayer.x)),cy=Math.max(vh/2,Math.min(mapH-vh/2,shuttlePlayer.y));
  x.clearRect(0,0,W,H);x.save();x.scale(zoom,zoom);x.translate(-cx+vw/2,-cy+vh/2);
- x.fillStyle='#07111f';x.fillRect(0,0,mapW,mapH);
- x.fillStyle='#14283d';x.beginPath();x.roundRect(310,185,1180,750,55);x.fill();
- x.strokeStyle='#638ba8';x.lineWidth=13;x.stroke();
- x.strokeStyle='#294a60';x.lineWidth=2;for(let a=360;a<1450;a+=85){x.beginPath();x.moveTo(a,205);x.lineTo(a,910);x.stroke()}for(let b=225;b<900;b+=85){x.beginPath();x.moveTo(335,b);x.lineTo(1465,b);x.stroke()}
- x.fillStyle='#0c2233';x.beginPath();x.roundRect(705,405,390,230,26);x.fill();x.strokeStyle='#54e4f2';x.lineWidth=4;x.stroke();
- x.fillStyle='#193d52';x.beginPath();x.roundRect(760,455,280,125,18);x.fill();x.strokeStyle='#79eafa';x.stroke();
- x.fillStyle='#e2faff';x.textAlign='center';x.font='bold 38px Arial';x.fillText('LOCKER',900,505);x.font='22px Arial';x.fillText('Press E to customize',900,544);
- x.fillStyle='#b6e6f3';x.font='bold 35px Arial';x.fillText('VOID CREW  /  WAITING BAY',900,255);
- x.font='21px Arial';x.fillText('WASD TO MOVE     •     E AT LOCKER',900,290);
- // Compact social waiting bay: benches, charging points, windows and soft indicator lights.
- x.save();
- for(const px of [435,1365]){
-  for(const py of [430,660]){
-   x.fillStyle='#081824';x.strokeStyle='#75afc8';x.lineWidth=3;
-   x.beginPath();x.roundRect(px-58,py-32,116,65,12);x.fill();x.stroke();
-   x.fillStyle='#2c4d61';x.beginPath();x.roundRect(px-48,py-21,96,45,9);x.fill();
-   x.fillStyle='#75d4eb';x.fillRect(px-38,py+15,76,4);
-  }
+ x.fillStyle='#030912';x.fillRect(0,0,mapW,mapH);
+ // Airlock chamber with inset steel walls and a central open floor.
+ x.fillStyle='#0c1a28';x.beginPath();x.roundRect(310,185,1180,750,40);x.fill();
+ x.strokeStyle='#4e7182';x.lineWidth=16;x.stroke();
+ x.strokeStyle='#1c3749';x.lineWidth=6;x.beginPath();x.roundRect(340,215,1120,690,25);x.stroke();
+ for(let i=0;i<9;i++){const xx=380+i*125;x.fillStyle='#1b3344';x.fillRect(xx,218,15,38);x.fillRect(xx,864,15,38);x.fillStyle=i%2?'#c99a56':'#5ca9b8';x.fillRect(xx+3,233,9,4)}
+ // The main departure deck is intentionally empty for player movement.
+ x.fillStyle='#132839';x.beginPath();x.roundRect(500,345,800,430,24);x.fill();
+ x.strokeStyle='#35566b';x.lineWidth=3;x.stroke();
+ x.strokeStyle='rgba(121,202,225,.14)';x.lineWidth=2;
+ for(let xx=545;xx<1280;xx+=120){x.beginPath();x.moveTo(xx,365);x.lineTo(xx,755);x.stroke()}
+ for(let yy=390;yy<770;yy+=120){x.beginPath();x.moveTo(525,yy);x.lineTo(1275,yy);x.stroke()}
+ // Wall-mounted locker station; never blocks the walking floor.
+ x.fillStyle='#0a1724';x.beginPath();x.roundRect(760,415,280,155,18);x.fill();
+ x.strokeStyle='#63e1e9';x.lineWidth=5;x.stroke();
+ x.fillStyle='#1d4659';x.beginPath();x.roundRect(795,442,210,72,9);x.fill();
+ x.fillStyle='#c5faff';x.textAlign='center';x.font='bold 31px Arial';x.fillText('LOCKER',900,485);
+ x.fillStyle='#8ac4d6';x.font='16px Arial';x.fillText('E  ·  CUSTOMIZE',900,543);
+ // Departure monitors, cargo benches and docking airlock along the perimeter.
+ for(const px of [420,1380])for(const py of [450,710]){
+  x.fillStyle='#1d3547';x.beginPath();x.roundRect(px-48,py-28,96,56,8);x.fill();
+  x.strokeStyle='#4d7689';x.lineWidth=3;x.stroke();
+  x.fillStyle='#416071';x.fillRect(px-35,py-11,70,21);
  }
- for(let i=0;i<7;i++){
-  let px=520+i*125;x.fillStyle='#0b1c2b';x.beginPath();x.roundRect(px,200,65,20,7);x.fill();
-  x.fillStyle=i%2?'#68e3aa':'#71c7f9';x.fillRect(px+9,206,47,6);
- }
- for(const px of [550,1250]){
-  x.fillStyle='#0a2536';x.strokeStyle='#78d7f3';x.lineWidth=4;
-  x.beginPath();x.roundRect(px-55,825,110,48,10);x.fill();x.stroke();
-  x.fillStyle='#9de8fb';x.font='bold 12px Arial';x.textAlign='center';x.fillText('READY BAY',px,855);
- }
- x.restore();
- const crew=window.vcB3Roster?.()||[];crew.forEach(p=>{if(p.id===window.vcB3MyId?.())return;if(!Number.isFinite(p.shuttleX)||!Number.isFinite(p.shuttleY))return;drawCrewShape({x:p.shuttleX,y:p.shuttleY,c:p.c,name:p.name,hat:p.room?.hat,vx:0,vy:0},1,false,false);vcPetArt(x,p.room?.pet,p.shuttleX+30,p.shuttleY+10,.8,performance.now()/1000)});
- drawCrewShape(shuttlePlayer,1,false,true);vcPetArt(x,window.vcB3RoomData?.().pet,shuttlePlayer.x+30,shuttlePlayer.y+10,.8,performance.now()/1000);
+ x.fillStyle='#102838';x.beginPath();x.roundRect(715,810,370,58,10);x.fill();x.strokeStyle='#d3a95f';x.lineWidth=3;x.stroke();
+ x.fillStyle='#e7d6aa';x.font='bold 17px Arial';x.fillText('DEPARTURE AIRLOCK   /   BAY 07',900,846);
+ x.fillStyle='#d6e9f3';x.font='bold 34px Arial';x.fillText('USV NULL HORIZON',900,288);
+ x.fillStyle='#7db1c8';x.font='17px Arial';x.fillText('CREW ASSEMBLY  /  WAITING BAY',900,321);
+ const crew=window.vcB3Roster?.()||[];
+ crew.forEach(p=>{if(p.id===window.vcB3MyId?.())return;if(!Number.isFinite(p.shuttleX)||!Number.isFinite(p.shuttleY))return;drawCrewShape({x:p.shuttleX,y:p.shuttleY,c:p.c,name:p.name,hat:p.room?.hat,vx:0,vy:0},1,false,false);vcPetArt(x,p.room?.pet,p.shuttleX+42,p.shuttleY+16,.38)});
+ if(shuttlePlayer)drawCrewShape(shuttlePlayer,1,false,true);
  x.restore();
 }
 function drawShuttle(){
@@ -745,7 +746,7 @@ function inside(px,py,r){return px>r.x+20&&px<r.x+r.w-20&&py>r.y+20&&py<r.y+r.h-
 // Distinct room silhouettes. The bounds and equipment stay in their original locations.
 function roomOutline(r,ctx=x,margin=0){
  const X=r.x-margin,Y=r.y-margin,W=r.w+2*margin,H=r.h+2*margin;
- const style={Cafeteria:'octagon',Reactor:'circle','Med Bay':'capsule',Security:'notch',Electrical:'bevel',Storage:'hangar',Admin:'notch',Oxygen:'oval',Shields:'octagon',Navigation:'nose'}[r.n]||'octagon';
+ const style={Cafeteria:'hangar',Reactor:'circle','Med Bay':'capsule',Security:'bevel',Electrical:'bevel',Storage:'hangar',Admin:'octagon',Oxygen:'oval',Shields:'octagon',Navigation:'nose'}[r.n]||'octagon';
  let pts;
  if(style==='circle'||style==='oval'){const cx=X+W/2,cy=Y+H/2,rx=W/2,ry=H/2;pts=Array.from({length:40},(_,i)=>{let a=i*Math.PI*2/40;return[cx+Math.cos(a)*rx,cy+Math.sin(a)*ry]})}
  else if(style==='octagon'){let a=Math.min(100,W*.20,H*.26);pts=[[X+a,Y],[X+W-a,Y],[X+W,Y+a],[X+W,Y+H-a],[X+W-a,Y+H],[X+a,Y+H],[X,Y+H-a],[X,Y+a]]}
@@ -1744,13 +1745,27 @@ function vcRoomFurnish(r){
 }
 function vcBuildDeck(){
  const saved=x,off=document.createElement('canvas');off.width=world.w;off.height=world.h;
- const ctx=off.getContext('2d',{alpha:false});if(!ctx)return;
+ const ctx=off.getContext('2d',{alpha:false,desynchronized:true});if(!ctx)return;
  x=ctx;
  try{
   x.fillStyle='#040a12';x.fillRect(0,0,world.w,world.h);
   drawCleanCorridors();
   rooms.forEach(drawRoomShell);
   rooms.forEach(vcRoomFurnish);
+  // Functional zoning, not scattered decoration: large identifiable machinery bays.
+  rooms.forEach((r,i)=>{
+   const accents=['#73d9e9','#f28c6d','#6dd7be','#8ab9ff','#e5bb68','#c5a17a','#a8b0fc','#7fdda9','#6cbdea','#8fcaff'];
+   const ac=accents[i%accents.length],px=r.x+r.w/2,py=r.y+r.h/2;
+   x.save();roomOutline(r,x);x.clip();
+   x.globalAlpha=.12;x.fillStyle=ac;
+   x.beginPath();x.arc(px,py,Math.min(r.w,r.h)*.34,0,Math.PI*2);x.fill();
+   x.globalAlpha=1;
+   x.strokeStyle=ac;x.globalAlpha=.45;x.lineWidth=5;
+   x.beginPath();x.moveTo(r.x+45,r.y+r.h-56);x.lineTo(r.x+Math.min(190,r.w*.55),r.y+r.h-56);x.stroke();
+   x.globalAlpha=1;x.fillStyle='#e5f7fc';x.font='bold 15px Arial';x.textAlign='left';
+   x.fillText(String(i+1).padStart(2,'0')+'  /  '+r.n.toUpperCase(),r.x+44,r.y+r.h-72);
+   x.restore();
+  });
   drawPhysicalCameras();
  }finally{x=saved}
  vcDeckCanvas=off;vcDeckVersion++;
@@ -1788,8 +1803,8 @@ if(role==='INFILTRATOR'&&player.alive&&!meeting&&killCD<=0){let near=bots.some(b
  let vg=x.createRadialGradient(lightX,lightY,Math.max(42,vr*.34),lightX,lightY,vr);
  vg.addColorStop(0,'rgba(0,0,0,0)');
  vg.addColorStop(.52,'rgba(0,0,0,.025)');
- vg.addColorStop(.52,'rgba(0,0,0,.52)');
- vg.addColorStop(1,'rgba(0,0,0,.997)');
+ vg.addColorStop(.52,'rgba(0,0,0,.24)');
+ vg.addColorStop(1,'rgba(0,0,0,.80)');
  x.fillStyle=vg;x.fillRect(0,0,W,H);
  if(cameraMode){x.fillStyle='rgba(75,130,105,.08)';x.fillRect(0,0,W,H);x.strokeStyle='#75a88e';x.lineWidth=2;x.strokeRect(10,10,W-20,H-20);x.fillStyle='#b9d6c7';x.font='bold 13px monospace';x.fillText('SECURITY CAMERA FEED',25,35)}
 }
@@ -1801,6 +1816,12 @@ function drawCrewShape(p,alpha=1,ghost=false,me=false){x.save();x.globalAlpha=al
  if(!ghost){let stride=moving?Math.sin(phase)*5:0;x.fillStyle='#152127';x.beginPath();x.roundRect(-13,13+stride,11,19,5);x.roundRect(4,13-stride,11,19,5);x.fill();x.fillStyle=c;x.beginPath();x.roundRect(-11,13+stride,8,14,4);x.roundRect(6,13-stride,8,14,4);x.fill()}
  // pressure suit torso, wider shoulders and tapered lower body
  let body=x.createLinearGradient(-17,-27,18,22);body.addColorStop(0,'#ffffff22');body.addColorStop(.12,c);body.addColorStop(.75,c);body.addColorStop(1,'#101b20');x.fillStyle=body;x.strokeStyle='rgba(225,245,250,.26)';x.lineWidth=2;x.beginPath();x.moveTo(-12,-25);x.bezierCurveTo(-25,-20,-24,-2,-20,12);x.bezierCurveTo(-17,24,-8,27,1,26);x.bezierCurveTo(13,27,21,20,22,7);x.bezierCurveTo(24,-8,20,-21,11,-25);x.bezierCurveTo(4,-29,-5,-29,-12,-25);x.closePath();x.fill();x.stroke();
+ // NULL HORIZON: pressure-sealed shoulder plates and central suit insignia.
+ x.save();x.strokeStyle='#071b27';x.lineWidth=3;
+ x.fillStyle='#243a47';x.beginPath();x.roundRect(-24,-18,13,17,5);x.roundRect(11,-18,13,17,5);x.fill();x.stroke();
+ x.fillStyle='#8acbda';x.globalAlpha=.68;x.fillRect(-21,-13,7,3);x.fillRect(14,-13,7,3);x.globalAlpha=1;
+ x.fillStyle='#0b2332';x.beginPath();x.roundRect(-11,4,22,14,4);x.fill();
+ x.strokeStyle='#a7dfe6';x.lineWidth=1.5;x.stroke();x.fillStyle='#65c7d4';x.fillRect(-7,8,14,3);x.restore();
  // helmet rim makes the Void Crew silhouette distinct
  x.strokeStyle='#101a20';x.lineWidth=4;x.beginPath();x.arc(1,-11,18,Math.PI*1.08,Math.PI*1.92);x.stroke();
  // dimensional visor
