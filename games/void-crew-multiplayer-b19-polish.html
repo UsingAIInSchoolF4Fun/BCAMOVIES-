@@ -1778,22 +1778,12 @@ function vcBuildDeck(){
   x.fillStyle='#040a12';x.fillRect(0,0,world.w,world.h);
   drawCleanCorridors();
   rooms.forEach(drawRoomShell);
-  rooms.forEach(vcRoomFurnish);
-  // Functional zoning, not scattered decoration: large identifiable machinery bays.
-  rooms.forEach((r,i)=>{
-   const accents=['#73d9e9','#f28c6d','#6dd7be','#8ab9ff','#e5bb68','#c5a17a','#a8b0fc','#7fdda9','#6cbdea','#8fcaff'];
-   const ac=accents[i%accents.length],px=r.x+r.w/2,py=r.y+r.h/2;
-   x.save();roomOutline(r,x);x.clip();
-   x.globalAlpha=.12;x.fillStyle=ac;
-   x.beginPath();x.arc(px,py,Math.min(r.w,r.h)*.34,0,Math.PI*2);x.fill();
-   x.globalAlpha=1;
-   x.strokeStyle=ac;x.globalAlpha=.45;x.lineWidth=5;
-   x.beginPath();x.moveTo(r.x+45,r.y+r.h-56);x.lineTo(r.x+Math.min(190,r.w*.55),r.y+r.h-56);x.stroke();
-   x.globalAlpha=1;x.fillStyle='#e5f7fc';x.font='bold 15px Arial';x.textAlign='left';
-   x.fillText(String(i+1).padStart(2,'0')+'  /  '+r.n.toUpperCase(),r.x+44,r.y+r.h-72);
-   x.restore();
-  });
-  drawPhysicalCameras();
+  // v35 room-by-room redesign: interiors intentionally blank until individually approved.
+  // Preserve room boundaries, tasks, vents, collision, and gameplay anchors.
+  // rooms.forEach(vcRoomFurnish);
+  // v35: remove old decorative machinery/glows/sector art from all rooms.
+  // New detailed interiors will be designed and added one room at a time.
+  // Physical camera positions remain in game data; no old room camera decorations.
  }finally{x=saved}
  vcDeckCanvas=off;vcDeckVersion++;
 }
