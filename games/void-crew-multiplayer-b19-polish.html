@@ -639,9 +639,9 @@ function drawVCWalkableLobby(){
  x.fillStyle='#14283d';x.beginPath();x.roundRect(310,185,1180,750,55);x.fill();
  x.strokeStyle='#638ba8';x.lineWidth=13;x.stroke();
  x.strokeStyle='#294a60';x.lineWidth=2;for(let a=360;a<1450;a+=85){x.beginPath();x.moveTo(a,205);x.lineTo(a,910);x.stroke()}for(let b=225;b<900;b+=85){x.beginPath();x.moveTo(335,b);x.lineTo(1465,b);x.stroke()}
- x.fillStyle='#0b1b2c';x.beginPath();x.roundRect(580,370,640,360,36);x.fill();x.strokeStyle='#54e4f2';x.lineWidth=5;x.stroke();
- x.fillStyle='#1e4961';x.beginPath();x.roundRect(740,445,320,215,24);x.fill();x.strokeStyle='#79eafa';x.stroke();
- x.fillStyle='#e2faff';x.textAlign='center';x.font='bold 38px Arial';x.fillText('LOCKER',900,520);x.font='22px Arial';x.fillText('Press E to customize',900,558);
+ x.fillStyle='#0c2233';x.beginPath();x.roundRect(705,405,390,230,26);x.fill();x.strokeStyle='#54e4f2';x.lineWidth=4;x.stroke();
+ x.fillStyle='#193d52';x.beginPath();x.roundRect(760,455,280,125,18);x.fill();x.strokeStyle='#79eafa';x.stroke();
+ x.fillStyle='#e2faff';x.textAlign='center';x.font='bold 38px Arial';x.fillText('LOCKER',900,505);x.font='22px Arial';x.fillText('Press E to customize',900,544);
  x.fillStyle='#b6e6f3';x.font='bold 35px Arial';x.fillText('VOID CREW  /  WAITING BAY',900,255);
  x.font='21px Arial';x.fillText('WASD TO MOVE     •     E AT LOCKER',900,290);
  // Compact social waiting bay: benches, charging points, windows and soft indicator lights.
@@ -1511,23 +1511,42 @@ function drawRoomIdentity(r,i){
  }
  x.restore();
 }
-function drawCleanCorridors(){hallwayCurves().forEach(h=>{x.save();x.lineCap='round';x.lineJoin='round';x.shadowColor='#000';x.shadowBlur=12;x.strokeStyle='#080c10';x.lineWidth=HALL_W+18;x.beginPath();x.moveTo(h.a.x,h.a.y);x.quadraticCurveTo(h.c.x,h.c.y,h.b.x,h.b.y);x.stroke();x.shadowBlur=0;x.strokeStyle='#1c2a31';x.lineWidth=HALL_W+4;x.stroke();x.strokeStyle='#2e434d';x.lineWidth=HALL_W-10;x.stroke();x.strokeStyle='rgba(125,180,201,.38)';x.lineWidth=3;x.setLineDash([18,12]);x.stroke();x.setLineDash([]);x.strokeStyle='rgba(142,188,203,.15)';x.lineWidth=2;x.setLineDash([14,16]);x.stroke();x.setLineDash([]);
- // Industrial hull seams, recessed conduits and numbered deck markings.
- x.strokeStyle='rgba(103,221,241,.28)';x.lineWidth=2;
- x.beginPath();x.moveTo(h.a.x,h.a.y);x.quadraticCurveTo(h.c.x,h.c.y,h.b.x,h.b.y);x.stroke();
- for(let i=1;i<=7;i++){const p=qPoint(h,i/8),q=qPoint(h,Math.min(1,i/8+.01)),angle=Math.atan2(q.y-p.y,q.x-p.x);
- x.save();x.translate(p.x,p.y);x.rotate(angle);x.strokeStyle='rgba(5,14,22,.5)';x.lineWidth=5;x.beginPath();x.moveTo(0,-HALL_W*.36);x.lineTo(0,-HALL_W*.24);x.moveTo(0,HALL_W*.24);x.lineTo(0,HALL_W*.36);x.stroke();
- x.fillStyle=i%2?'#6bd7dc':'#d9b568';x.fillRect(-3,-HALL_W*.39,6,5);x.fillRect(-3,HALL_W*.36,6,5);x.restore()}
- x.restore()})}
+function drawCleanCorridors(){
+ hallwayCurves().forEach((h,idx)=>{
+  x.save();x.lineCap='round';x.lineJoin='round';
+  x.beginPath();x.moveTo(h.a.x,h.a.y);x.quadraticCurveTo(h.c.x,h.c.y,h.b.x,h.b.y);
+  x.strokeStyle='#060e18';x.lineWidth=HALL_W+22;x.stroke();
+  x.strokeStyle='#345063';x.lineWidth=HALL_W+8;x.stroke();
+  x.strokeStyle='#192f40';x.lineWidth=HALL_W-10;x.stroke();
+  // Industrial light tracks, continuous and unobtrusive.
+  x.strokeStyle='#7bb8c5';x.globalAlpha=.18;x.lineWidth=3;x.setLineDash([22,35]);x.stroke();x.setLineDash([]);
+  for(let j=1;j<=4;j++){
+   const p=qPoint(h,j/5),q=qPoint(h,Math.min(1,j/5+.02)),angle=Math.atan2(q.y-p.y,q.x-p.x);
+   x.save();x.translate(p.x,p.y);x.rotate(angle);
+   x.fillStyle=idx%2?'#8ccce1':'#e6c278';
+   x.globalAlpha=.7;x.fillRect(-12,-HALL_W*.40,24,5);x.fillRect(-12,HALL_W*.37,24,5);
+   x.restore();
+  }
+  x.restore();
+ });
+}
 function roomPalette(n){return {Cafeteria:['#22323a','#496471'],Reactor:['#2b1718','#a8493b'],'Med Bay':['#172c34','#4b9db5'],Security:['#182830','#477d91'],Electrical:['#292719','#96813e'],Storage:['#29251e','#776647'],Admin:['#1b2933','#55758a'],Oxygen:['#18302d','#4b8d80'],Shields:['#172b37','#4f8fae'],Navigation:['#152a35','#477f9a']}[n]||['#202b2c','#53666a']}
 function drawRoomShell(r){
- let [base,edge]=roomPalette(r.n);x.save();x.shadowColor='#000';x.shadowBlur=18;x.fillStyle='#070b0d';roomOutline(r,x,12);x.fill();x.shadowBlur=0;
- // 2.5D raised bulkhead: an offset extrusion under the floor perimeter.
- x.save();x.translate(0,18);x.fillStyle='#05090e';roomOutline(r,x,8);x.fill();x.strokeStyle='#162b37';x.lineWidth=11;x.stroke();x.restore();
- let g=x.createLinearGradient(r.x,r.y,r.x,r.y+r.h);g.addColorStop(0,edge);g.addColorStop(.10,base);g.addColorStop(1,'#101719');x.fillStyle=g;roomOutline(r);x.fill();x.strokeStyle=edge;x.globalAlpha=.7;x.lineWidth=5;x.stroke();x.globalAlpha=1;
- x.save();roomOutline(r);x.clip();for(let yy=r.y+55;yy<r.y+r.h-20;yy+=38){x.strokeStyle='rgba(255,255,255,.035)';x.beginPath();x.moveTo(r.x+18,yy);x.lineTo(r.x+r.w-18,yy);x.stroke()}
- x.strokeStyle='rgba(144,220,232,.08)';x.lineWidth=2;for(let xx=r.x+45;xx<r.x+r.w;xx+=65){x.beginPath();x.moveTo(xx,r.y);x.lineTo(xx,r.y+r.h);x.stroke()}x.restore();
- x.fillStyle='#071015';x.beginPath();x.roundRect(r.x+38,r.y+13,Math.min(165,r.w-72),28,7);x.fill();x.strokeStyle=edge;x.lineWidth=1;x.stroke();x.fillStyle='#d4e3e8';x.font='bold 12px Arial';x.fillText(r.n.toUpperCase(),r.x+49,r.y+32);x.restore();
+ const [base,edge]=roomPalette(r.n);
+ x.save();x.fillStyle='#060c15';roomOutline(r,x,11);x.fill();
+ x.fillStyle=base;roomOutline(r,x);x.fill();
+ x.strokeStyle=edge;x.lineWidth=7;x.stroke();
+ x.save();roomOutline(r,x);x.clip();
+ x.strokeStyle='rgba(180,220,232,.08)';x.lineWidth=2;
+ for(let xx=r.x+60;xx<r.x+r.w;xx+=125){x.beginPath();x.moveTo(xx,r.y+35);x.lineTo(xx,r.y+r.h-20);x.stroke()}
+ for(let yy=r.y+90;yy<r.y+r.h;yy+=125){x.beginPath();x.moveTo(r.x+22,yy);x.lineTo(r.x+r.w-22,yy);x.stroke()}
+ x.restore();
+ // One clean wall-mounted nameplate per room.
+ const w=Math.min(185,r.w-80);
+ x.fillStyle='#091722';x.beginPath();x.roundRect(r.x+30,r.y+22,w,32,7);x.fill();
+ x.strokeStyle=edge;x.lineWidth=2;x.stroke();
+ x.fillStyle='#e7f6ff';x.font='bold 14px Arial';x.textAlign='left';x.fillText(r.n.toUpperCase(),r.x+44,r.y+43);
+ x.restore();
 }
 function drawRoomPolish(r){
  const {x:rx,y:ry,w:rw,h:rh,n}=r;
