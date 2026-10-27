@@ -333,7 +333,16 @@ kbd{background:#222f43;padding:2px 6px;border-radius:4px}
 .vcB7EndActions button{background:linear-gradient(135deg,#45228d,#9657f5)!important;border:2px solid #b6a5ff!important;border-radius:12px!important;color:white!important;font-weight:900!important;padding:14px 20px!important;cursor:pointer}
 .vcB7EndActions .vcB7Leave{background:#131a2c!important}
 #vcB7RematchStatus{color:#b8b7d4;font:13px Arial;margin-top:18px}
-</style><style id="vcB7NameLimits">#lobby label[for="name"],#lobby label[for="code"]{display:block;width:100%;margin:6px 0 0}#lobby #name,#lobby #code{flex:1;min-width:130px}#lobby.mpWaitingLobby label[for="name"],#lobby.mpWaitingLobby label[for="code"]{display:none!important}</style></head>
+</style><style id="vcB7NameLimits">#lobby label[for="name"],#lobby label[for="code"]{display:block;width:100%;margin:6px 0 0}#lobby #name,#lobby #code{flex:1;min-width:130px}#lobby.mpWaitingLobby label[for="name"],#lobby.mpWaitingLobby label[for="code"]{display:none!important}</style><style id="vcV30Visual">
+#vcB18Shop .b19feat{background:linear-gradient(135deg,#123149,#1c1837);border:1px solid #4cbed1;border-radius:16px;padding:14px;margin-bottom:16px}
+#vcB18Shop .b19feat h3{letter-spacing:.16em;color:#a3f3ff}
+#vcB18Shop .b19card{transition:transform .15s ease,border-color .15s ease}
+#vcB18Shop .b19card:hover{transform:translateY(-3px);border-color:#80e9ff}
+#mpMeeting{backdrop-filter:none!important}
+#mpMeeting .mpVoteCard{transition:border-color .15s ease,transform .15s ease}
+#mpMeeting .mpVoteCard:hover{transform:translateY(-2px)}
+@media(prefers-reduced-motion:reduce){#vcB18Shop .b19card,#mpMeeting .mpVoteCard{transition:none!important;animation:none!important}}
+</style></head>
 <body>
 <canvas id="c"></canvas>
 <div id="menuSpace"><div id="stars"></div><div class="menuShip"><div style="position:absolute;right:210px;top:45px;width:150px;height:3px;background:linear-gradient(90deg,transparent,rgba(85,190,255,.65));filter:blur(2px)"></div><div class="menuWing"></div><div class="menuShipBody"></div><div class="menuEngine"></div></div></div><div id="shuttleHud" style="display:none;position:fixed;inset:0;z-index:25;pointer-events:none;color:white;font-family:Arial">
@@ -1491,7 +1500,14 @@ function drawRoomIdentity(r,i){
  }
  x.restore();
 }
-function drawCleanCorridors(){hallwayCurves().forEach(h=>{x.save();x.lineCap='round';x.lineJoin='round';x.shadowColor='#000';x.shadowBlur=12;x.strokeStyle='#080c10';x.lineWidth=HALL_W+18;x.beginPath();x.moveTo(h.a.x,h.a.y);x.quadraticCurveTo(h.c.x,h.c.y,h.b.x,h.b.y);x.stroke();x.shadowBlur=0;x.strokeStyle='#1c2a31';x.lineWidth=HALL_W+4;x.stroke();x.strokeStyle='#2e434d';x.lineWidth=HALL_W-10;x.stroke();x.strokeStyle='rgba(125,180,201,.38)';x.lineWidth=3;x.setLineDash([18,12]);x.stroke();x.setLineDash([]);x.strokeStyle='rgba(142,188,203,.15)';x.lineWidth=2;x.setLineDash([14,16]);x.stroke();x.setLineDash([]);x.restore()})}
+function drawCleanCorridors(){hallwayCurves().forEach(h=>{x.save();x.lineCap='round';x.lineJoin='round';x.shadowColor='#000';x.shadowBlur=12;x.strokeStyle='#080c10';x.lineWidth=HALL_W+18;x.beginPath();x.moveTo(h.a.x,h.a.y);x.quadraticCurveTo(h.c.x,h.c.y,h.b.x,h.b.y);x.stroke();x.shadowBlur=0;x.strokeStyle='#1c2a31';x.lineWidth=HALL_W+4;x.stroke();x.strokeStyle='#2e434d';x.lineWidth=HALL_W-10;x.stroke();x.strokeStyle='rgba(125,180,201,.38)';x.lineWidth=3;x.setLineDash([18,12]);x.stroke();x.setLineDash([]);x.strokeStyle='rgba(142,188,203,.15)';x.lineWidth=2;x.setLineDash([14,16]);x.stroke();x.setLineDash([]);
+ // Industrial hull seams, recessed conduits and numbered deck markings.
+ x.strokeStyle='rgba(103,221,241,.28)';x.lineWidth=2;
+ x.beginPath();x.moveTo(h.a.x,h.a.y);x.quadraticCurveTo(h.c.x,h.c.y,h.b.x,h.b.y);x.stroke();
+ for(let i=1;i<=7;i++){const p=qPoint(h,i/8),q=qPoint(h,Math.min(1,i/8+.01)),angle=Math.atan2(q.y-p.y,q.x-p.x);
+ x.save();x.translate(p.x,p.y);x.rotate(angle);x.strokeStyle='rgba(5,14,22,.5)';x.lineWidth=5;x.beginPath();x.moveTo(0,-HALL_W*.36);x.lineTo(0,-HALL_W*.24);x.moveTo(0,HALL_W*.24);x.lineTo(0,HALL_W*.36);x.stroke();
+ x.fillStyle=i%2?'#6bd7dc':'#d9b568';x.fillRect(-3,-HALL_W*.39,6,5);x.fillRect(-3,HALL_W*.36,6,5);x.restore()}
+ x.restore()})}
 function roomPalette(n){return {Cafeteria:['#22323a','#496471'],Reactor:['#2b1718','#a8493b'],'Med Bay':['#172c34','#4b9db5'],Security:['#182830','#477d91'],Electrical:['#292719','#96813e'],Storage:['#29251e','#776647'],Admin:['#1b2933','#55758a'],Oxygen:['#18302d','#4b8d80'],Shields:['#172b37','#4f8fae'],Navigation:['#152a35','#477f9a']}[n]||['#202b2c','#53666a']}
 function drawRoomShell(r){
  let [base,edge]=roomPalette(r.n);x.save();x.shadowColor='#000';x.shadowBlur=18;x.fillStyle='#070b0d';roomOutline(r,x,12);x.fill();x.shadowBlur=0;
@@ -2208,7 +2224,7 @@ window.mpLeave=function(){resetNetwork();state='menu';el('mpEndScreen').style.di
 function ensurePeer(){if(typeof Peer==='undefined'){info('Could not load the online connection library. Check your network.');return false}return true}
 window.mpCreate=function(){
  if(!ensurePeer())return;resetNetwork();M.host=true;M.code=rnd();M.id=PREFIX+M.code;
- M.roster.set(M.id,{id:M.id,name:ownName(),c:myColor(),room:window.vcB3RoomData?.(),alive:true,shuttleX:200,shuttleY:215});
+ M.roster.set(M.id,{id:M.id,name:ownName(),c:myColor(),room:window.vcB3RoomData?.(),alive:true,shuttleX:600,shuttleY:400});
  info('Creating private room…');el('mpShareCode').style.display='block';el('mpShareCodeValue').textContent=M.code;
  try{M.peer=new Peer(M.id)}catch(e){info('Could not create room: '+e.message);return;}
  M.peer.on('open',()=>{rosterView()});
@@ -2977,7 +2993,7 @@ if(typeof window.vcB19DrawAvatar==='function')window.vcB19DrawAvatar(ctx,cfg,ite
 window.openVCShop=function(){
 var panel=document.getElementById("vcB18Shop");if(!panel)return;
 if(!panel.querySelector(".b19wrap")){
-panel.innerHTML="<div class=b19wrap><div class=b19head><h1 class=b19title>VOID CREW · FEATURED SUPPLY DROP</h1><div style=\"display:flex;align-items:center;gap:12px;flex-wrap:wrap\"><div class=b19wallet id=vcB18Wallet><svg width=22 height=22 viewBox=\"0 0 24 24\"><path fill=#69e5f5 d=\"M12 1 21 12 12 23 3 12Z\"/><path fill=#12394f d=\"m12 6 5 6-5 6-5-6Z\"/></svg> <span id=b19Credits>0</span> CREW CREDITS</div><button class=b19close onclick=\"window.closeVCShop()\">CLOSE</button></div></div><div class=b19layout><div class=b19preview><h3>ITEM PREVIEW</h3><canvas id=b19BigPreview width=260 height=280></canvas><div class=b19itemname id=b19SelName>Select an item</div><div class=b19meta id=b19SelMeta>Click any cosmetic to preview.</div><button class=b19buy id=b19BuyBtn disabled>SELECT AN ITEM</button></div><div><div class=b19feat><h3>FEATURED THIS WEEK</h3><div class=b19grid id=b19Featured></div></div><div class=b19tabs id=b19Tabs></div><div class=b19tools><input id=b19Search placeholder=\"Search featured items...\" type=search /><select id=b19Rarity><option value=all>All rarities</option><option value=common>Common</option><option value=uncommon>Uncommon</option><option value=rare>Rare</option><option value=epic>Epic</option><option value=legendary>Legendary</option></select></div><div class=b19grid id=vcB18ShopGrid></div></div></div></div>";
+panel.innerHTML="<div class=b19wrap><div class=b19head><h1 class=b19title>VOID CREW · FEATURED SUPPLY DROP</h1><div style=\"display:flex;align-items:center;gap:12px;flex-wrap:wrap\"><div class=b19wallet id=vcB18Wallet><svg width=22 height=22 viewBox=\"0 0 24 24\"><path fill=#69e5f5 d=\"M12 1 21 12 12 23 3 12Z\"/><path fill=#12394f d=\"m12 6 5 6-5 6-5-6Z\"/></svg> <span id=b19Credits>0</span> CREW CREDITS</div><button class=b19close onclick=\"window.closeVCShop()\">CLOSE</button></div></div><div class=b19layout><div class=b19preview><h3>ITEM PREVIEW</h3><canvas id=b19BigPreview width=260 height=280></canvas><div class=b19itemname id=b19SelName>Select an item</div><div class=b19meta id=b19SelMeta>Weekly featured items only. New stock rotates automatically; purchased items stay in your locker.</div><button class=b19buy id=b19BuyBtn disabled>SELECT AN ITEM</button></div><div><div class=b19feat><h3>FEATURED THIS WEEK</h3><div class=b19grid id=b19Featured></div></div><div class=b19tabs id=b19Tabs></div><div class=b19tools><input id=b19Search placeholder=\"Search featured items...\" type=search /><select id=b19Rarity><option value=all>All rarities</option><option value=common>Common</option><option value=uncommon>Uncommon</option><option value=rare>Rare</option><option value=epic>Epic</option><option value=legendary>Legendary</option></select></div><div class=b19grid id=vcB18ShopGrid></div></div></div></div>";
 document.getElementById("b19Search").oninput=function(e){window._b19ShopQ=e.target.value.toLowerCase();window._b19RenderShopGrid()};
 document.getElementById("b19Rarity").onchange=function(e){window._b19ShopRarity=e.target.value;window._b19RenderShopGrid()};
 }
@@ -3175,10 +3191,11 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('vcLocker').style.d
  };
  setInterval(()=>{const active=(typeof state!=='undefined'&&state==='game')||!!window.VCMP?.active;btn.style.display=active?'block':'none'},450);
 })();
-</script><div id="vcCodeTerminal" style="position:fixed;right:14px;bottom:14px;z-index:1200;display:none;max-width:310px;padding:16px;border:1px solid #70d9ed;border-radius:14px;background:#081624;color:#e7f9ff;box-shadow:0 12px 40px #000b;font:13px system-ui"><strong>OWNER TRANSMISSIONS · REDEEM CODE</strong><p style="color:#a5c3d3">Enter a broadcast reward code.</p><input id="vcCodeInput" placeholder="ENTER CODE" maxlength="32" style="width:100%;box-sizing:border-box;background:#122b40;color:white;border:1px solid #78a9bf;padding:10px;border-radius:8px"><p id="vcCodeMessage" aria-live="polite"></p><button id="vcCodeSubmit" style="background:#59d6e5;color:#061b25;border:0;padding:9px;border-radius:8px;font-weight:bold">REDEEM</button> <button id="vcCodeClose" style="background:transparent;color:white;border:1px solid #678;padding:9px;border-radius:8px">CLOSE</button></div><button id="vcCodeOpen" style="position:fixed;bottom:14px;right:14px;z-index:1100;background:#10263a;color:#b6f3ff;border:1px solid #65b9d1;padding:10px 13px;border-radius:12px;cursor:pointer;font:700 12px system-ui">OWNER TRANSMISSIONS · CODES</button><script>
+</script><div id="vcCodeTerminal" style="position:fixed;right:14px;bottom:14px;z-index:1200;display:none;max-width:310px;padding:16px;border:1px solid #70d9ed;border-radius:14px;background:#081624;color:#e7f9ff;box-shadow:0 12px 40px #000b;font:13px system-ui"><strong>OWNER TRANSMISSIONS · REDEEM CODE</strong><p style="color:#a5c3d3">Enter a broadcast reward code. Try DADDY for 250 credits (once per save).</p><input id="vcCodeInput" placeholder="ENTER CODE" maxlength="32" style="width:100%;box-sizing:border-box;background:#122b40;color:white;border:1px solid #78a9bf;padding:10px;border-radius:8px"><p id="vcCodeMessage" aria-live="polite"></p><button id="vcCodeSubmit" style="background:#59d6e5;color:#061b25;border:0;padding:9px;border-radius:8px;font-weight:bold">REDEEM</button> <button id="vcCodeClose" style="background:transparent;color:white;border:1px solid #678;padding:9px;border-radius:8px">CLOSE</button></div><button id="vcCodeOpen" style="position:fixed;bottom:14px;right:14px;z-index:1100;background:#10263a;color:#b6f3ff;border:1px solid #65b9d1;padding:10px 13px;border-radius:12px;cursor:pointer;font:700 12px system-ui">OWNER TRANSMISSIONS · CODES</button><script>
 (function(){
  const open=document.getElementById('vcCodeOpen'),panel=document.getElementById('vcCodeTerminal'),input=document.getElementById('vcCodeInput'),msg=document.getElementById('vcCodeMessage');
  open.onclick=()=>{panel.style.display='block';input.focus()};
+ setInterval(()=>{const playing=typeof state!=='undefined'&&state==='game';open.style.display=playing?'none':'block';if(playing)panel.style.display='none'},500);
  document.getElementById('vcCodeClose').onclick=()=>panel.style.display='none';
  const redeem=()=>{const old=document.getElementById('vcRedeemCode'),status=document.getElementById('vcRedeemStatus');if(!old||!status){msg.textContent='Open the locker to activate rewards.';return}old.value=input.value;document.getElementById('vcRedeemButton').click();msg.textContent=status.textContent;input.value=''};
  document.getElementById('vcCodeSubmit').onclick=redeem;input.addEventListener('keydown',e=>{if(e.key==='Enter')redeem()});
