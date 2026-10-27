@@ -2929,6 +2929,18 @@ function render(){
  const hs=$('vcHats');hs.replaceChildren();button(hs,'No Hat',()=>{state.hat='none';save();render()},state.hat==='none');
  rewards.forEach(r=>{if(r.kind==='pet')button(ps,r.name+(owned(r.id)?'':' [LOCKED]'),()=>{state.pet=r.id;save();render()},state.pet===r.id,!owned(r.id));else if(r.kind==='hat')button(hs,r.name+(owned(r.id)?'':' [LOCKED]'),()=>{state.hat=r.id;save();render()},state.hat===r.id,!owned(r.id))});
  
+ // Locker controls for every owned category, not only hats and pets.
+ let full=document.getElementById('vcFullLoadout');
+ if(!full){full=document.createElement('div');full.id='vcFullLoadout';full.style.cssText='margin:18px 0;padding:14px;border:1px solid #557d94;border-radius:12px;background:#0c2031';$('vcShowcase').parentElement.appendChild(full)}
+ full.replaceChildren();
+ const heading=document.createElement('h3');heading.textContent='FULL LOADOUT · EQUIPPED COSMETICS';full.appendChild(heading);
+ for(const kind of ['suit','visor','accessory','effect','nameplate']){
+  const label=document.createElement('label');label.textContent=kind.toUpperCase()+'  ';label.style.cssText='display:inline-flex;align-items:center;gap:10px;margin:8px 14px 8px 0;color:#b7eafa;font:700 12px system-ui';
+  const sel=document.createElement('select');sel.style.cssText='padding:9px;background:#142d40;color:#fff;border:1px solid #6697af;border-radius:8px;max-width:220px';
+  const none=document.createElement('option');none.value='none';none.textContent='None';sel.appendChild(none);
+  rewards.filter(r=>r.kind===kind&&owned(r.id)).forEach(r=>{const opt=document.createElement('option');opt.value=r.id;opt.textContent=r.name;sel.appendChild(opt)});
+  sel.value=state[kind]||'none';sel.onchange=()=>{state[kind]=sel.value;save();render()};label.appendChild(sel);full.appendChild(label);
+ }
  const showcase=$('vcShowcase');showcase.replaceChildren();const p=document.createElement('p');p.textContent=state.claimed.length?state.claimed.map(id=>rewards.find(r=>r.id===id)?.name||'').join('  '):'Complete tasks and win matches to fill your trophy shelf.';showcase.append(p);
 }
 
@@ -3022,6 +3034,7 @@ panel.style.display="block";
 window._b19RenderShopGrid=function(){
 var grid=document.getElementById("vcB18ShopGrid");if(!grid)return;
 var cacheKey=[window._b19ShopCat||'all',window._b19ShopRarity||'all',window._b19ShopQ||'',state.color,state.claimed.length,Math.floor(Date.now()/604800000)].join('|');
+grid.style.display=window._b19ShopCat==='all'&&!window._b19ShopQ&&window._b19ShopRarity==='all'?'none':'';
 if(grid.dataset.cacheKey===cacheKey)return;grid.dataset.cacheKey=cacheKey;grid.replaceChildren();
 var list=vcFeaturedItems();
 if(window._b19ShopCat!=="all")list=list.filter(function(r){return r.kind===window._b19ShopCat});
