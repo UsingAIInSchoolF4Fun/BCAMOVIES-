@@ -1770,6 +1770,14 @@ function vcRoomFurnish(r){
  else if(n==='Navigation'){unit(rx+35,ry+85,125,65);unit(rx+w-160,ry+h-130,125,65);x.strokeStyle=a;x.lineWidth=4;x.beginPath();x.arc(cx,cy,55,0,7);x.stroke()}
  x.restore();
 }
+// Illustrated art assets are loaded independently of the multiplayer simulation.
+const vcRoomArt={};
+(function(){
+ const img=new Image();
+ img.onload=()=>{vcRoomArt.Cafeteria=img;try{vcBuildDeck()}catch(err){console.warn('Room art redraw',err)}};
+ img.onerror=()=>console.warn('Cafeteria art unavailable; keeping original playable floor');
+ img.src='void-crew-art/cafeteria.svg?v=1';
+})();
 function vcBuildDeck(){
  const saved=x,off=document.createElement('canvas');off.width=world.w;off.height=world.h;
  const ctx=off.getContext('2d',{alpha:false,desynchronized:true});if(!ctx)return;
@@ -1778,6 +1786,10 @@ function vcBuildDeck(){
   x.fillStyle='#040a12';x.fillRect(0,0,world.w,world.h);
   drawCleanCorridors();
   rooms.forEach(drawRoomShell);
+  // Approved concept-art direction: full illustrated texture, not procedural furniture.
+  for(const r of rooms){const art=vcRoomArt[r.n];if(!art)continue;
+   x.save();roomOutline(r,x);x.clip();x.drawImage(art,r.x,r.y,r.w,r.h);x.restore();
+  }
   // v35 room-by-room redesign: interiors intentionally blank until individually approved.
   // Preserve room boundaries, tasks, vents, collision, and gameplay anchors.
   // rooms.forEach(vcRoomFurnish);
