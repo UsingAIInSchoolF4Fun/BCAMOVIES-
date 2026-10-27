@@ -459,13 +459,19 @@ const rooms=[
  {n:'Security',x:455,y:900,w:390,h:310},{n:'Electrical',x:35,y:1155,w:365,h:290},{n:'Storage',x:915,y:1010,w:515,h:410},
  {n:'Admin',x:1520,y:470,w:405,h:325},{n:'Oxygen',x:1570,y:950,w:325,h:275},{n:'Shields',x:1925,y:1145,w:310,h:260},
  {n:'Navigation',x:1990,y:355,w:290,h:325}
-], world={w:2320,h:1480};
+], world={w:3420,h:2250};
 // Larger play spaces: expand room footprints around their original centers.
 const vcOriginalRoomSize=new Map(rooms.map(r=>[r.n,{x:r.x,y:r.y,w:r.w,h:r.h}]));
 rooms.forEach(r=>{const factor=r.n==='Cafeteria'?1.28:1.22;
  const cx=r.x+r.w/2,cy=r.y+r.h/2;
  r.w=Math.round(r.w*factor);r.h=Math.round(r.h*factor);
  r.x=Math.round(cx-r.w/2);r.y=Math.round(cy-r.h/2);
+});
+// Spread the ship footprint out; room size stays moderate while empty space grows.
+const VC_SPREAD=1.38,VC_OFFSET=130;
+function vcSpreadPoint(p){return {x:Math.round(p.x*VC_SPREAD+VC_OFFSET),y:Math.round(p.y*VC_SPREAD+VC_OFFSET)}}
+rooms.forEach(r=>{const center=vcSpreadPoint({x:r.x+r.w/2,y:r.y+r.h/2});
+ r.x=Math.round(center.x-r.w/2);r.y=Math.round(center.y-r.h/2);
 });
 rooms.forEach(r=>{const cx=r.x+r.w/2,cy=r.y+r.h/2;r.w=Math.min(r.w,world.w-28);r.h=Math.min(r.h,world.h-28);r.x=Math.max(14,Math.min(world.w-r.w-14,cx-r.w/2));r.y=Math.max(14,Math.min(world.h-r.h-14,cy-r.h/2))});
 function openLobby(){menuEl.style.display='none';lobbyEl.style.display='block';minimapEl.style.display='none';pingEl.style.display='none'} function backMenu(){let ctb=document.getElementById('crewTaskBar');if(ctb)ctb.style.display='none';let ka=document.getElementById('killerActions');if(ka)ka.style.display='none';lobbyEl.style.display='none';menuEl.style.setProperty('display','block','important');menuEl.style.visibility='visible';menuEl.style.pointerEvents='auto';minimapEl.style.display='none';pingEl.style.display='none';document.getElementById('menuSpace').style.display='block'}
@@ -753,7 +759,7 @@ document.getElementById('menuSpace').style.display='none';state='game';roundAge=
  if(role==='CREW') bots[Math.floor(Math.random()*bots.length)].evil=true;
  assignCrewTasks();
  doors=[];
- vents=[{x:165,y:745,id:0},{x:705,y:1115,id:1},{x:1225,y:1290,id:2},{x:2075,y:620,id:3},{x:1710,y:1120,id:4},{x:1050,y:380,id:5}];vcValidateVents();vcValidateVents();
+ vents=[{x:165,y:745,id:0},{x:705,y:1115,id:1},{x:1225,y:1290,id:2},{x:2075,y:620,id:3},{x:1710,y:1120,id:4},{x:1050,y:380,id:5}].map(v=>({...v,...vcSpreadPoint(v)}));vcValidateVents();vcValidateVents();
  emergencyCD=0;document.getElementById('sabotageChoiceV110').style.display='none';document.getElementById('minimap').style.display='none';
  updateHUD();showRoleReveal();setTimeout(()=>{if(state==='game'){gamehudEl.style.display='block';minimapEl.style.display='block';pingEl.style.display='block'}},2450);toastMsg(role==='INFILTRATOR'?'You are the INFILTRATOR. Eliminate the crew.':'You are CREW. Finish tasks and find the infiltrator.');
 }
@@ -826,7 +832,7 @@ function hallwayCurves(){return [
  {a:{x:430,y:1040},c:{x:385,y:1080},b:{x:380,y:1110}},{a:{x:800,y:1040},c:{x:845,y:1015},b:{x:880,y:1075}},
  {a:{x:1350,y:1080},c:{x:1430,y:880},b:{x:1515,y:785}},{a:{x:1850,y:610},c:{x:1880,y:540},b:{x:1920,y:525}},
  {a:{x:1660,y:785},c:{x:1635,y:875},b:{x:1660,y:965}},{a:{x:1880,y:1085},c:{x:1910,y:1170},b:{x:1940,y:1220}}
-]}
+].map(h=>({a:vcSpreadPoint(h.a),c:vcSpreadPoint(h.c),b:vcSpreadPoint(h.b)}))}
 function qPoint(h,t){let u=1-t;return{x:u*u*h.a.x+2*u*t*h.c.x+t*t*h.b.x,y:u*u*h.a.y+2*u*t*h.c.y+t*t*h.b.y}}
 function curveSegments(){
  if(curveSegments._cache)return curveSegments._cache;
@@ -2160,10 +2166,12 @@ function scheduleBotMeetingChat(reason){
 // ==================== VOID CREW V10 CONSOLIDATED SYSTEMS ====================
 let v10MeetingLeft=0,v10MeetingAuto=false,v10FixOpen=false,v10VentIndex=0,v10VentHidden=false,v10LastWin=null;
 const V10_SAB_STATIONS={LIGHTS:{x:190,y:1140,label:'Electrical breaker panel'},REACTOR:{x:180,y:600,label:'Reactor stabilizer'},OXYGEN:{x:1695,y:1085,label:'Oxygen regulator'}};
+Object.values(V10_SAB_STATIONS).forEach(p=>Object.assign(p,vcSpreadPoint(p)));
 const V10_DOORS=[
  {x:613,y:810,w:140,h:18,name:'Security North'},{x:720,y:920,w:18,h:90,name:'Security East'},
  {x:1450,y:875,w:18,h:115,name:'Admin South'},{x:1890,y:545,w:18,h:115,name:'Navigation Entry'}
 ];
+V10_DOORS.forEach(d=>Object.assign(d,vcSpreadPoint(d)));
 function v10ShowTransition(title,sub,ms=1100,done){
  let o=document.getElementById('v10Transition'),bar=o.querySelector('i');document.getElementById('v10TransTitle').textContent=title;document.getElementById('v10TransSub').textContent=sub;
  o.style.display='flex';bar.style.width='0';requestAnimationFrame(()=>bar.style.width='100%');setTimeout(()=>{o.style.display='none';if(done)done()},ms);
