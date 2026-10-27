@@ -1838,7 +1838,14 @@ window.vcB12DrawPreview=function(config){
  const cv=document.getElementById('vcAvatarCanvas');if(!cv)return;const pc=cv.getContext('2d');pc.clearRect(0,0,cv.width,cv.height);
  window.vcB19DrawAvatar(pc,config,cv.width*.41,cv.height*.54,3.25);
 };
-function vcDrawPet(p,me){const pet=(me||p===player)?window.vcB2State?.().pet:(p.pet||p.room?.pet);vcPetArt(x,pet,p.x+42,p.y+18,.40)}
+const vcPetFollowers=new Map();
+function vcDrawPet(p,me){
+ const pet=(me||p===player)?window.vcB2State?.().pet:(p.pet||p.room?.pet);if(!pet||pet==='none')return;
+ const key=p.id||p.name||'local',now=performance.now(),side=p.vx<-.5?1:-1,targetX=p.x+side*43,targetY=p.y+19;
+ let q=vcPetFollowers.get(key);if(!q||q.type!==pet||Math.hypot(q.x-targetX,q.y-targetY)>220)q={x:targetX,y:targetY,time:now,type:pet};
+ const dt=Math.min(.06,(now-q.time)/1000),a=1-Math.exp(-7*dt);q.x+=(targetX-q.x)*a;q.y+=(targetY-q.y)*a;q.time=now;vcPetFollowers.set(key,q);
+ vcPetArt(x,pet,q.x,q.y,.38);
+}
 
 function drawGuy(p,me=false){if(!p||p.vented||((p===player||me)&&p.vented))return;if(p.id&&window.VCMP?.roster?.get(p.id)?.room){p.hat=window.VCMP.roster.get(p.id).room.hat;p.pet=window.VCMP.roster.get(p.id).room.pet}if(p===player&&playerGhost){drawCrewShape(p,.46,true,true);vcDrawPet(p,me);return}if(!p.alive)return;drawCrewShape(p,1,false,me);vcDrawPet(p,me)}
 function drawBody(b){x.save();x.translate(b.x,b.y);x.shadowColor='#000';x.shadowBlur=14;x.fillStyle='#10191e';x.beginPath();x.roundRect(-27,-7,13,17,5);x.fill();x.fillStyle=b.c;x.beginPath();x.ellipse(-5,2,23,13,-.12,0,7);x.fill();x.strokeStyle='rgba(255,255,255,.2)';x.lineWidth=2;x.stroke();x.fillStyle='#e5ece9';x.beginPath();x.roundRect(8,-16,8,20,3);x.fill();x.fillStyle='#bcc7c4';x.fillRect(11,-23,3,9);x.restore()}
@@ -1868,7 +1875,7 @@ function drawMini(){
  m.restore();
  m.fillStyle='#b9d5e3';m.font=(expanded?'bold 18px':'bold 11px')+' Arial';m.textAlign='left';m.fillText((expanded?'SHIP OVERVIEW • M TO CLOSE':'LOCAL RADAR • M TO EXPAND'),12,expanded?24:15);
 }
-function loop(ts){let dt=Math.min(.033,(ts-last)/1000||0);last=ts;if(state==='shuttle'){updateShuttle(dt);drawShuttle();requestAnimationFrame(loop);return}screenShake=Math.max(0,screenShake-dt*28);deathFreeze=Math.max(0,deathFreeze-dt);if(state==='game'&&player&&!meeting){let dx=((keys.d||keys.KeyD||keys.arrowright||keys.ArrowRight)?1:0)-((keys.a||keys.KeyA||keys.arrowleft||keys.ArrowLeft)?1:0),dy=((keys.s||keys.KeyS||keys.arrowdown||keys.ArrowDown)?1:0)-((keys.w||keys.KeyW||keys.arrowup||keys.ArrowUp)?1:0),m=Math.hypot(dx,dy)||1;emergencyCD=Math.max(0,emergencyCD-dt);const oldPX=player.x,oldPY=player.y;updateVentAnim(dt);taskBurst=Math.max(0,taskBurst-dt);if(deathFreeze<=0&&!ventAnim){if(playerGhost){player.x=Math.max(35,Math.min(world.w-35,player.x+dx/m*moveSpeed*1.08*dt));player.y=Math.max(35,Math.min(world.h-35,player.y+dy/m*moveSpeed*1.08*dt))}else if(player.alive)moveEnt(player,dx/m*moveSpeed*dt,dy/m*moveSpeed*dt)}if(Math.hypot(player.x-oldPX,player.y-oldPY)>.2)walkPhase+=dt*12;else if((dx||dy)&&!playerGhost&&!ventAnim&&deathFreeze<=0){if(!window.lastBlockedMoveNotice||performance.now()-window.lastBlockedMoveNotice>2400){toastMsg('Wall or closed door — try another direction.');window.lastBlockedMoveNotice=performance.now()}}if(!window.VCMP?.active||window.VCMP.host)ai(dt);if(!window.VCMP?.active)updateGhosts(dt);killCD=Math.max(0,killCD-dt);if(sabotageTimer>0){sabotageTimer-=dt;if(sabotageTimer<=0){if(sabotageType==='LIGHTS'){visionRadius=188;toastMsg('Lights restored.')}else if(sabotageType==='DOORS'){doors.forEach(d=>d.closed=false);toastMsg('Doors reopened.')}else if(role==='CREW')endGame(false,sabotageType+' failure. The ship was lost.');else endGame(true,sabotageType+' failure. The infiltrator wins.');sabotageType=''}}}particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.t-=dt});if(killAnim){killAnim.t-=dt;if(killAnim.t<=0)killAnim=null}particles=particles.filter(p=>p.t>0);if(player&&state!=='menu'){drawMap(camera());if(!window.vcLastRadarDraw||ts-window.vcLastRadarDraw>100){drawMini();window.vcLastRadarDraw=ts}}else{x.fillStyle='#050912';x.fillRect(0,0,W,H)}if(taskBurst>0){x.fillStyle=`rgba(100,255,160,${taskBurst*.08})`;x.fillRect(0,0,W,H)}updateKillerActions();requestAnimationFrame(loop)}
+function loop(ts){let dt=Math.min(.033,(ts-last)/1000||0);last=ts;if(state==='shuttle'){updateShuttle(dt);drawShuttle();requestAnimationFrame(loop);return}screenShake=Math.max(0,screenShake-dt*28);deathFreeze=Math.max(0,deathFreeze-dt);if(state==='game'&&player&&!meeting){let dx=((keys.d||keys.KeyD||keys.arrowright||keys.ArrowRight)?1:0)-((keys.a||keys.KeyA||keys.arrowleft||keys.ArrowLeft)?1:0),dy=((keys.s||keys.KeyS||keys.arrowdown||keys.ArrowDown)?1:0)-((keys.w||keys.KeyW||keys.arrowup||keys.ArrowUp)?1:0),m=Math.hypot(dx,dy)||1;emergencyCD=Math.max(0,emergencyCD-dt);const oldPX=player.x,oldPY=player.y;updateVentAnim(dt);taskBurst=Math.max(0,taskBurst-dt);if(deathFreeze<=0&&!ventAnim){if(playerGhost){player.x=Math.max(35,Math.min(world.w-35,player.x+dx/m*moveSpeed*1.08*dt));player.y=Math.max(35,Math.min(world.h-35,player.y+dy/m*moveSpeed*1.08*dt))}else if(player.alive)moveEnt(player,dx/m*moveSpeed*dt,dy/m*moveSpeed*dt)}if(Math.hypot(player.x-oldPX,player.y-oldPY)>.2)walkPhase+=dt*12;else if((dx||dy)&&!playerGhost&&!ventAnim&&deathFreeze<=0){if(!window.lastBlockedMoveNotice||performance.now()-window.lastBlockedMoveNotice>2400){/* Boundary blocks movement without spamming alerts. */window.lastBlockedMoveNotice=performance.now()}}if(!window.VCMP?.active||window.VCMP.host)ai(dt);if(!window.VCMP?.active)updateGhosts(dt);killCD=Math.max(0,killCD-dt);if(sabotageTimer>0){sabotageTimer-=dt;if(sabotageTimer<=0){if(sabotageType==='LIGHTS'){visionRadius=188;toastMsg('Lights restored.')}else if(sabotageType==='DOORS'){doors.forEach(d=>d.closed=false);toastMsg('Doors reopened.')}else if(role==='CREW')endGame(false,sabotageType+' failure. The ship was lost.');else endGame(true,sabotageType+' failure. The infiltrator wins.');sabotageType=''}}}particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.t-=dt});if(killAnim){killAnim.t-=dt;if(killAnim.t<=0)killAnim=null}particles=particles.filter(p=>p.t>0);if(player&&state!=='menu'){drawMap(camera());if(!window.vcLastRadarDraw||ts-window.vcLastRadarDraw>100){drawMini();window.vcLastRadarDraw=ts}}else{x.fillStyle='#050912';x.fillRect(0,0,W,H)}if(taskBurst>0){x.fillStyle=`rgba(100,255,160,${taskBurst*.08})`;x.fillRect(0,0,W,H)}updateKillerActions();requestAnimationFrame(loop)}
 function updateKillerActions(){
  let box=document.getElementById('killerActions');if(!box)return;
  if(state!=='game'||role!=='INFILTRATOR'||meeting){box.style.display='none';return}
@@ -2306,7 +2313,7 @@ window.mpStart=function(){
  if(window.vcB2MatchStart)window.vcB2MatchStart();M.started=true;M.taskGoal=4*(MAX-1);M.taskDone=0;M.cooldowns.clear();M.votes.clear();M.suspicions.clear();M.interpolated.clear();
  for(const [i,id] of ids.entries())if(id!==M.id)send(M.conns.get(id),{type:'start',role:M.roster.get(id).role,spawn:spawnFor(i),botCount,taskGoal:M.taskGoal});
  beginLocal(M.roster.get(M.id).role,spawnFor(0),botCount);
- bots=crewBots;broadcastSnapshot();
+ bots=crewBots;broadcastSnapshot(true);
 };
 
 const previousFinishTask=window.finishTask;
@@ -2331,7 +2338,7 @@ function hostTaskDone(id,taskId){
  M.taskDone=Math.min(M.taskGoal,M.taskDone+1);
  const label=station.n||'Task';
  // Only shared progress is synchronized; no public task announcement.
- broadcastSnapshot();
+ broadcastSnapshot(true);
  if(id===M.id){updateCrewTaskBar();}
  if(M.taskDone>=M.taskGoal)finishGame('CREW won — tasks completed');
 }
@@ -2343,7 +2350,7 @@ function hostReceive(id,d){
  if(!M.started)return;
  if(d.type==='move'&&M.active&&(p.alive||p.role==='CREW')&&!M.meeting){
   const nx=Number(d.x),ny=Number(d.y);
-  if(Number.isFinite(nx)&&Number.isFinite(ny)&&nx>=0&&nx<=world.w&&ny>=0&&ny<=world.h&&validPoint(nx,ny)){
+  if(Number.isFinite(nx)&&Number.isFinite(ny)&&nx>=0&&nx<=world.w&&ny>=0&&ny<=world.h&&valid(nx,ny,10)){
    if(Math.hypot(nx-p.x,ny-p.y)<220){let v=M.interpolated.get(id);if(!v)M.interpolated.set(id,{x:p.x,y:p.y,tx:nx,ty:ny});else{v.tx=nx;v.ty=ny}p.x=nx;p.y=ny}
   }
  }else if(d.type==='action')hostAction(id,d.action);
@@ -2453,7 +2460,7 @@ function startMPMeeting(reason){
  if(M.meeting||!M.active)return false;
  M.nextMeetingAllowed=Date.now()+45000;
  M.meeting=reason;M.meetingEnd=Date.now()+45000;M.votes.clear();showMeeting(reason,M.meetingEnd);broadcast({type:'meeting',reason,endsAt:M.meetingEnd});broadcastVoteProgress();
- setTimeout(()=>{if(!M.meeting)return;const speakers=bots.filter(b=>b.alive).sort((a,b)=>Number(M.suspicions.has(b.id))-Number(M.suspicions.has(a.id))).slice(0,Math.min(4,bots.filter(b=>b.alive).length));speakers.forEach((b,i)=>setTimeout(()=>{if(!M.meeting)return;const suspect=M.suspicions.get(b.id);const suspectName=(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name;const line=suspect&&suspectName?'I saw '+suspectName+' near the body. I think we should vote them.':b.evil?['Who actually saw the body?','Do we know the room where it happened?','I need evidence before voting.'][Math.floor(Math.random()*3)]:['I did not see a kill, so I am not accusing anyone.','Can the reporter tell us the exact room?','I will listen to evidence before deciding.'][Math.floor(Math.random()*3)];appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})},i*2800));},2000);
+ setTimeout(()=>{if(!M.meeting||M.meeting!==reason)return;const speakers=bots.filter(b=>b.alive).sort((a,b)=>Number(M.suspicions.has(b.id))-Number(M.suspicions.has(a.id))).slice(0,Math.min(4,bots.filter(b=>b.alive).length));speakers.forEach((b,i)=>setTimeout(()=>{if(!M.meeting)return;const suspect=M.suspicions.get(b.id);const suspectName=(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name;const line=suspect&&suspectName?'I saw '+suspectName+' near the body. I think we should vote them.':b.evil?['Who actually saw the body?','Do we know the room where it happened?','I need evidence before voting.'][Math.floor(Math.random()*3)]:['I did not see a kill, so I am not accusing anyone.','Can the reporter tell us the exact room?','I will listen to evidence before deciding.'][Math.floor(Math.random()*3)];appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})},i*2800));},2000);
  return true;
 }
 function livingVoterTotal(){
@@ -2595,10 +2602,11 @@ function showMPEjection(text,color){
  clearTimeout(window.mpEjectTimer);window.mpEjectTimer=setTimeout(()=>{scene.style.display='none';person.classList.remove('launch')},3550);
 }
 function hideMeeting(){M.meeting=null;M._selectedVote=null;el('mpMeeting').style.display='none';el('mpVoteOptions').style.pointerEvents='auto';const conf=el('mpConfirmVoteBtn');if(conf){conf.disabled=true;conf.textContent='CONFIRM VOTE'}const skip=el('mpSkipVoteBtn');if(skip)skip.disabled=false;el('mpSabMenu').style.display='none'}
-function broadcastSnapshot(){
+function broadcastSnapshot(force=false){
  if(!M.host||!M.started)return;
- const players=[...M.roster.values()].map(p=>({id:p.id,name:p.name,c:p.c,x:p.x,y:p.y,alive:p.alive,vented:!!p.vented}));
- broadcast({type:'snap',seq:++M.seq,players,bots:bots.map(b=>({x:b.x,y:b.y,id:b.id,name:b.name,c:b.c,alive:b.alive,r:18,vx:b.vx||0,vy:b.vy||0})),bodies,meeting:M.meeting,meetingEnd:M.meetingEnd,voteCount:M.votes.size,voteTotal:[...M.roster.values()].filter(p=>p.alive).length,tasks:M.taskDone,goal:M.taskGoal,ended:M.gameEnded,sabotage:M.sabotage});
+ const now=performance.now();if(!force&&now-(M._lastSnapshot||0)<90)return;M._lastSnapshot=now;
+ const players=[...M.roster.values()].map(p=>({id:p.id,name:p.name,c:p.c,x:Math.round(p.x),y:Math.round(p.y),alive:p.alive,vented:!!p.vented}));
+ broadcast({type:'snap',seq:++M.seq,players,bots:bots.map(b=>({x:Math.round(b.x),y:Math.round(b.y),id:b.id,name:b.name,c:b.c,alive:b.alive,vx:Math.round(b.vx||0),vy:Math.round(b.vy||0)})),bodies,meeting:M.meeting,meetingEnd:M.meetingEnd,voteCount:M.votes.size,voteTotal:[...M.roster.values()].filter(p=>p.alive).length,tasks:M.taskDone,goal:M.taskGoal,ended:M.gameEnded,sabotage:M.sabotage});
 }
 // Route the original solo controls to multiplayer while preserving solo behavior.
 const soloUse=window.use,soloKill=window.killNearest,soloReport=window.report,soloVent=window.useVent,soloSabotage=window.openSabotage,soloChooseSabotage=window.chooseSabotageV110;
@@ -2895,6 +2903,18 @@ function render(){
  const showcase=$('vcShowcase');showcase.replaceChildren();const p=document.createElement('p');p.textContent=state.claimed.length?state.claimed.map(id=>rewards.find(r=>r.id===id)?.name||'').join('  '):'Complete tasks and win matches to fill your trophy shelf.';showcase.append(p);
 }
 
+
+const VC_FEATURED_OVERRIDE=[]; // Owner: set item IDs here to change featured stock manually.
+function vcFeaturedItems(){
+ const byId=id=>rewards.find(r=>r.id===id);
+ if(VC_FEATURED_OVERRIDE.length)return VC_FEATURED_OVERRIDE.map(byId).filter(Boolean);
+ const week=Math.floor(Date.now()/604800000),groups=['hat','pet','suit','visor','accessory','effect','nameplate'];
+ const featured=[];
+ groups.forEach((kind,i)=>{const options=rewards.filter(r=>r.kind===kind);if(options.length)featured.push(options[(week*3+i*7)%options.length])});
+ const extra=rewards.filter(r=>!featured.includes(r));
+ if(extra.length)featured.push(extra[(week*11)%extra.length]);
+ return featured;
+}
 window._b19ShopSel=null;window._b19ShopCat="all";window._b19ShopRarity="all";window._b19ShopQ="";
 function b19RarityClass(r){return r||"common"}
 function b19DrawHat(ctx,id,ox,oy,s){
@@ -2957,24 +2977,24 @@ if(typeof window.vcB19DrawAvatar==='function')window.vcB19DrawAvatar(ctx,cfg,ite
 window.openVCShop=function(){
 var panel=document.getElementById("vcB18Shop");if(!panel)return;
 if(!panel.querySelector(".b19wrap")){
-panel.innerHTML="<div class=b19wrap><div class=b19head><h1 class=b19title>VOID CREW COSMETIC SHOP</h1><div style=\"display:flex;align-items:center;gap:12px;flex-wrap:wrap\"><div class=b19wallet id=vcB18Wallet><svg width=22 height=22 viewBox=\"0 0 24 24\"><path fill=#69e5f5 d=\"M12 1 21 12 12 23 3 12Z\"/><path fill=#12394f d=\"m12 6 5 6-5 6-5-6Z\"/></svg> <span id=b19Credits>0</span> CREW CREDITS</div><button class=b19close onclick=\"window.closeVCShop()\">CLOSE</button></div></div><div class=b19layout><div class=b19preview><h3>ITEM PREVIEW</h3><canvas id=b19BigPreview width=260 height=280></canvas><div class=b19itemname id=b19SelName>Select an item</div><div class=b19meta id=b19SelMeta>Click any cosmetic to preview.</div><button class=b19buy id=b19BuyBtn disabled>SELECT AN ITEM</button></div><div><div class=b19feat><h3>FEATURED</h3><div class=b19grid id=b19Featured></div></div><div class=b19tabs id=b19Tabs></div><div class=b19tools><input id=b19Search placeholder=\"Search cosmetics...\" type=search /><select id=b19Rarity><option value=all>All rarities</option><option value=common>Common</option><option value=uncommon>Uncommon</option><option value=rare>Rare</option><option value=epic>Epic</option><option value=legendary>Legendary</option></select></div><div class=b19grid id=vcB18ShopGrid></div></div></div></div>";
+panel.innerHTML="<div class=b19wrap><div class=b19head><h1 class=b19title>VOID CREW · FEATURED SUPPLY DROP</h1><div style=\"display:flex;align-items:center;gap:12px;flex-wrap:wrap\"><div class=b19wallet id=vcB18Wallet><svg width=22 height=22 viewBox=\"0 0 24 24\"><path fill=#69e5f5 d=\"M12 1 21 12 12 23 3 12Z\"/><path fill=#12394f d=\"m12 6 5 6-5 6-5-6Z\"/></svg> <span id=b19Credits>0</span> CREW CREDITS</div><button class=b19close onclick=\"window.closeVCShop()\">CLOSE</button></div></div><div class=b19layout><div class=b19preview><h3>ITEM PREVIEW</h3><canvas id=b19BigPreview width=260 height=280></canvas><div class=b19itemname id=b19SelName>Select an item</div><div class=b19meta id=b19SelMeta>Click any cosmetic to preview.</div><button class=b19buy id=b19BuyBtn disabled>SELECT AN ITEM</button></div><div><div class=b19feat><h3>FEATURED THIS WEEK</h3><div class=b19grid id=b19Featured></div></div><div class=b19tabs id=b19Tabs></div><div class=b19tools><input id=b19Search placeholder=\"Search featured items...\" type=search /><select id=b19Rarity><option value=all>All rarities</option><option value=common>Common</option><option value=uncommon>Uncommon</option><option value=rare>Rare</option><option value=epic>Epic</option><option value=legendary>Legendary</option></select></div><div class=b19grid id=vcB18ShopGrid></div></div></div></div>";
 document.getElementById("b19Search").oninput=function(e){window._b19ShopQ=e.target.value.toLowerCase();window._b19RenderShopGrid()};
 document.getElementById("b19Rarity").onchange=function(e){window._b19ShopRarity=e.target.value;window._b19RenderShopGrid()};
 }
 var credEl=document.getElementById("b19Credits");if(credEl)credEl.textContent=state.credits;
-var cats=[["all","All"],["hat","Hats"],["pet","Pets"],["suit","Suits"],["visor","Visors"],["accessory","Gear"],["effect","Effects"],["nameplate","Nameplates"]];
+var cats=[["all","Featured"],["hat","Hats"],["pet","Pets"],["suit","Suits"],["visor","Visors"],["accessory","Gear"],["effect","Effects"],["nameplate","Nameplates"]];
 var tabs=document.getElementById("b19Tabs");tabs.innerHTML="";
 cats.forEach(function(pair){var b=document.createElement("button");b.className="b19tab"+(window._b19ShopCat===pair[0]?" on":"");b.textContent=pair[1];b.onclick=function(){window._b19ShopCat=pair[0];window.openVCShop()};tabs.appendChild(b)});
-var feat=document.getElementById("b19Featured");if(!feat.childElementCount){rewards.filter(function(r){return r.rarity==="legendary"||r.rarity==="epic"}).slice(0,4).forEach(function(item){feat.appendChild(b19MakeCard(item))})}
+var feat=document.getElementById("b19Featured");feat.replaceChildren();vcFeaturedItems().forEach(function(item){feat.appendChild(b19MakeCard(item))})
 window._b19RenderShopGrid();
 b19UpdateBigPreview(window._b19ShopSel);
 panel.style.display="block";
 };
 window._b19RenderShopGrid=function(){
 var grid=document.getElementById("vcB18ShopGrid");if(!grid)return;
-var cacheKey=[window._b19ShopCat||'all',window._b19ShopRarity||'all',window._b19ShopQ||'',state.color,state.claimed.length].join('|');
+var cacheKey=[window._b19ShopCat||'all',window._b19ShopRarity||'all',window._b19ShopQ||'',state.color,state.claimed.length,Math.floor(Date.now()/604800000)].join('|');
 if(grid.dataset.cacheKey===cacheKey)return;grid.dataset.cacheKey=cacheKey;grid.replaceChildren();
-var list=rewards.slice();
+var list=vcFeaturedItems();
 if(window._b19ShopCat!=="all")list=list.filter(function(r){return r.kind===window._b19ShopCat});
 if(window._b19ShopRarity!=="all")list=list.filter(function(r){return r.rarity===window._b19ShopRarity});
 if(window._b19ShopQ)list=list.filter(function(r){return r.name.toLowerCase().indexOf(window._b19ShopQ)>=0||r.id.indexOf(window._b19ShopQ)>=0});
@@ -3154,5 +3174,13 @@ window.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('vcLocker').style.d
   document.getElementById('gamehud').style.display='none';
  };
  setInterval(()=>{const active=(typeof state!=='undefined'&&state==='game')||!!window.VCMP?.active;btn.style.display=active?'block':'none'},450);
+})();
+</script><div id="vcCodeTerminal" style="position:fixed;right:14px;bottom:14px;z-index:1200;display:none;max-width:310px;padding:16px;border:1px solid #70d9ed;border-radius:14px;background:#081624;color:#e7f9ff;box-shadow:0 12px 40px #000b;font:13px system-ui"><strong>OWNER TRANSMISSIONS · REDEEM CODE</strong><p style="color:#a5c3d3">Enter a broadcast reward code.</p><input id="vcCodeInput" placeholder="ENTER CODE" maxlength="32" style="width:100%;box-sizing:border-box;background:#122b40;color:white;border:1px solid #78a9bf;padding:10px;border-radius:8px"><p id="vcCodeMessage" aria-live="polite"></p><button id="vcCodeSubmit" style="background:#59d6e5;color:#061b25;border:0;padding:9px;border-radius:8px;font-weight:bold">REDEEM</button> <button id="vcCodeClose" style="background:transparent;color:white;border:1px solid #678;padding:9px;border-radius:8px">CLOSE</button></div><button id="vcCodeOpen" style="position:fixed;bottom:14px;right:14px;z-index:1100;background:#10263a;color:#b6f3ff;border:1px solid #65b9d1;padding:10px 13px;border-radius:12px;cursor:pointer;font:700 12px system-ui">OWNER TRANSMISSIONS · CODES</button><script>
+(function(){
+ const open=document.getElementById('vcCodeOpen'),panel=document.getElementById('vcCodeTerminal'),input=document.getElementById('vcCodeInput'),msg=document.getElementById('vcCodeMessage');
+ open.onclick=()=>{panel.style.display='block';input.focus()};
+ document.getElementById('vcCodeClose').onclick=()=>panel.style.display='none';
+ const redeem=()=>{const old=document.getElementById('vcRedeemCode'),status=document.getElementById('vcRedeemStatus');if(!old||!status){msg.textContent='Open the locker to activate rewards.';return}old.value=input.value;document.getElementById('vcRedeemButton').click();msg.textContent=status.textContent;input.value=''};
+ document.getElementById('vcCodeSubmit').onclick=redeem;input.addEventListener('keydown',e=>{if(e.key==='Enter')redeem()});
 })();
 </script></body></html>
