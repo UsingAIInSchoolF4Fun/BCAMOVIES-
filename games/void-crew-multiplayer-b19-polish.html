@@ -460,6 +460,13 @@ const rooms=[
  {n:'Admin',x:1520,y:470,w:405,h:325},{n:'Oxygen',x:1570,y:950,w:325,h:275},{n:'Shields',x:1925,y:1145,w:310,h:260},
  {n:'Navigation',x:1990,y:355,w:290,h:325}
 ], world={w:2320,h:1480};
+// Larger play spaces: expand room footprints around their original centers.
+const vcOriginalRoomSize=new Map(rooms.map(r=>[r.n,{x:r.x,y:r.y,w:r.w,h:r.h}]));
+rooms.forEach(r=>{const factor=r.n==='Cafeteria'?1.32:1.27;
+ const cx=r.x+r.w/2,cy=r.y+r.h/2;
+ r.w=Math.round(r.w*factor);r.h=Math.round(r.h*factor);
+ r.x=Math.round(cx-r.w/2);r.y=Math.round(cy-r.h/2);
+});
 rooms.forEach(r=>{const cx=r.x+r.w/2,cy=r.y+r.h/2;r.w=Math.min(r.w,world.w-28);r.h=Math.min(r.h,world.h-28);r.x=Math.max(14,Math.min(world.w-r.w-14,cx-r.w/2));r.y=Math.max(14,Math.min(world.h-r.h-14,cy-r.h/2))});
 function openLobby(){menuEl.style.display='none';lobbyEl.style.display='block';minimapEl.style.display='none';pingEl.style.display='none'} function backMenu(){let ctb=document.getElementById('crewTaskBar');if(ctb)ctb.style.display='none';let ka=document.getElementById('killerActions');if(ka)ka.style.display='none';lobbyEl.style.display='none';menuEl.style.setProperty('display','block','important');menuEl.style.visibility='visible';menuEl.style.pointerEvents='auto';minimapEl.style.display='none';pingEl.style.display='none';document.getElementById('menuSpace').style.display='block'}
 function openCustom(){menu.style.display='none';custom.style.display='block';swatches.innerHTML=colors.map((c,i)=>'<button class="swatch" aria-label="color '+(i+1)+'" style="background:'+c+'" onclick="pickColor('+i+')"></button>').join('')}
@@ -792,8 +799,19 @@ function inRoomOutline(px,py,r){
  }return inside;
 }
 
+// Cafeteria table collision matches the illustrated art's five round tables.
+// Coordinates use the actual SVG proportions; other rooms remain open for redesign.
+function vcBlockedFurniture(px,py){
+ const r=rooms.find(room=>room.n==='Cafeteria');
+ if(!r||!inRoomOutline(px,py,r))return false;
+ const tableCenters=[[184,145],[536,145],[184,302],[536,302],[360,222]];
+ const radius=84; // includes chair edges and a walking clearance
+ const u=(px-r.x)*720/r.w,v=(py-r.y)*410/r.h;
+ return tableCenters.some(([cx,cy])=>Math.hypot(u-cx,v-cy)<radius);
+}
 function validPoint(px,py){
  if(px<12||py<12||px>world.w-12||py>world.h-12)return false;
+ if(vcBlockedFurniture(px,py))return false;
  if(rooms.some(r=>inRoomOutline(px,py,r)))return true;
  // Entrance connector zones ensure expanded rooms actually meet their corridor endpoints.
  return curveSegments().some(seg=>pointSegDist(px,py,seg)<(HALL_W-10)/2-4);
