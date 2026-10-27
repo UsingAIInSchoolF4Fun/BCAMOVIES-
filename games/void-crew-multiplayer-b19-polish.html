@@ -1648,6 +1648,10 @@ function drawVentEffectV112(){if(!ventAnim||!player)return;const v=ventAnim.phas
 const vcVentEvidence=[];
 function vcAddVentEvidence(px,py,phase,color){
  if(!Number.isFinite(px)||!Number.isFinite(py))return;
+ // Vent noise: nearby crewmates receive a clue, not the infiltrator's identity.
+ if(player&&role==='CREW'&&player.alive&&Math.hypot(player.x-px,player.y-py)<185){
+  const now=performance.now();if(now-(window.vcVentNoiseAt||0)>2500){window.vcVentNoiseAt=now;toastMsg('You heard a metal hatch nearby.');try{tone(170,.08)}catch(e){}}
+ }
  vcVentEvidence.push({x:px,y:py,phase:phase==='enter'?'enter':'exit',color:/^#[0-9a-f]{6}$/i.test(color||'')?color:'#89e8ff',start:performance.now()});
  if(vcVentEvidence.length>18)vcVentEvidence.splice(0,vcVentEvidence.length-18);
 }
@@ -1752,7 +1756,7 @@ function drawCrewShape(p,alpha=1,ghost=false,me=false){x.save();x.globalAlpha=al
  x.fillStyle=plate?'#ffeec6':'#eef8ff';x.font='bold 11px Arial';x.textAlign='center';x.textBaseline='middle';x.fillText(name,p.x,nameY);x.restore()}
 function vcPetArt(ctx,type,px,py,size=1,time=performance.now()/1000){
  if(!type||type==='none')return;ctx.save();ctx.translate(px,py+Math.sin(time*3)*4*size);ctx.scale(size,size);
- ctx.shadowColor=type==='robot'?'#66eaff':type==='alien'?'#b5ff74':'#ff8de4';ctx.shadowBlur=16;
+ ctx.shadowColor=type==='robot'?'#66eaff':type==='alien'?'#b5ff74':'#ff8de4';ctx.shadowBlur=5;
  ctx.fillStyle='#0008';ctx.beginPath();ctx.ellipse(0,21,18,5,0,0,7);ctx.fill();
  if(type==='robot'){ctx.fillStyle='#8bc7e5';ctx.strokeStyle='#1b3757';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-16,-18,32,31,8);ctx.fill();ctx.stroke();ctx.fillStyle='#142e50';ctx.fillRect(-11,-10,22,12);ctx.fillStyle='#69fff1';ctx.fillRect(-8,-7,5,6);ctx.fillRect(3,-7,5,6);ctx.strokeStyle='#a6e9ff';ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(0,-25);ctx.stroke();ctx.fillStyle='#ff80bc';ctx.beginPath();ctx.arc(0,-27,4,0,7);ctx.fill()}
  else if(type==='alien'){ctx.fillStyle='#86e8a3';ctx.strokeStyle='#2e846b';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,-1,19,23,0,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#193d50';ctx.beginPath();ctx.ellipse(-8,-5,6,10,-.3,0,7);ctx.ellipse(8,-5,6,10,.3,0,7);ctx.fill();ctx.strokeStyle='#b7ffd3';ctx.beginPath();ctx.moveTo(-8,-20);ctx.lineTo(-14,-29);ctx.moveTo(8,-20);ctx.lineTo(14,-29);ctx.stroke()}
@@ -2434,10 +2438,11 @@ function finishGame(text){
  if(M.gameEnded)return;M.gameEnded=text;broadcast({type:'end',text});showMPEnd(text);
 }
 function showMPEnd(text){
- if(M._b7EndShown===text)return;M._b7EndShown=text;
+ if(M._b7EndShown===text)return;
+ vcRecordEvent('RESULT · '+String(text).slice(0,85));M._b7EndShown=text;
  if(window.vcB2MatchEnd)window.vcB2MatchEnd(text);
  M.gameEnded=text;M.active=false;hideMeeting();el('mpHudStatus').textContent='GAME OVER: '+text;
- const p=el('mpEndScreen');const endedText=text;setTimeout(()=>{if(M.gameEnded===endedText&&!M.active)p.style.display='flex'},el('mpEjectScene').style.display==='flex'?3500:0);el('mpEndTitle').textContent=/CREW won/i.test(text)?'CREW VICTORY':'INFILTRATOR VICTORY';el('mpEndTitle').style.color=/CREW won/i.test(text)?'#80ffb1':'#ff8190';el('mpEndText').textContent=text+'  ·  +'+(window.vcB4LastPayout||0)+' CREW CREDITS';window.vcB7DrawLineup?.(text);el('vcB7Again').textContent=M.host?'PLAY AGAIN · SAME LOBBY':'REQUEST NEXT ROUND';el('vcB7RematchStatus').textContent=M.host?'Everyone stays connected. Start another round whenever you are ready.':'The host controls when the next round begins.';
+ const p=el('mpEndScreen');vcShowLegacyLog(p);const endedText=text;setTimeout(()=>{if(M.gameEnded===endedText&&!M.active)p.style.display='flex'},el('mpEjectScene').style.display==='flex'?3500:0);el('mpEndTitle').textContent=/CREW won/i.test(text)?'CREW VICTORY':'INFILTRATOR VICTORY';el('mpEndTitle').style.color=/CREW won/i.test(text)?'#80ffb1':'#ff8190';el('mpEndText').textContent=text+'  ·  +'+(window.vcB4LastPayout||0)+' CREW CREDITS';window.vcB7DrawLineup?.(text);el('vcB7Again').textContent=M.host?'PLAY AGAIN · SAME LOBBY':'REQUEST NEXT ROUND';el('vcB7RematchStatus').textContent=M.host?'Everyone stays connected. Start another round whenever you are ready.':'The host controls when the next round begins.';
 }
 
 // End-of-round navigation keeps the PeerJS connections and original room code alive.
@@ -2472,8 +2477,16 @@ window.vcB7DrawLineup=function(result){
  });
 };
 
+const vcLegacyLog=[];
+function vcRecordEvent(line){vcLegacyLog.push({line,time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});if(vcLegacyLog.length>20)vcLegacyLog.shift()}
+function vcShowLegacyLog(panel){
+ let log=document.getElementById('vcLegacyLog');if(!log){log=document.createElement('div');log.id='vcLegacyLog';log.style.cssText='max-width:440px;margin:16px auto;padding:14px;background:#0b1c2b;border:1px solid #517b96;border-radius:12px;text-align:left;font:13px system-ui;color:#d2ebfa';panel.appendChild(log)}
+ log.replaceChildren();const title=document.createElement('strong');title.textContent='MISSION BLACK BOX · EVENT LOG';log.appendChild(title);
+ vcLegacyLog.slice(-5).forEach(e=>{const row=document.createElement('div');row.style.marginTop='8px';row.textContent=e.time+'  '+e.line;log.appendChild(row)});
+}
 function startMPMeeting(reason){
  if(M.meeting||!M.active)return false;
+ vcRecordEvent('MEETING · '+String(reason).slice(0,85));
  M.nextMeetingAllowed=Date.now()+45000;
  M.meeting=reason;M.meetingEnd=Date.now()+45000;M.votes.clear();showMeeting(reason,M.meetingEnd);broadcast({type:'meeting',reason,endsAt:M.meetingEnd});broadcastVoteProgress();
  setTimeout(()=>{if(!M.meeting||M.meeting!==reason)return;const speakers=bots.filter(b=>b.alive).sort((a,b)=>Number(M.suspicions.has(b.id))-Number(M.suspicions.has(a.id))).slice(0,Math.min(4,bots.filter(b=>b.alive).length));speakers.forEach((b,i)=>setTimeout(()=>{if(!M.meeting)return;const suspect=M.suspicions.get(b.id);const suspectName=(M.roster.get(suspect)||bots.find(p=>p.id===suspect))?.name;const line=suspect&&suspectName?'I saw '+suspectName+' near the body. I think we should vote them.':b.evil?['Who actually saw the body?','Do we know the room where it happened?','I need evidence before voting.'][Math.floor(Math.random()*3)]:['I did not see a kill, so I am not accusing anyone.','Can the reporter tell us the exact room?','I will listen to evidence before deciding.'][Math.floor(Math.random()*3)];appendMPChat(b.name,line);broadcast({type:'chat',name:b.name,text:line})},i*2800));},2000);
