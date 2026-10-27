@@ -424,7 +424,7 @@ const el=id=>document.getElementById(id);
 const menuEl=el('menu'), lobbyEl=el('lobby'), gamehudEl=el('gamehud'), minimapEl=el('minimap'), pingEl=el('ping'), roleElNode=el('role'), tasksElNode=el('tasks');
 
 const c=document.getElementById('c');let x=c.getContext('2d');let W,H;
-function resize(){W=c.width=innerWidth*devicePixelRatio;H=c.height=innerHeight*devicePixelRatio;x.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);W=innerWidth;H=innerHeight}addEventListener('resize',resize);resize();
+function resize(){const dpr=Math.min(1.5,devicePixelRatio||1);W=c.width=Math.round(innerWidth*dpr);H=c.height=Math.round(innerHeight*dpr);x.setTransform(dpr,0,0,dpr,0,0);W=innerWidth;H=innerHeight}addEventListener('resize',resize);resize();
 const colors=['#55d7ff','#ff5964','#ffd75a','#7cf29a','#bf78ff','#ff9f50','#f66fe1','#eee'];
 let state='menu',keys={},player=null,bots=[],bodies=[],tasks=[],role='CREW',meeting=false,last=0,killCD=0,taskActive=null,doneOrder=0,selectedColor=colors[0],moveSpeed=145,sabotageTimer=0,camPos={x:0,y:0},particles=[],doors=[],vents=[],ghosts=[],sabotageType='',visionRadius=188,walkPhase=0,cameraMode=false,emergencyCD=0,screenShake=0,killAnim=null,ventAnim=null,taskBurst=0,taskMode='',wirePick=null,holdTimer=null,botTaskClock=0,gameZoom=1.36,roundAge=0,meetingLock=12,playerGhost=false,deathFreeze=0;
 const rooms=[
@@ -1692,11 +1692,56 @@ function vcDrawVentEvidence(){
   x.restore();
  }
 }
-function drawMap(cam){x.fillStyle='#050912';x.fillRect(0,0,W,H);x.save();let sh=screenShake>0?(Math.random()-.5)*screenShake:0;x.scale(gameZoom,gameZoom);x.translate(-cam.x+sh/gameZoom,-cam.y+sh/gameZoom);
- drawCleanCorridors();
- rooms.filter(r=>roomVisible(r,cam)).forEach(drawRoomShell);
- rooms.forEach((r,i)=>{if(roomVisible(r,cam)){drawRoomIdentity(r,i);drawRoomPolish(r)}});drawPhysicalCameras();
- rooms.filter(r=>roomVisible(r,cam)).forEach(drawAmbient);
+
+// USV NULL HORIZON: one cached ship deck, not hundreds of gradients and shadows per frame.
+// A single static 1x world canvas is cheaper than re-rendering all rooms for each player.
+let vcDeckCanvas=null,vcDeckVersion=0;
+function vcRoomFurnish(r){
+ const {x:rx,y:ry,w,h,n}=r, cx=rx+w/2,cy=ry+h/2;
+ const palette={Cafeteria:'#69dce5',Reactor:'#fa785c','Med Bay':'#80f1d7',Security:'#78b9ff',Electrical:'#edc46a',Storage:'#d4b08a',Admin:'#9faaff',Oxygen:'#72e0af',Shields:'#78cbff',Navigation:'#9ad8f6'};
+ const a=palette[n]||'#9cd7df';
+ x.save();roomOutline(r,x);x.clip();
+ // Keep the center of every room clear for navigation and tasks.
+ x.fillStyle='rgba(2,10,19,.24)';x.beginPath();x.roundRect(rx+28,ry+54,w-56,h-80,18);x.fill();
+ const unit=(px,py,uw,uh,accent=a)=>{
+  x.fillStyle='#07131d';x.beginPath();x.roundRect(px+5,py+7,uw,uh,9);x.fill();
+  x.fillStyle='#263e4c';x.beginPath();x.roundRect(px,py,uw,uh,9);x.fill();
+  x.strokeStyle='#506f7c';x.lineWidth=2;x.stroke();
+  x.fillStyle=accent;x.globalAlpha=.72;x.fillRect(px+11,py+10,Math.max(5,uw-22),4);x.globalAlpha=1;
+  x.fillStyle='#071e2d';x.fillRect(px+11,py+19,Math.max(5,uw-22),Math.max(6,uh-30));
+ };
+ // Dedicated functional furniture zones, never a scatter of generic props.
+ if(n==='Cafeteria'){for(const yy of [ry+112,ry+h-120])for(const xx of [rx+175,rx+w-240]){unit(xx,yy,145,68);x.fillStyle='#486b78';x.fillRect(xx+18,yy+21,110,28)}}
+ else if(n==='Reactor'){unit(rx+35,ry+110,100,150);unit(rx+w-145,ry+110,100,150);x.strokeStyle=a;x.lineWidth=12;x.beginPath();x.arc(cx,cy,65,0,Math.PI*2);x.stroke();x.fillStyle='#873c31';x.beginPath();x.arc(cx,cy,39,0,7);x.fill()}
+ else if(n==='Med Bay'){unit(rx+30,ry+110,105,62);unit(rx+w-135,ry+110,105,62);unit(rx+30,ry+h-115,105,62);unit(rx+w-135,ry+h-115,105,62)}
+ else if(n==='Security'){unit(rx+28,ry+85,115,66);unit(rx+w-143,ry+85,115,66);unit(rx+28,ry+h-120,105,64)}
+ else if(n==='Electrical'){for(let i=0;i<3;i++)unit(rx+30+i*112,ry+80,84,74,'#efb951')}
+ else if(n==='Storage'){for(let i=0;i<3;i++){unit(rx+35+i*135,ry+78,88,75,'#ad9270');unit(rx+35+i*135,ry+h-150,88,75,'#ad9270')}}
+ else if(n==='Admin'){unit(rx+30,ry+85,120,65);unit(rx+w-150,ry+85,120,65);unit(rx+30,ry+h-125,115,64)}
+ else if(n==='Oxygen'){for(const xx of [rx+65,rx+w-125]){unit(xx,ry+100,60,110);x.fillStyle='#42ac85';x.fillRect(xx+15,ry+137,30,54)}}
+ else if(n==='Shields'){for(const xx of [rx+45,rx+w-125])unit(xx,ry+100,80,95);x.strokeStyle=a;x.lineWidth=8;x.beginPath();x.arc(cx,cy,45,0,7);x.stroke()}
+ else if(n==='Navigation'){unit(rx+35,ry+85,125,65);unit(rx+w-160,ry+h-130,125,65);x.strokeStyle=a;x.lineWidth=4;x.beginPath();x.arc(cx,cy,55,0,7);x.stroke()}
+ x.restore();
+}
+function vcBuildDeck(){
+ const saved=x,off=document.createElement('canvas');off.width=world.w;off.height=world.h;
+ const ctx=off.getContext('2d',{alpha:false});if(!ctx)return;
+ x=ctx;
+ try{
+  x.fillStyle='#040a12';x.fillRect(0,0,world.w,world.h);
+  drawCleanCorridors();
+  rooms.forEach(drawRoomShell);
+  rooms.forEach(vcRoomFurnish);
+  drawPhysicalCameras();
+ }finally{x=saved}
+ vcDeckCanvas=off;vcDeckVersion++;
+}
+function drawMap(cam){
+ x.fillStyle='#050912';x.fillRect(0,0,W,H);
+ if(!vcDeckCanvas)vcBuildDeck();
+ x.save();let sh=screenShake>0?(Math.random()-.5)*screenShake:0;
+ x.scale(gameZoom,gameZoom);x.translate(-cam.x+sh/gameZoom,-cam.y+sh/gameZoom);
+ x.drawImage(vcDeckCanvas,0,0);
 
  drawVentEffectV112();
  // Clearly visible vent grates; only infiltrators can use them.
@@ -1906,7 +1951,7 @@ function drawMini(){
  m.restore();
  m.fillStyle='#b9d5e3';m.font=(expanded?'bold 18px':'bold 11px')+' Arial';m.textAlign='left';m.fillText((expanded?'SHIP OVERVIEW • M TO CLOSE':'LOCAL RADAR • M TO EXPAND'),12,expanded?24:15);
 }
-function loop(ts){let dt=Math.min(.033,(ts-last)/1000||0);last=ts;if(state==='shuttle'){updateShuttle(dt);drawShuttle();requestAnimationFrame(loop);return}screenShake=Math.max(0,screenShake-dt*28);deathFreeze=Math.max(0,deathFreeze-dt);if(state==='game'&&player&&!meeting){let dx=((keys.d||keys.KeyD||keys.arrowright||keys.ArrowRight)?1:0)-((keys.a||keys.KeyA||keys.arrowleft||keys.ArrowLeft)?1:0),dy=((keys.s||keys.KeyS||keys.arrowdown||keys.ArrowDown)?1:0)-((keys.w||keys.KeyW||keys.arrowup||keys.ArrowUp)?1:0),m=Math.hypot(dx,dy)||1;emergencyCD=Math.max(0,emergencyCD-dt);const oldPX=player.x,oldPY=player.y;updateVentAnim(dt);taskBurst=Math.max(0,taskBurst-dt);if(deathFreeze<=0&&!ventAnim){if(playerGhost){player.x=Math.max(35,Math.min(world.w-35,player.x+dx/m*moveSpeed*1.08*dt));player.y=Math.max(35,Math.min(world.h-35,player.y+dy/m*moveSpeed*1.08*dt))}else if(player.alive)moveEnt(player,dx/m*moveSpeed*dt,dy/m*moveSpeed*dt)}if(Math.hypot(player.x-oldPX,player.y-oldPY)>.2)walkPhase+=dt*12;else if((dx||dy)&&!playerGhost&&!ventAnim&&deathFreeze<=0){if(!window.lastBlockedMoveNotice||performance.now()-window.lastBlockedMoveNotice>2400){/* Boundary blocks movement without spamming alerts. */window.lastBlockedMoveNotice=performance.now()}}if(!window.VCMP?.active||window.VCMP.host)ai(dt);if(!window.VCMP?.active)updateGhosts(dt);killCD=Math.max(0,killCD-dt);if(sabotageTimer>0){sabotageTimer-=dt;if(sabotageTimer<=0){if(sabotageType==='LIGHTS'){visionRadius=188;toastMsg('Lights restored.')}else if(sabotageType==='DOORS'){doors.forEach(d=>d.closed=false);toastMsg('Doors reopened.')}else if(role==='CREW')endGame(false,sabotageType+' failure. The ship was lost.');else endGame(true,sabotageType+' failure. The infiltrator wins.');sabotageType=''}}}particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.t-=dt});if(killAnim){killAnim.t-=dt;if(killAnim.t<=0)killAnim=null}particles=particles.filter(p=>p.t>0);if(player&&state!=='menu'){drawMap(camera());if(!window.vcLastRadarDraw||ts-window.vcLastRadarDraw>100){drawMini();window.vcLastRadarDraw=ts}}else{x.fillStyle='#050912';x.fillRect(0,0,W,H)}if(taskBurst>0){x.fillStyle=`rgba(100,255,160,${taskBurst*.08})`;x.fillRect(0,0,W,H)}updateKillerActions();requestAnimationFrame(loop)}
+function loop(ts){let dt=Math.min(.033,(ts-last)/1000||0);last=ts;if(state==='shuttle'){updateShuttle(dt);drawShuttle();requestAnimationFrame(loop);return}screenShake=Math.max(0,screenShake-dt*28);deathFreeze=Math.max(0,deathFreeze-dt);if(state==='game'&&player&&!meeting){let dx=((keys.d||keys.KeyD||keys.arrowright||keys.ArrowRight)?1:0)-((keys.a||keys.KeyA||keys.arrowleft||keys.ArrowLeft)?1:0),dy=((keys.s||keys.KeyS||keys.arrowdown||keys.ArrowDown)?1:0)-((keys.w||keys.KeyW||keys.arrowup||keys.ArrowUp)?1:0),m=Math.hypot(dx,dy)||1;emergencyCD=Math.max(0,emergencyCD-dt);const oldPX=player.x,oldPY=player.y;updateVentAnim(dt);taskBurst=Math.max(0,taskBurst-dt);if(deathFreeze<=0&&!ventAnim){if(playerGhost){player.x=Math.max(35,Math.min(world.w-35,player.x+dx/m*moveSpeed*1.08*dt));player.y=Math.max(35,Math.min(world.h-35,player.y+dy/m*moveSpeed*1.08*dt))}else if(player.alive)moveEnt(player,dx/m*moveSpeed*dt,dy/m*moveSpeed*dt)}if(Math.hypot(player.x-oldPX,player.y-oldPY)>.2)walkPhase+=dt*12;else if((dx||dy)&&!playerGhost&&!ventAnim&&deathFreeze<=0){if(!window.lastBlockedMoveNotice||performance.now()-window.lastBlockedMoveNotice>2400){/* Boundary blocks movement without spamming alerts. */window.lastBlockedMoveNotice=performance.now()}}if(!window.VCMP?.active||window.VCMP.host)ai(dt);if(!window.VCMP?.active)updateGhosts(dt);killCD=Math.max(0,killCD-dt);if(sabotageTimer>0){sabotageTimer-=dt;if(sabotageTimer<=0){if(sabotageType==='LIGHTS'){visionRadius=188;toastMsg('Lights restored.')}else if(sabotageType==='DOORS'){doors.forEach(d=>d.closed=false);toastMsg('Doors reopened.')}else if(role==='CREW')endGame(false,sabotageType+' failure. The ship was lost.');else endGame(true,sabotageType+' failure. The infiltrator wins.');sabotageType=''}}}particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.t-=dt});if(killAnim){killAnim.t-=dt;if(killAnim.t<=0)killAnim=null}particles=particles.filter(p=>p.t>0);if(player&&state!=='menu'&&(!window.vcLastWorldFrame||ts-window.vcLastWorldFrame>=30)){window.vcLastWorldFrame=ts;drawMap(camera());if(!window.vcLastRadarDraw||ts-window.vcLastRadarDraw>220){drawMini();window.vcLastRadarDraw=ts}}else{x.fillStyle='#050912';x.fillRect(0,0,W,H)}if(taskBurst>0){x.fillStyle=`rgba(100,255,160,${taskBurst*.08})`;x.fillRect(0,0,W,H)}if(role==='INFILTRATOR'&&state==='game')updateKillerActions();requestAnimationFrame(loop)}
 function updateKillerActions(){
  let box=document.getElementById('killerActions');if(!box)return;
  if(state!=='game'||role!=='INFILTRATOR'||meeting){box.style.display='none';return}
