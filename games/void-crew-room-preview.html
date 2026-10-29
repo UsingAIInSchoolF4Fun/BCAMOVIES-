@@ -465,16 +465,16 @@ const rooms=[
  {n:'Security',x:455,y:900,w:390,h:310},{n:'Electrical',x:35,y:1155,w:365,h:290},{n:'Storage',x:915,y:1010,w:515,h:410},
  {n:'Admin',x:1520,y:470,w:405,h:325},{n:'Oxygen',x:1570,y:950,w:325,h:275},{n:'Shields',x:1925,y:1145,w:310,h:260},
  {n:'Navigation',x:1990,y:355,w:290,h:325}
-], world={w:3420,h:2250};
+], world={w:4300,h:3100};
 // Larger play spaces: expand room footprints around their original centers.
 const vcOriginalRoomSize=new Map(rooms.map(r=>[r.n,{x:r.x,y:r.y,w:r.w,h:r.h}]));
-rooms.forEach(r=>{const factor=r.n==='Cafeteria'?1.28:1.22;
+rooms.forEach(r=>{const factor=r.n==='Cafeteria'?1.28:1.65;
  const cx=r.x+r.w/2,cy=r.y+r.h/2;
  r.w=Math.round(r.w*factor);r.h=Math.round(r.h*factor);
  r.x=Math.round(cx-r.w/2);r.y=Math.round(cy-r.h/2);
 });
 // Spread the ship footprint out; room size stays moderate while empty space grows.
-const VC_SPREAD=1.38,VC_OFFSET=130;
+const VC_SPREAD=1.65,VC_OFFSET=160;
 function vcSpreadPoint(p){return {x:Math.round(p.x*VC_SPREAD+VC_OFFSET),y:Math.round(p.y*VC_SPREAD+VC_OFFSET)}}
 rooms.forEach(r=>{const center=vcSpreadPoint({x:r.x+r.w/2,y:r.y+r.h/2});
  r.x=Math.round(center.x-r.w/2);r.y=Math.round(center.y-r.h/2);
@@ -1823,7 +1823,7 @@ const vcRoomArt={};
   const img=new Image();
   img.onload=()=>{vcRoomArt[name]=img;if(--pending===0)try{vcBuildDeck()}catch(err){console.warn('Room art redraw',err)}};
   img.onerror=()=>{console.warn('Art unavailable for '+name);if(--pending===0)try{vcBuildDeck()}catch(err){}};
-  img.src='void-crew-art/'+name.toLowerCase().replaceAll(' ','-')+'.svg?v=4';
+  img.src='void-crew-art/'+name.toLowerCase().replaceAll(' ','-')+'.svg?v=5';
  });
 })();
 function vcBuildDeck(){
