@@ -1811,10 +1811,14 @@ function vcRoomFurnish(r){
 // Illustrated art assets are loaded independently of the multiplayer simulation.
 const vcRoomArt={};
 (function(){
- const img=new Image();
- img.onload=()=>{vcRoomArt.Cafeteria=img;try{vcBuildDeck()}catch(err){console.warn('Room art redraw',err)}};
- img.onerror=()=>console.warn('Cafeteria art unavailable; keeping original playable floor');
- img.src='void-crew-art/cafeteria.svg?v=2';
+ const names=['Cafeteria','Reactor','Med Bay','Security','Electrical','Storage','Admin','Oxygen','Shields','Navigation'];
+ let pending=names.length;
+ names.forEach(name=>{
+  const img=new Image();
+  img.onload=()=>{vcRoomArt[name]=img;if(--pending===0)try{vcBuildDeck()}catch(err){console.warn('Room art redraw',err)}};
+  img.onerror=()=>{console.warn('Art unavailable for '+name);if(--pending===0)try{vcBuildDeck()}catch(err){}};
+  img.src='void-crew-art/'+name.toLowerCase().replaceAll(' ','-')+'.svg?v=3';
+ });
 })();
 function vcBuildDeck(){
  const saved=x,off=document.createElement('canvas');off.width=world.w;off.height=world.h;
@@ -1898,8 +1902,8 @@ function drawCrewShape(p,alpha=1,ghost=false,me=false){x.save();x.globalAlpha=al
  const vg=x.createLinearGradient(-5,-21,23,-4);
  vg.addColorStop(0,'#efffff');vg.addColorStop(.42,'#a2e4f5');vg.addColorStop(1,'#39779a');
  x.fillStyle=vg;x.strokeStyle='#101e2c';x.lineWidth=4;
- x.beginPath();x.roundRect(-5,-20,30,17,9);x.fill();x.stroke();
- x.fillStyle='#ffffffa8';x.beginPath();x.roundRect(0,-17,12,4,3);x.fill();
+ x.beginPath();x.roundRect(-8,-21,34,20,10);x.fill();x.stroke();
+ x.fillStyle='#ffffffa8';x.beginPath();x.roundRect(-2,-18,14,5,3);x.fill();
  x.restore();
  // Unlockable DUM sticky-note visor, inspired by the supplied green crewmate image.
  const equippedHat=(me||p===player)?window.vcB2State?.().hat:(p.hat||p.room?.hat);const equippedDum=equippedHat==='dum';
