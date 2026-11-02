@@ -141,38 +141,4 @@ if(blockers.length){cameraDesired.copy(cameraFocus).addScaledVector(rayDirection
 const alpha=1-Math.exp(-8*dt);
 camera.position.lerp(cameraDesired,alpha);
 camera.lookAt(cameraFocus);renderer.render(scene,camera);requestAnimationFrame(frame)}requestAnimationFrame(frame);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});updateUI();
-</script></body></html>+item.cost);label.position.set(item.at[0],2.6,item.at[1]);tycoonGroup.add(label);armyPads.push({mesh,label,item})}
-const targetPads=[];
-for(let i=1;i<4;i++){const x=(i-2)*4.5,z=29.5;const mesh=cylinder(1.05,1.05,.18,mats[i],x,.2,z,tycoonGroup);const label=padLabel(['','RED TARGET','GREEN TARGET','GOLD TARGET'][i]);label.position.set(x,2.4,z);tycoonGroup.add(label);targetPads.push({mesh,x,z,target:i})}
-function interactNearby(){
- let nearest=null,distance=2.8;
- const consider=(x,z,action)=>{const d=Math.hypot(avatar.position.x-x,avatar.position.z-z);if(d<distance){distance=d;nearest=action}};
- for(const p of tycoonPads)if(!tycoonOwned.has(p.def.id))consider(p.def.at[0],p.def.at[1],()=>{show(purchaseTycoon(p.def.id)?'Building '+p.def.name:'Locked or insufficient cash')});
- for(const p of armyPads)consider(p.item.at[0],p.item.at[1],()=>{show(buyTroop(0,p.item.id)?'Deployed '+p.item.name:'Build barracks or earn more cash')});
- for(const p of targetPads)consider(p.x,p.z,()=>{states[0].target=p.target;show('Target set: '+['','Red','Green','Gold'][p.target]+' Base')});
- if(nearest){nearest();updateUI()}else show('Move closer to a purchase or target pad');
-}
-function buyBuild(id,type){if(id===0){const first={gen:'gen1',tower:'tower1',armor:'keep',auto:'barracks1'};return purchaseTycoon(first[type])}const s=states[id],b=buildTypes.find(x=>x.id===type);if(!s.alive||s.money<b.cost)return false;if(type==='gen'&&s.gen>=4||type==='tower'&&s.tower>=2||type==='armor'&&s.armor>=2||type==='auto'&&s.auto>=2)return false;s.money-=b.cost;s[type]++;if(type==='gen'){s.income+=5;s.genMesh.scale.y=1+s.gen*.35;s.genMesh.position.y=.8+s.gen*.2}if(type==='armor'){s.hp+=300;box(5.4+s.armor*.3,.45,5.4+s.armor*.3,stone,0,1+s.armor*.8,0,s.group)}if(type==='tower'){const x=s.tower===1?-5:5,z=4;box(1.6,3,1.6,stone,x,1.5,z,s.group);box(2.4,.7,2.4,mats[id],x,3.3,z,s.group)}if(type==='auto'){box(2.5,1.4,2.5,material('#8aa9ba'),5,.7,-3+s.auto*2,s.group)}return true}
-function updateUI(){const s=states[0];document.getElementById('money').textContent='$'+Math.floor(s.money);document.getElementById('income').textContent='+$'+s.income+'/sec';document.getElementById('stats').textContent='Base Health: '+Math.max(0,Math.ceil(s.hp))+' HP;}
-function damage(s,amount){if(!s.alive)return;s.hp-=amount;if(s.hp<=0){s.hp=0;s.alive=false;s.hqMesh.material=stone;for(const u of units)if(u.owner===s.id)u.hp=0;if(s.id===0)finish(false);else if(states.slice(1).every(x=>!x.alive))finish(true)}}
-function finish(win){if(finished)return;finished=true;running=false;document.getElementById('outcome').textContent=win?'YOU WIN!':'YOUR BASE FELL';document.getElementById('end').style.display='grid'}
-function reset(){location.reload()}document.getElementById('again').onclick=reset;document.getElementById('begin').onclick=()=>{document.getElementById('start').style.display='none';running=true;renderer.domElement.requestPointerLock?.()};
-renderer.domElement.addEventListener('click',()=>{if(running&&document.pointerLockElement!==renderer.domElement)renderer.domElement.requestPointerLock?.()});
-addEventListener('mousemove',e=>{if(!running||document.pointerLockElement!==renderer.domElement)return;yaw-=e.movementX*.003;tilt=THREE.MathUtils.clamp(tilt+e.movementY*.0025,.18,.6)});
-renderer.domElement.addEventListener('wheel',e=>{zoom=THREE.MathUtils.clamp(zoom+e.deltaY*.006,3,8)},{passive:true});
-function nearestEnemy(u){let best=null,dist=Infinity;for(const v of units){if(v===u||v.hp<=0||v.owner===u.owner)continue;const d=v.g.position.distanceTo(u.g.position);if(d<dist&&d<7.5){best=v;dist=d}}return best}
-function step(dt){if(!running)return;seconds+=dt;updateConstruction(dt);const forward=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0),strafe=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0);if(forward||strafe){const f=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),r=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),delta=f.multiplyScalar(forward).addScaledVector(r,strafe).normalize();const next=avatar.position.clone().addScaledVector(delta,dt*7);const insideHome=Math.hypot(next.x,next.z-32)<8.5||(Math.abs(next.x)<13.8&&next.z>=33&&next.z<=64);const bridgeNorth= Math.abs(next.x)<2.2&&next.z>=0&&next.z<=32;const insideCenter=Math.hypot(next.x,next.z)<10.5;if(insideHome||bridgeNorth||insideCenter){avatar.position.copy(next);avatar.rotation.y=Math.atan2(-delta.x,-delta.z)}}for(const s of states){if(!s.alive)continue;s.money+=s.income*dt;if(s.id!==0){s.aiTimer-=dt;if(s.aiTimer<=0){s.aiTimer=1.5+Math.random()*2;s.target=states.filter(x=>x.alive&&x.id!==s.id).sort((a,b)=>a.hp-b.hp)[0]?.id??0;const roll=Math.random();if(s.money>=200&&s.gen<3&&roll<.24)buyBuild(s.id,'gen');else if(s.money>=150&&s.tower<2&&roll<.35)buyBuild(s.id,'tower');else if(s.money>=350&&s.auto<1&&roll<.38)buyBuild(s.id,'auto');else{const choices=troopTypes.filter(t=>t.cost<=s.money);if(choices.length)buyTroop(s.id,choices[Math.floor(Math.random()*choices.length)].id)}}}if(s.auto){s.spawnTimer+=dt;if(s.spawnTimer>=Math.max(2,8-s.auto*2)){s.spawnTimer=0;if(s.money>=50)buyTroop(s.id,'sword')}}}
-for(const s of states){if(!s.alive||!s.tower)continue;for(let n=0;n<s.tower;n++){const nearby=units.find(u=>u.hp>0&&u.owner!==s.id&&u.g.position.distanceTo(new THREE.Vector3(s.x,0,s.z))<10);if(nearby)nearby.hp-=dt*15}}
-for(const u of units){if(u.hp<=0)continue;u.cool-=dt;const home=states[u.owner],enemy=states[u.target];if(!enemy.alive){u.target=states.find(s=>s.alive&&s.id!==u.owner)?.id??u.owner}const target=states[u.target];if(!target||target.id===u.owner)continue;const foe=nearestEnemy(u);const destination=foe?foe.g.position: u.phase===0?new THREE.Vector3(0,0,0):new THREE.Vector3(target.x,0,target.z);const d=u.g.position.distanceTo(destination);if(d<(foe?u.range: u.phase===0?2:3.5)){if(u.phase===0&&!foe){u.phase=1;continue}if(u.cool<=0){u.cool=u.interval;if(foe)foe.hp-=u.dmg;else damage(target,u.dmg)}}else{const dir=destination.clone().sub(u.g.position);dir.y=0;dir.normalize();u.g.position.addScaledVector(dir,dt*u.speed);u.g.rotation.y=Math.atan2(-dir.x,-dir.z)}}for(let i=units.length-1;i>=0;i--){if(units[i].hp<=0){scene.remove(units[i].g);units.splice(i,1)}}updateUI()}
-function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;step(dt);updateCommanderVisuals(dt);
-cameraTarget.getWorldPosition(cameraFocus);
-const x=Math.sin(yaw)*zoom*Math.cos(tilt),z=Math.cos(yaw)*zoom*Math.cos(tilt),y=Math.sin(tilt)*zoom;
-cameraDesired.copy(cameraFocus).add(new THREE.Vector3(x,y,z));
-const rayDirection=cameraDesired.clone().sub(cameraFocus),rayLength=rayDirection.length();
-cameraRay.set(cameraFocus,rayDirection.normalize());cameraRay.far=rayLength;
-const blockers=cameraRay.intersectObjects(cameraObstacles,false);
-if(blockers.length){cameraDesired.copy(cameraFocus).addScaledVector(rayDirection,Math.max(1.2,blockers[0].distance-.3))}
-const alpha=1-Math.exp(-8*dt);
-camera.position.lerp(cameraDesired,alpha);
-camera.lookAt(cameraFocus);renderer.render(scene,camera);requestAnimationFrame(frame)}requestAnimationFrame(frame);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});updateUI();
 </script></body></html>
