@@ -1678,4 +1678,43 @@ body>#movies{border-color:#bb77ff9c!important;box-shadow:0 0 30px #8b5cf630,0 20
  if(chat)new MutationObserver(()=>{if(chat.classList.contains('chat-drawer'))closeOthers(null)}).observe(chat,{attributes:true,attributeFilter:['class']});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeOthers(null);for(const id of ids){const el=document.getElementById(id);if(el)el.hidden=true}if(chat&&chat.classList.contains('chat-drawer')&&typeof toggleChat==='function')toggleChat(false)}});
 })();
+</script><!-- BCA Christmas website skin: decorative only, games and iframe untouched -->
+<style id="bca-christmas-2026">
+body:not(.schoolwork-open){background:radial-gradient(ellipse at 50% -15%,#1b493b 0%,transparent 55%),radial-gradient(ellipse at 100% 80%,#391321,transparent 55%),#07110f!important}
+body:not(.schoolwork-open) .top{background:linear-gradient(100deg,#09251eeb,#31101aef)!important;border-bottom:2px solid #b68b49!important;box-shadow:0 5px 32px #082d26aa!important}
+body:not(.schoolwork-open) .logo{color:#fff7e6!important;text-shadow:0 0 16px #ffd88c88!important}
+body:not(.schoolwork-open) .logo b{color:#e3b86e!important}
+body:not(.schoolwork-open) .tab.active{background:linear-gradient(125deg,#146444,#a72d3d)!important;box-shadow:0 0 18px #e4ae6b44!important}
+body:not(.schoolwork-open) .tab:hover{border-color:#e7c080!important}
+body:not(.schoolwork-open) #landing{background:radial-gradient(ellipse at 18% 65%,#15523b99,transparent 55%),radial-gradient(ellipse at 85% 18%,#6a202c88,transparent 55%),linear-gradient(160deg,#07130f,#180c14)!important}
+body:not(.schoolwork-open) .landing-card{border-color:#caa56c77!important;background:#101d1bcc!important;box-shadow:0 25px 100px #000b,0 0 45px #c29a4330!important}
+body:not(.schoolwork-open) .landing-brand b{color:#e9bc72!important}
+body:not(.schoolwork-open) .landing-kicker{color:#f0ce92!important}
+body:not(.schoolwork-open) .landing-actions button:not(.secondary){background:linear-gradient(115deg,#14734d,#ae3543)!important}
+body:not(.schoolwork-open) #chatFab{background:linear-gradient(130deg,#136545,#ae3443)!important}
+body:not(.schoolwork-open) .post,body:not(.schoolwork-open) .communityBox{border-color:#b9955555!important}
+#bca-xmas-snow{position:fixed;inset:0;z-index:115;pointer-events:none;overflow:hidden;contain:strict}
+#bca-xmas-snow .flake{position:absolute;top:-30px;left:var(--x);font-size:var(--size);color:#fff;opacity:var(--alpha);text-shadow:0 0 7px #e7ffffaa;animation:bcaSnowFall var(--duration) linear var(--delay) infinite;will-change:transform}
+@keyframes bcaSnowFall{to{transform:translate3d(var(--drift),110vh,0) rotate(180deg)}}
+#bca-xmas-lights{position:fixed;left:0;right:0;top:0;height:39px;z-index:116;display:flex;justify-content:space-around;pointer-events:none;overflow:hidden;border-top:2px solid #184b33}
+#bca-xmas-lights:before{content:"";position:absolute;left:-2%;right:-2%;top:-9px;height:24px;border-bottom:2px solid #396448;border-radius:50%}
+#bca-xmas-lights i{display:block;position:relative;top:13px;width:9px;height:15px;border-radius:50% 50% 48% 48%;background:var(--bulb);box-shadow:0 0 9px 3px var(--bulb);animation:bcaBulb 2.6s ease-in-out infinite alternate;animation-delay:var(--twinkle)}
+#bca-xmas-lights i:before{content:"";position:absolute;top:-5px;left:2px;width:5px;height:6px;background:#385044;border-radius:2px}
+@keyframes bcaBulb{from{opacity:.48;filter:brightness(.7)}to{opacity:1;filter:brightness(1.2)}}
+body.schoolwork-open #bca-xmas-snow,body.schoolwork-open #bca-xmas-lights{display:none!important}
+@media(prefers-reduced-motion:reduce){#bca-xmas-snow{display:none!important}#bca-xmas-lights i{animation:none!important}}
+</style>
+<script id="bca-christmas-decor-2026">
+(function(){
+ if(document.getElementById('bca-xmas-lights'))return;
+ const lights=document.createElement('div');lights.id='bca-xmas-lights';lights.setAttribute('aria-hidden','true');
+ const colors=['#ffdb7a','#e64d58','#68d99a','#8bc8ff','#fff3c7'];
+ for(let i=0;i<32;i++){const bulb=document.createElement('i');bulb.style.setProperty('--bulb',colors[i%colors.length]);bulb.style.setProperty('--twinkle',(-i*.19)+'s');lights.appendChild(bulb)}
+ document.body.appendChild(lights);
+ const snow=document.createElement('div');snow.id='bca-xmas-snow';snow.setAttribute('aria-hidden','true');
+ if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+ for(let i=0;i<55;i++){const f=document.createElement('span');f.className='flake';f.textContent=i%3===0?'❄':'•';f.style.setProperty('--x',((i*37.7)%100)+'%');f.style.setProperty('--size',(i%3===0?9+i%8:4+i%5)+'px');f.style.setProperty('--alpha',(.25+(i%6)*.11).toFixed(2));f.style.setProperty('--duration',(12+i%17)+'s');f.style.setProperty('--delay',(-i*.79)+'s');f.style.setProperty('--drift',((i%2?-1:1)*(25+i%85))+'px');snow.appendChild(f)}
+ }
+ document.body.appendChild(snow);
+})();
 </script></body></html>
