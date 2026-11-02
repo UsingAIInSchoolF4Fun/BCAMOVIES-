@@ -1693,10 +1693,10 @@ body:not(.schoolwork-open) .landing-kicker{color:#f0ce92!important}
 body:not(.schoolwork-open) .landing-actions button:not(.secondary){background:linear-gradient(115deg,#14734d,#ae3543)!important}
 body:not(.schoolwork-open) #chatFab{background:linear-gradient(130deg,#136545,#ae3443)!important}
 body:not(.schoolwork-open) .post,body:not(.schoolwork-open) .communityBox{border-color:#b9955555!important}
-#bca-xmas-snow{position:fixed;inset:0;z-index:115;pointer-events:none;overflow:hidden;contain:strict}
+#bca-xmas-snow{position:fixed;inset:0;z-index:120;pointer-events:none;overflow:hidden;width:100vw;height:100vh}
 #bca-xmas-snow .flake{position:absolute;top:-30px;left:var(--x);font-size:var(--size);color:#fff;opacity:var(--alpha);text-shadow:0 0 7px #e7ffffaa;animation:bcaSnowFall var(--duration) linear var(--delay) infinite;will-change:transform}
 @keyframes bcaSnowFall{to{transform:translate3d(var(--drift),110vh,0) rotate(180deg)}}
-#bca-xmas-lights{position:fixed;left:0;right:0;top:0;height:39px;z-index:116;display:flex;justify-content:space-around;pointer-events:none;overflow:hidden;border-top:2px solid #184b33}
+#bca-xmas-lights{position:fixed;left:0;right:0;top:0;height:39px;z-index:121;display:flex;justify-content:space-around;pointer-events:none;overflow:hidden;border-top:2px solid #184b33}
 #bca-xmas-lights:before{content:"";position:absolute;left:-2%;right:-2%;top:-9px;height:24px;border-bottom:2px solid #396448;border-radius:50%}
 #bca-xmas-lights i{display:block;position:relative;top:13px;width:9px;height:15px;border-radius:50% 50% 48% 48%;background:var(--bulb);box-shadow:0 0 9px 3px var(--bulb);animation:bcaBulb 2.6s ease-in-out infinite alternate;animation-delay:var(--twinkle)}
 #bca-xmas-lights i:before{content:"";position:absolute;top:-5px;left:2px;width:5px;height:6px;background:#385044;border-radius:2px}
@@ -1710,11 +1710,11 @@ body.schoolwork-open #bca-xmas-snow,body.schoolwork-open #bca-xmas-lights{displa
  const lights=document.createElement('div');lights.id='bca-xmas-lights';lights.setAttribute('aria-hidden','true');
  const colors=['#ffdb7a','#e64d58','#68d99a','#8bc8ff','#fff3c7'];
  for(let i=0;i<32;i++){const bulb=document.createElement('i');bulb.style.setProperty('--bulb',colors[i%colors.length]);bulb.style.setProperty('--twinkle',(-i*.19)+'s');lights.appendChild(bulb)}
- document.body.appendChild(lights);
+ document.documentElement.appendChild(lights);
  const snow=document.createElement('div');snow.id='bca-xmas-snow';snow.setAttribute('aria-hidden','true');
  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
- for(let i=0;i<55;i++){const f=document.createElement('span');f.className='flake';f.textContent=i%3===0?'❄':'•';f.style.setProperty('--x',((i*37.7)%100)+'%');f.style.setProperty('--size',(i%3===0?9+i%8:4+i%5)+'px');f.style.setProperty('--alpha',(.25+(i%6)*.11).toFixed(2));f.style.setProperty('--duration',(12+i%17)+'s');f.style.setProperty('--delay',(-i*.79)+'s');f.style.setProperty('--drift',((i%2?-1:1)*(25+i%85))+'px');snow.appendChild(f)}
+ for(let i=0;i<85;i++){const f=document.createElement('span');f.className='flake';f.textContent=i%3===0?'❄':'●';f.style.setProperty('--x',((i*37.7)%100)+'%');f.style.setProperty('--size',(i%3===0?9+i%8:4+i%5)+'px');f.style.setProperty('--alpha',(.55+(i%5)*.09).toFixed(2));f.style.setProperty('--duration',(12+i%17)+'s');f.style.setProperty('--delay',(-i*.79)+'s');f.style.setProperty('--drift',((i%2?-1:1)*(25+i%85))+'px');snow.appendChild(f)}
  }
- document.body.appendChild(snow);
+ document.documentElement.appendChild(snow);
 })();
 </script></body></html>
