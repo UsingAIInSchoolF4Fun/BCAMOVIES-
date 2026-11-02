@@ -1817,4 +1817,31 @@ body:not(.schoolwork-open) .post,body:not(.schoolwork-open) .communityBox{backgr
  lights.style.position='absolute';
  lights.style.top='0';
 })();
+</script><!-- Christmas blue and Santa launch repair: seasonal, removable -->
+<style id="bca-blue-launch-repair">
+html,body:not(.schoolwork-open){background:#06172f!important}
+body:not(.schoolwork-open) #landing{background:#06172f!important}
+body:not(.schoolwork-open) #landing .aurora-sky{background:linear-gradient(135deg,#06172f,#124777,#092342)!important;filter:hue-rotate(160deg)!important}
+body:not(.schoolwork-open) #landing .aurora-ribbon,body:not(.schoolwork-open) #landing .aurora-one,body:not(.schoolwork-open) #landing .aurora-two,body:not(.schoolwork-open) #landing .aurora-three{background:linear-gradient(110deg,transparent,#1472bc77,#3ab4ff55,transparent)!important;filter:none!important}
+body:not(.schoolwork-open) #landing .landing-card{background:#0a2543ee!important}
+body:not(.schoolwork-open) .top{background:#0a2b50!important}
+body:not(.schoolwork-open) .tab:not(.active){background:#12375b!important}
+body:not(.schoolwork-open) .tab.active{background:#1683d0!important}
+body:not(.schoolwork-open) #owner,body:not(.schoolwork-open) #community{background:#081d38!important}
+#bca-santa-intro{z-index:2147483647!important}
+</style>
+<script id="bca-santa-launch-repair">
+(function(){
+ function launch(){
+  if(document.getElementById('bca-santa-intro'))return;
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const layer=document.createElement('div');
+  layer.id='bca-santa-intro';layer.setAttribute('aria-hidden','true');
+  layer.innerHTML='<div class="moon"></div><div class="sleigh-flight"><svg viewBox="0 0 600 210" xmlns="http://www.w3.org/2000/svg"><g fill="#b9e3ff" stroke="#ccecff" stroke-width="4" stroke-linejoin="round"><path d="M90 128 Q48 111 55 76 L95 76 L112 127 Z" fill="#8fc8e9"/><path d="M65 126 Q70 167 130 166 L245 166 Q281 161 293 129 L90 129 Z" fill="#155b98"/><path d="M78 173 Q100 191 260 178 Q292 175 295 158" fill="none" stroke-width="9"/><path d="M120 127 L119 85 Q137 67 156 89 L163 127" fill="#f5f8ff"/><circle cx="138" cy="67" r="19" fill="#ffe6d2"/><path d="M119 60 Q126 29 152 41 L161 59 Z" fill="#267cc0"/><path d="M130 85 Q139 116 158 88" fill="#fff"/><path d="M308 112 Q338 68 366 99 L389 118 L402 91 Q430 67 445 92 L461 115 L470 89 Q502 64 519 95 L539 122" fill="none" stroke-width="13"/><path d="M358 94 L350 61 M358 75 L334 48 M360 74 L376 48 M442 91 L437 56 M442 71 L423 44 M446 72 L465 46 M515 93 L511 58 M515 73 L495 46 M519 73 L537 48" fill="none" stroke-width="5"/></g></svg></div><div class="intro-name">BCA <span>MOVIES</span></div>';
+ document.body.appendChild(layer);
+ setTimeout(()=>layer.remove(),5300);
+ }
+ // Run immediately on loading rather than waiting for other site initialization.
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',launch,{once:true});else launch();
+})();
 </script></body></html>
