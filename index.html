@@ -1678,7 +1678,31 @@ body>#movies{border-color:#bb77ff9c!important;box-shadow:0 0 30px #8b5cf630,0 20
  if(chat)new MutationObserver(()=>{if(chat.classList.contains('chat-drawer'))closeOthers(null)}).observe(chat,{attributes:true,attributeFilter:['class']});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeOthers(null);for(const id of ids){const el=document.getElementById(id);if(el)el.hidden=true}if(chat&&chat.classList.contains('chat-drawer')&&typeof toggleChat==='function')toggleChat(false)}});
 })();
-</script><!-- BCA Christmas website skin: decorative only, games and iframe untouched -->
+</script><!-- TEMPORARY HOLIDAY BLUE OVERRIDES: remove this style block (and the BCA Christmas skin/style+script above) to restore original purple site. No original colors changed. -->
+<style id="bca-holiday-blue-2026">
+body:not(.schoolwork-open){--neon-purple:#38a9ff;--neon-pink:#1c75dc}
+body:not(.schoolwork-open) .logo,body:not(.schoolwork-open) .landing-brand{filter:none}
+body:not(.schoolwork-open) .tab:not(.active){border-color:#4aa6f533!important}
+body:not(.schoolwork-open) .tab:hover{background:#143f60!important;box-shadow:0 0 22px #35a8ff55!important}
+body:not(.schoolwork-open) .tab.active{background:linear-gradient(120deg,#1260ad,#36b8e8)!important;box-shadow:0 0 24px #36aaff66!important}
+body:not(.schoolwork-open) .landing-brand b,body:not(.schoolwork-open) .logo b{color:#82d5ff!important}
+body:not(.schoolwork-open) .landing-kicker,body:not(.schoolwork-open) #landingStatus{color:#a8dcff!important}
+body:not(.schoolwork-open) .landing-card{border-color:#5bb8f977!important;box-shadow:0 25px 100px #000b,0 0 48px #369ce833!important}
+body:not(.schoolwork-open) .landing-actions button:not(.secondary),body:not(.schoolwork-open) #chatFab{background:linear-gradient(125deg,#1555a3,#26a5dc)!important;box-shadow:0 8px 28px #247bd455!important}
+body:not(.schoolwork-open) #profileBtn{background:#102b45!important;border-color:#48aaf788!important}
+body:not(.schoolwork-open) #profileBtn:hover{box-shadow:0 0 20px #3daaff77!important}
+body:not(.schoolwork-open) #profilePanel,body:not(.schoolwork-open) #community.chat-drawer{border-color:#439de766!important;background:#0b1a2bf5!important;box-shadow:0 20px 75px #000b,0 0 25px #288ad322!important}
+body:not(.schoolwork-open) #profilePanel button,body:not(.schoolwork-open) #profilePanel label{background:#153b60!important;border-color:#4aabed88!important}
+body:not(.schoolwork-open) #profileAvatar{border-color:#55baff!important;box-shadow:0 0 22px #2799ee55!important}
+body:not(.schoolwork-open) .profile-stat{background:#112b43!important;border-color:#469fe655!important}
+body:not(.schoolwork-open) .profile-stat strong{color:#a3dfff!important}
+body:not(.schoolwork-open) .communityBox button,body:not(.schoolwork-open) .study-btn{background:#1977c8!important}
+body:not(.schoolwork-open) .communityBox input:focus,body:not(.schoolwork-open) .communityBox textarea:focus{border-color:#53b8ff!important}
+body:not(.schoolwork-open) .post,body:not(.schoolwork-open) .communityBox{border-color:#367da755!important}
+body:not(.schoolwork-open) #landing .landing-card input:focus{border-color:#59bdff!important;outline-color:#59bdff!important}
+body:not(.schoolwork-open) #auroraParticleCanvas,body:not(.schoolwork-open) #bcaAmbient,body:not(.schoolwork-open) #bcaMovingParticles{filter:hue-rotate(85deg)}
+</style>
+<!-- BCA Christmas website skin: decorative only, games and iframe untouched -->
 <style id="bca-christmas-2026">
 body:not(.schoolwork-open){background:radial-gradient(ellipse at 50% -15%,#1b493b 0%,transparent 55%),radial-gradient(ellipse at 100% 80%,#391321,transparent 55%),#07110f!important}
 body:not(.schoolwork-open) .top{background:linear-gradient(100deg,#09251eeb,#31101aef)!important;border-bottom:2px solid #b68b49!important;box-shadow:0 5px 32px #082d26aa!important}
