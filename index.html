@@ -1741,4 +1741,34 @@ body.schoolwork-open #bca-xmas-snow,body.schoolwork-open #bca-xmas-lights{displa
  }
  document.documentElement.appendChild(snow);
 })();
+</script><!-- Holiday blue final layer: intentionally LAST so Christmas red and older purple rules cannot override it. Remove with other holiday layers to revert. -->
+<style id="bca-blue-final-2026">
+body:not(.schoolwork-open){--neon-purple:#249dff!important;--neon-pink:#66caff!important;accent-color:#249dff}
+body:not(.schoolwork-open) .top{background:linear-gradient(110deg,#071c35ee,#123f66ee)!important;border-color:#64c6ff!important;box-shadow:0 6px 35px #158de755!important}
+body:not(.schoolwork-open) #landing{background:radial-gradient(ellipse at 20% 70%,#164f8699,transparent 55%),radial-gradient(ellipse at 85% 15%,#22699c88,transparent 55%),#071325!important}
+body:not(.schoolwork-open) .tab.active,body:not(.schoolwork-open) .landing-actions button:not(.secondary),body:not(.schoolwork-open) #chatFab,body:not(.schoolwork-open) .communityBox button{background:linear-gradient(120deg,#1465b8,#2aaff1)!important;box-shadow:0 0 22px #269ef955!important}
+body:not(.schoolwork-open) .logo b,body:not(.schoolwork-open) .landing-brand b,body:not(.schoolwork-open) .landing-kicker{color:#80d6ff!important}
+body:not(.schoolwork-open) .landing-card,body:not(.schoolwork-open) #profilePanel,body:not(.schoolwork-open) #community.chat-drawer{border-color:#54baff88!important;background-color:#0b1b31ee!important}
+body:not(.schoolwork-open) .post,body:not(.schoolwork-open) .communityBox{border-color:#3d9cdb66!important}
+body:not(.schoolwork-open) #profileBtn,body:not(.schoolwork-open) #profilePanel button{border-color:#50baff!important;background:#123d66!important}
+body:not(.schoolwork-open) a:not(.ownerlink){color:#83d2ff}
+body:not(.schoolwork-open) input:focus,body:not(.schoolwork-open) textarea:focus{outline-color:#45baff!important;border-color:#45baff!important}
+body:not(.schoolwork-open) .profile-stat{background:#112f50!important;border-color:#3c9ee077!important}
+body:not(.schoolwork-open) .profile-stat strong{color:#b4e6ff!important}
+#bca-xmas-lights{border-top-color:#266eab!important}
+#bca-xmas-lights:before{border-bottom-color:#4c91c5!important}
+#bca-xmas-lights i:nth-child(5n+2){background:#64c6ff!important;box-shadow:0 0 9px 3px #64c6ff!important}
+#bca-xmas-lights i:nth-child(5n+3){background:#a3e3ff!important;box-shadow:0 0 9px 3px #a3e3ff!important}
+</style>
+<script id="bca-blue-purple-cleanup-2026">
+(function(){
+ const palette=[['#a855f7','#299eff'],['#7c3aed','#1465b8'],['#9333ea','#257ecb'],['#9d2bdb','#258fd3'],['#fb3f85','#49b7ed'],['#fb426e','#5dc4f5'],['#d8b4fe','#b0e6ff'],['#e9d5ff','#c4eaff'],['#c084fc','#75c9ff'],['#581c87','#174e7e'],['#301b68','#113f70'],['#311027','#102f4f'],['#261927','#102b45'],['#b84cff','#52b9ff'],['#ad5cff','#57baff'],['#f7c4ff','#b7e5ff'],['#bb77ff','#64baff'],['#b76bff','#56b8ff']];
+ function convert(value){let out=value;for(const [oldColor,newColor] of palette){out=out.replace(new RegExp(oldColor,'gi'),newColor)}return out}
+ // Recolor only website-owned styles, never iframe documents or game files.
+ for(const sheet of document.querySelectorAll('style:not(#bca-christmas-2026):not(#bca-blue-final-2026)')){
+  if(sheet.id==='bca-holiday-blue-2026')continue;
+  const next=convert(sheet.textContent);
+  if(next!==sheet.textContent)sheet.textContent=next;
+ }
+})();
 </script></body></html>
