@@ -1704,19 +1704,19 @@ body:not(.schoolwork-open) #auroraParticleCanvas,body:not(.schoolwork-open) #bca
 </style>
 <!-- BCA Christmas website skin: decorative only, games and iframe untouched -->
 <style id="bca-christmas-2026">
-body:not(.schoolwork-open){background:radial-gradient(ellipse at 50% -15%,#1b493b 0%,transparent 55%),radial-gradient(ellipse at 100% 80%,#391321,transparent 55%),#07110f!important}
-body:not(.schoolwork-open) .top{background:linear-gradient(100deg,#09251eeb,#31101aef)!important;border-bottom:2px solid #b68b49!important;box-shadow:0 5px 32px #082d26aa!important}
+body:not(.schoolwork-open){background:radial-gradient(ellipse at 50% -15%,#1b493b 0%,transparent 55%),radial-gradient(ellipse at 100% 80%,#102d4b,transparent 55%),#07110f!important}
+body:not(.schoolwork-open) .top{background:linear-gradient(100deg,#0a2745eb,#0d365bef)!important;border-bottom:2px solid #b68b49!important;box-shadow:0 5px 32px #082d26aa!important}
 body:not(.schoolwork-open) .logo{color:#fff7e6!important;text-shadow:0 0 16px #ffd88c88!important}
 body:not(.schoolwork-open) .logo b{color:#e3b86e!important}
-body:not(.schoolwork-open) .tab.active{background:linear-gradient(125deg,#146444,#a72d3d)!important;box-shadow:0 0 18px #e4ae6b44!important}
+body:not(.schoolwork-open) .tab.active{background:linear-gradient(125deg,#165e9a,#248dc9)!important;box-shadow:0 0 18px #e4ae6b44!important}
 body:not(.schoolwork-open) .tab:hover{border-color:#e7c080!important}
-body:not(.schoolwork-open) #landing{background:radial-gradient(ellipse at 18% 65%,#15523b99,transparent 55%),radial-gradient(ellipse at 85% 18%,#6a202c88,transparent 55%),linear-gradient(160deg,#07130f,#180c14)!important}
-body:not(.schoolwork-open) .landing-card{border-color:#caa56c77!important;background:#101d1bcc!important;box-shadow:0 25px 100px #000b,0 0 45px #c29a4330!important}
+body:not(.schoolwork-open) #landing{background:radial-gradient(ellipse at 18% 65%,#1a579799,transparent 55%),radial-gradient(ellipse at 85% 18%,#1d5b9088,transparent 55%),linear-gradient(160deg,#07130f,#091c30)!important}
+body:not(.schoolwork-open) .landing-card{border-color:#68b9e077!important;background:#101f37cc!important;box-shadow:0 25px 100px #000b,0 0 45px #c29a4330!important}
 body:not(.schoolwork-open) .landing-brand b{color:#e9bc72!important}
 body:not(.schoolwork-open) .landing-kicker{color:#f0ce92!important}
-body:not(.schoolwork-open) .landing-actions button:not(.secondary){background:linear-gradient(115deg,#14734d,#ae3543)!important}
-body:not(.schoolwork-open) #chatFab{background:linear-gradient(130deg,#136545,#ae3443)!important}
-body:not(.schoolwork-open) .post,body:not(.schoolwork-open) .communityBox{border-color:#b9955555!important}
+body:not(.schoolwork-open) .landing-actions button:not(.secondary){background:linear-gradient(115deg,#155c9c,#228acb)!important}
+body:not(.schoolwork-open) #chatFab{background:linear-gradient(130deg,#165b9c,#228acb)!important}
+body:not(.schoolwork-open) .post,body:not(.schoolwork-open) .communityBox{border-color:#5aa7d755!important}
 #bca-xmas-snow{position:fixed;inset:0;z-index:120;pointer-events:none;overflow:hidden;width:100vw;height:100vh}
 #bca-xmas-snow .flake{position:absolute;top:-30px;left:var(--x);font-size:var(--size);color:#fff;opacity:var(--alpha);text-shadow:0 0 7px #e7ffffaa;animation:bcaSnowFall var(--duration) linear var(--delay) infinite;will-change:transform}
 @keyframes bcaSnowFall{to{transform:translate3d(var(--drift),110vh,0) rotate(180deg)}}
@@ -1770,5 +1770,29 @@ body:not(.schoolwork-open) .profile-stat strong{color:#b4e6ff!important}
   const next=convert(sheet.textContent);
   if(next!==sheet.textContent)sheet.textContent=next;
  }
+})();
+</script><!-- Reversible Christmas flight intro; remove this block to restore regular intro -->
+<style id="bca-santa-intro-2026">
+body:not(.schoolwork-open) #landing{background:radial-gradient(circle at 75% 20%,#215f9d66,transparent 48%),linear-gradient(145deg,#061529,#0c2b50)!important}
+body:not(.schoolwork-open) .aurora-ribbon{filter:hue-rotate(100deg)!important}
+#bca-santa-intro{position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 75% 25%,#235e99 0%,#0a2748 42%,#061324 100%);pointer-events:none;overflow:hidden;display:grid;place-items:center;animation:bcaIntroOut .85s ease 4.35s forwards}
+#bca-santa-intro:before{content:"";position:absolute;inset:0;opacity:.65;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:41px 43px}
+#bca-santa-intro .moon{position:absolute;width:min(35vw,240px);aspect-ratio:1;border-radius:50%;background:#d8edff;box-shadow:0 0 80px #b6dcff88;top:12%;right:18%}
+#bca-santa-intro .sleigh-flight{position:absolute;top:29%;left:0;width:min(65vw,530px);animation:bcaFly 2.8s ease-in-out .25s both;filter:drop-shadow(0 8px 12px #0008)}
+#bca-santa-intro .sleigh-flight svg{width:100%;height:auto}
+#bca-santa-intro .intro-name{position:relative;z-index:1;font-size:clamp(38px,9vw,100px);font-weight:950;letter-spacing:-.055em;color:#ecf8ff;text-shadow:0 0 24px #69baffaa;text-align:center;opacity:0;animation:bcaNameReveal 2.1s ease 2.15s both}
+#bca-santa-intro .intro-name span{color:#75cbff}
+@keyframes bcaFly{0%{transform:translate(-115vw,24vh) scale(.65) rotate(-8deg)}55%{transform:translate(36vw,-5vh) scale(1) rotate(2deg)}100%{transform:translate(125vw,-16vh) scale(.7) rotate(-5deg)}}
+@keyframes bcaNameReveal{0%{opacity:0;transform:translateY(22px) scale(.92);filter:blur(12px)}35%,80%{opacity:1;transform:none;filter:blur(0)}100%{opacity:0;transform:translateY(-12px);filter:blur(8px)}}
+@keyframes bcaIntroOut{to{opacity:0;visibility:hidden}}
+@media(prefers-reduced-motion:reduce){#bca-santa-intro{display:none!important}}
+</style>
+<script id="bca-santa-intro-script-2026">
+(function(){
+ if(document.getElementById('bca-santa-intro')||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const intro=document.createElement('div');intro.id='bca-santa-intro';intro.setAttribute('aria-hidden','true');
+ intro.innerHTML='<div class="moon"></div><div class="sleigh-flight"><svg viewBox="0 0 600 210" xmlns="http://www.w3.org/2000/svg"><g fill="#b9e3ff" stroke="#ccecff" stroke-width="4" stroke-linejoin="round"><path d="M90 128 Q48 111 55 76 L95 76 L112 127 Z" fill="#8fc8e9"/><path d="M65 126 Q70 167 130 166 L245 166 Q281 161 293 129 L90 129 Z" fill="#155b98"/><path d="M78 173 Q100 191 260 178 Q292 175 295 158" fill="none" stroke-width="9"/><path d="M120 127 L119 85 Q137 67 156 89 L163 127" fill="#f5f8ff"/><circle cx="138" cy="67" r="19" fill="#ffe6d2"/><path d="M119 60 Q126 29 152 41 L161 59 Z" fill="#267cc0"/><path d="M130 85 Q139 116 158 88" fill="#fff"/><path d="M180 90 L197 42 L218 89 Z" fill="#70b5e9"/><path d="M193 118 L198 85 L219 113 Z" fill="#70b5e9"/><path d="M308 112 Q338 68 366 99 L389 118 L402 91 Q430 67 445 92 L461 115 L470 89 Q502 64 519 95 L539 122" fill="none" stroke-width="13"/><path d="M358 94 L350 61 M358 75 L334 48 M360 74 L376 48 M442 91 L437 56 M442 71 L423 44 M446 72 L465 46 M515 93 L511 58 M515 73 L495 46 M519 73 L537 48" fill="none" stroke-width="5"/><circle cx="383" cy="111" r="4" fill="#fff"/><circle cx="456" cy="109" r="4" fill="#fff"/><circle cx="530" cy="114" r="4" fill="#fff"/></g><path d="M285 129 Q316 107 350 119 M285 129 Q363 109 431 125 M285 129 Q419 110 508 132" fill="none" stroke="#8fc8e9" stroke-width="2"/></svg></div><div class="intro-name">BCA <span>MOVIES</span></div>';
+ document.documentElement.appendChild(intro);
+ setTimeout(()=>intro.remove(),5400);
 })();
 </script></body></html>
