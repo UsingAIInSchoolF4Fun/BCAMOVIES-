@@ -1795,4 +1795,26 @@ body:not(.schoolwork-open) .aurora-ribbon{filter:hue-rotate(100deg)!important}
  document.documentElement.appendChild(intro);
  setTimeout(()=>intro.remove(),5400);
 })();
+</script><!-- Winter blue correction: isolated seasonal overrides; remove this block to restore earlier colors. -->
+<style id="bca-winter-blue-correction-2026">
+html{background:#06152b!important}
+body:not(.schoolwork-open){background:linear-gradient(145deg,#06152b 0%,#0b2e52 55%,#06172e 100%)!important;background-color:#06152b!important}
+body:not(.schoolwork-open) #landing{background:radial-gradient(ellipse at 25% 25%,#174e85,transparent 55%),radial-gradient(ellipse at 80% 80%,#103a68,transparent 60%),#06162d!important}
+body:not(.schoolwork-open) #owner,body:not(.schoolwork-open) #community,body:not(.schoolwork-open) #movies{background-color:#081b34!important}
+body:not(.schoolwork-open) .top{background:#0b2748f5!important}
+body:not(.schoolwork-open) .aurora-sky{filter:hue-rotate(115deg) saturate(.85)!important}
+body:not(.schoolwork-open) .aurora-ribbon{filter:hue-rotate(115deg) saturate(.85)!important}
+body:not(.schoolwork-open) .landing-card{background:#0c213bef!important}
+body:not(.schoolwork-open) .post,body:not(.schoolwork-open) .communityBox{background:#102742!important}
+#bca-xmas-lights{position:absolute!important;top:0!important;left:0!important;right:0!important;width:100%!important}
+</style>
+<script id="bca-lights-scroll-fix-2026">
+(function(){
+ const lights=document.getElementById('bca-xmas-lights');
+ if(!lights)return;
+ // Position at the TOP of the page, not the viewport, so it scrolls away.
+ document.body.prepend(lights);
+ lights.style.position='absolute';
+ lights.style.top='0';
+})();
 </script></body></html>
