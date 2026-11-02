@@ -1,7 +1,7 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BASE WARS — Alpha 0.1</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BASE WARS — Alpha 0.2a</title><style>
 *{box-sizing:border-box}body{margin:0;background:#0b1828;color:#eff8ff;font-family:system-ui,Arial;overflow:hidden}canvas{display:block}#ui{position:fixed;top:12px;left:12px;width:295px;max-height:calc(100vh - 24px);overflow:auto;background:#0b2034e9;border:1px solid #6cb8ef77;border-radius:17px;padding:14px;box-shadow:0 8px 32px #0008}h1{font-size:22px;margin:0 0 5px}h2{font-size:14px;color:#8bd3ff;margin:14px 0 6px}p{font-size:12px;color:#b9d2e5;margin:4px 0 9px}#money{font-size:25px;font-weight:900;color:#9bf0a7}#income{color:#9bd5ff;font-size:13px}button,select{background:#1b4668;border:1px solid #6db9ed77;color:white;padding:9px 10px;border-radius:9px;cursor:pointer;font:inherit}button{font-size:12px;font-weight:750}button:hover:not(:disabled){background:#277bb1}button:disabled{opacity:.4;cursor:not-allowed}.buy{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:5px 0}.buy span{font-size:12px}.buy button{min-width:105px}#target{width:100%}#message{font-size:12px;color:#ffe49a;min-height:18px}#help{position:fixed;bottom:12px;right:12px;background:#09243de9;border-radius:12px;padding:10px;font-size:12px}#start{position:fixed;inset:0;display:grid;place-items:center;background:#061527df;z-index:4}#start article{background:#102b43;padding:30px;border-radius:22px;text-align:center;max-width:430px;border:1px solid #6db9ed88}#start h1{font-size:38px}#start button{font-size:18px;padding:12px 24px;background:#1688ce}#end{position:fixed;inset:0;display:none;place-items:center;background:#061527dd;z-index:5}#end article{background:#102b43;padding:35px;border-radius:20px;text-align:center}@media(max-width:700px){#ui{width:220px;padding:10px}#help{max-width:40%;font-size:10px}}
 </style></head><body><div id="start"><article><h1>BASE WARS</h1><p>Build your island fortress. Earn money automatically. Buy troops and choose which enemy base to attack. Defeat three AI commanders!</p><p>Walk around your island in third person. Approach glowing pads and press E to purchase.</p><button id="begin">START BATTLE</button><p>Alpha 0.1 • Single-player prototype</p></article></div>
-<div id="ui"><h1>BASE WARS <small style="font-size:10px">ALPHA 0.1</small></h1><div id="money">$100</div><div id="income">+$10/sec</div><p id="stats">Your HQ: 1000 HP</p><h2>CHOOSE ATTACK TARGET</h2><select id="target"><option value="1">Red Base</option><option value="2">Green Base</option><option value="3">Yellow Base</option></select><h2>ARMY SHOP</h2><div id="army"></div><h2>TYCOON UPGRADES</h2><div id="buildings"></div><h2>BATTLE</h2><div id="message">Choose a target and buy troops.</div><button id="reset">Restart match</button></div>
+<div id="ui"><h1>BASE WARS <small style="font-size:10px">ALPHA 0.2a</small></h1><div id="money">$100</div><div id="income">+$10/sec</div><p id="stats">Your HQ: 1000 HP</p><h2>CHOOSE ATTACK TARGET</h2><select id="target"><option value="1">Red Base</option><option value="2">Green Base</option><option value="3">Yellow Base</option></select><h2>ARMY SHOP</h2><div id="army"></div><h2>TYCOON UPGRADES</h2><div id="buildings"></div><h2>BATTLE</h2><div id="message">Choose a target and buy troops.</div><button id="reset">Restart match</button></div>
 <div id="help">WASD move · Mouse turn · Scroll zoom<br>Walk near a glowing pad and press E to buy</div><div id="end"><article><h1 id="outcome"></h1><button id="again">PLAY AGAIN</button></article></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
@@ -15,21 +15,62 @@ const cylinder=(top,bottom,h,mat,x,y,z,group)=>make(new THREE.CylinderGeometry(t
 const bases=[{x:0,z:32},{x:32,z:0},{x:0,z:-32},{x:-32,z:0}];const states=bases.map((p,i)=>({...p,id:i,money:100,income:10,hp:1000,alive:true,gen:0,tower:0,armor:0,auto:0,spawnTimer:0,aiTimer:3+i,target:(i+1)%4,units:[],pads:[],structures:[]}));
 const troopTypes=[{id:'sword',name:'Swordsman',cost:50,hp:85,dmg:13,range:2.2,speed:4.1,interval:.9},{id:'archer',name:'Archer',cost:100,hp:55,dmg:15,range:8,speed:3.6,interval:1.4},{id:'tank',name:'Tank',cost:200,hp:270,dmg:20,range:2.5,speed:2.3,interval:1.3},{id:'demo',name:'Demolition',cost:250,hp:95,dmg:48,range:2.5,speed:2.8,interval:1.8}];
 const buildTypes=[{id:'gen',name:'Generator +$5/sec',cost:200},{id:'tower',name:'Guard Tower',cost:150},{id:'armor',name:'HQ Armor +300 HP',cost:400},{id:'auto',name:'Swordsman Factory',cost:350}];
-const buildings=[],units=[],pads=[];let running=false,finished=false,seconds=0,last=performance.now(),yaw=0,zoom=13,tilt=.4,drag=false,px=0,py=0,camFocus=new THREE.Vector3(0,0,0);
+const buildings=[],units=[],pads=[];let running=false,finished=false,seconds=0,last=performance.now(),yaw=0,zoom=5.5,tilt=.48,drag=false,px=0,py=0,camFocus=new THREE.Vector3(0,0,0);
 function platform(x,z,r=10){cylinder(r,r,1.5,grass,x,-.75,z);cylinder(r-.5,r-2,3.5,dirt,x,-3,z)}
 platform(0,0,12);for(const p of bases)platform(p.x,p.z,10);
 for(let i=0;i<4;i++){const p=bases[i],a=Math.atan2(p.z,p.x),len=12;const bridge=box(5,.6,len,wood,p.x*.5,.05,p.z*.5);bridge.rotation.y=-a+Math.PI/2;for(let k=-5;k<=5;k+=2){const v=(k/11+.5);const x=p.x*v,z=p.z*v;const plank=box(5.4,.16,1.2,material('#caa47a'),x,.44,z);plank.rotation.y=-a+Math.PI/2}}
 cylinder(2,2,.6,material('#d9bc69'),0,.5,0);
 for(const s of states){const group=new THREE.Group();group.position.set(s.x,0,s.z);scene.add(group);s.group=group;const hq=box(4,4,4,mats[s.id],0,2,0,group);box(5,.7,5,stone,0,.4,0,group);const roof=make(new THREE.ConeGeometry(3.6,2,4),material('#e2e8ee'),0,5,0,group);roof.rotation.y=Math.PI/4;s.hqMesh=hq;const flag=box(.15,3,.15,stone,0,7,0,group);box(2,.9,.1,mats[s.id],1,8,0,group);const gen=box(2.2,1.6,2.2,material('#9edbe4'),-5,.8,-2,group);cylinder(.7,.7,.5,material('#ffe17b'),-5,1.9,-2,group);s.genMesh=gen;for(let j=0;j<3;j++){const angle=(j-1)*.85;const x=5.5*Math.cos(angle),z=5.5*Math.sin(angle);const pad=cylinder(1.25,1.25,.15,material(s.id===0?'#49f7ba':'#a6a6aa'),x,.12,z,group);pad.userData={base:s.id,index:j};s.pads.push(pad);pads.push(pad)}}
 for(let i=0;i<14;i++){let a=i*2.3,r=60+i%3*12;let cloud=make(new THREE.SphereGeometry(4+i%3,8,6),material('#eaf8ff'),Math.cos(a)*r,-10-i%4,Math.sin(a)*r);cloud.scale.y=.25}
-const avatar=new THREE.Group();scene.add(avatar);
-const avatarBlue=material('#2584dd'),avatarTrim=material('#d7f1ff'),avatarFace=material('#e9c7a5');
-cylinder(.52,.62,1.12,avatarBlue,0,.94,0,avatar);
-make(new THREE.SphereGeometry(.46,12,10),avatarFace,0,1.76,0,avatar);
-box(.85,.18,.6,avatarTrim,0,2.14,0,avatar);
-for(const side of [-1,1]){box(.3,.9,.36,avatarBlue,side*.68,1,0,avatar);box(.36,.65,.4,avatarBlue,side*.27,.25,0,avatar)}
-box(.17,.12,.1,material('#20324d'),-.17,1.79,-.43,avatar);box(.17,.12,.1,material('#20324d'),.17,1.79,-.43,avatar);
+const avatar=new THREE.Group();avatar.name='Commander';scene.add(avatar);
+const armor=material('#287ed5'),darkArmor=material('#1c466c'),metal=material('#a7c8dc'),visor= new THREE.MeshStandardMaterial({color:'#153149',metalness:.4,roughness:.3,emissive:'#08263c',emissiveIntensity:.28});
+const body=new THREE.Group();body.name='Body';avatar.add(body);
+function namedBox(name,w,h,d,mat,x,y,z,parent=body){const m=box(w,h,d,mat,x,y,z,parent);m.name=name;return m}
+function namedJoint(name,parent,x,y,z){const g=new THREE.Group();g.name=name;g.position.set(x,y,z);parent.add(g);return g}
+namedBox('Torso',.86,.65,.45,armor,0,1.27,0);
+namedBox('ChestRidge',.52,.13,.08,metal,0,1.38,-.27);
+namedBox('Hips',.66,.26,.42,darkArmor,0,.82,0);
+namedBox('Neck',.28,.16,.28,metal,0,1.69,0);
+make(new THREE.SphereGeometry(.28,12,10),armor,0,1.87,0,body).name='Helmet';
+namedBox('Visor',.43,.16,.11,visor,0,1.88,-.255);
+namedBox('HelmetCrest',.12,.13,.5,metal,0,2.13,0);
+namedBox('Backpack',.54,.55,.26,darkArmor,0,1.25,.37);
+for(const x of [-.18,.18])cylinder(.025,.025,.3,metal,x,1.66,.46,body);
+const limbs={};
+for(const [side,sgn] of [['Left',-1],['Right',1]]){
+ const shoulder=namedJoint(side+'UpperArm',body,sgn*.55,1.52,0);limbs[side+'Arm']=shoulder;
+ namedBox(side+'UpperArmMesh',.26,.46,.3,armor,0,-.25,0,shoulder);
+ namedBox(side+'ShoulderPad',.39,.22,.39,darkArmor,0,-.06,0,shoulder);
+ const fore=namedJoint(side+'LowerArm',shoulder,0,-.47,0);namedBox(side+'LowerArmMesh',.23,.4,.25,armor,0,-.21,0,fore);
+ const hand=namedJoint(side+'Hand',fore,0,-.44,0);namedBox(side+'Glove',.27,.17,.29,darkArmor,0,-.08,0,hand);
+ if(side==='Right'){const mount=namedJoint('WeaponMount',hand,0,-.12,-.1)}
+ const thigh=namedJoint(side+'UpperLeg',body,sgn*.23,.73,0);limbs[side+'Leg']=thigh;
+ namedBox(side+'ThighMesh',.3,.4,.35,armor,0,-.21,0,thigh);
+ const shin=namedJoint(side+'LowerLeg',thigh,0,-.43,0);limbs[side+'Knee']=shin;
+ namedBox(side+'ShinMesh',.29,.37,.32,darkArmor,0,-.2,0,shin);
+ const foot=namedJoint(side+'Foot',shin,0,-.4,0);namedBox(side+'Boot',.37,.2,.57,darkArmor,0,-.08,-.13,foot);
+}
+const cameraTarget=namedJoint('CameraTarget',avatar,0,1.25,0);
 avatar.position.set(0,0,35);
+let walkCycle=0,walkBlend=0;const previousAvatarPosition=avatar.position.clone();
+function updateCommanderVisuals(dt){
+ const speed=avatar.position.distanceTo(previousAvatarPosition)/Math.max(dt,.001);
+ previousAvatarPosition.copy(avatar.position);
+ const moving=THREE.MathUtils.clamp(speed/7,0,1);
+ walkBlend=THREE.MathUtils.damp(walkBlend,moving,10,dt);
+ if(moving>.05)walkCycle=(walkCycle+dt*1.8*moving)%1;
+ const phase=walkCycle*Math.PI*2,swing=Math.sin(phase)*walkBlend;
+ limbs.LeftLeg.rotation.x=THREE.MathUtils.damp(limbs.LeftLeg.rotation.x,swing*.55,12,dt);
+ limbs.RightLeg.rotation.x=THREE.MathUtils.damp(limbs.RightLeg.rotation.x,-swing*.55,12,dt);
+ limbs.LeftArm.rotation.x=THREE.MathUtils.damp(limbs.LeftArm.rotation.x,-swing*.4,12,dt);
+ limbs.RightArm.rotation.x=THREE.MathUtils.damp(limbs.RightArm.rotation.x,swing*.4,12,dt);
+ limbs.LeftKnee.rotation.x=Math.max(0,-limbs.LeftLeg.rotation.x*.7);
+ limbs.RightKnee.rotation.x=Math.max(0,-limbs.RightLeg.rotation.x*.7);
+ body.position.y=Math.abs(Math.sin(phase))*.04*walkBlend+Math.sin(performance.now()*.0025)*.012*(1-walkBlend);
+ body.rotation.z=swing*.06;
+}
+const cameraRay=new THREE.Raycaster(),cameraFocus=new THREE.Vector3(),cameraDesired=new THREE.Vector3();
+const cameraObstacles=states.flatMap(s=>[s.hqMesh,s.genMesh]);
 const keys=new Set();let playerFacing=Math.PI,mouseLook=false;
 addEventListener('keydown',e=>{if(['KeyW','KeyA','KeyS','KeyD','KeyE','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();keys.add(e.code);if(e.code==='KeyE'&&running){let best=null,d=Infinity;for(const pad of states[0].pads){const world=new THREE.Vector3();pad.getWorldPosition(world);const dd=world.distanceTo(avatar.position);if(dd<3.2&&dd<d){best=pad;d=dd}}if(best){const type=['gen','tower','auto'][best.userData.index];show(buyBuild(0,type)?'Purchased '+type:'Insufficient cash or upgrade limit reached');updateUI()}}});
 addEventListener('keyup',e=>keys.delete(e.code));
@@ -42,10 +83,20 @@ makeShop();document.getElementById('target').onchange=e=>{states[0].target=Numbe
 function damage(s,amount){if(!s.alive)return;s.hp-=amount;if(s.hp<=0){s.hp=0;s.alive=false;s.hqMesh.material=stone;for(const u of units)if(u.owner===s.id)u.hp=0;if(s.id===0)finish(false);else if(states.slice(1).every(x=>!x.alive))finish(true)}}
 function finish(win){if(finished)return;finished=true;running=false;document.getElementById('outcome').textContent=win?'YOU WIN!':'YOUR BASE FELL';document.getElementById('end').style.display='grid'}
 function reset(){location.reload()}document.getElementById('reset').onclick=reset;document.getElementById('again').onclick=reset;document.getElementById('begin').onclick=()=>{document.getElementById('start').style.display='none';running=true};
-const raycaster=new THREE.Raycaster(),mouse=new THREE.Vector2();renderer.domElement.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY});addEventListener('pointerup',e=>{if(!drag)return;drag=false;if(Math.abs(e.clientX-px)+Math.abs(e.clientY-py)>7||!running)return;mouse.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);raycaster.setFromCamera(mouse,camera);const hits=raycaster.intersectObjects(pads);if(hits.length&&hits[0].object.userData.base===0&&hits[0].object.getWorldPosition(new THREE.Vector3()).distanceTo(avatar.position)<3.2){const options=['gen','tower','auto'];const type=options[hits[0].object.userData.index];show(buyBuild(0,type)?'Built '+type+'!':'Cannot purchase '+type+' yet.');updateUI()}});addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-px,dy=e.clientY-py;px=e.clientX;py=e.clientY;yaw-=dx*.006;tilt=THREE.MathUtils.clamp(tilt+dy*.004,.18,.85)});renderer.domElement.addEventListener('wheel',e=>{zoom=THREE.MathUtils.clamp(zoom+e.deltaY*.012,7,24)},{passive:true});
+const raycaster=new THREE.Raycaster(),mouse=new THREE.Vector2();renderer.domElement.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY});addEventListener('pointerup',e=>{if(!drag)return;drag=false;if(Math.abs(e.clientX-px)+Math.abs(e.clientY-py)>7||!running)return;mouse.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);raycaster.setFromCamera(mouse,camera);const hits=raycaster.intersectObjects(pads);if(hits.length&&hits[0].object.userData.base===0&&hits[0].object.getWorldPosition(new THREE.Vector3()).distanceTo(avatar.position)<3.2){const options=['gen','tower','auto'];const type=options[hits[0].object.userData.index];show(buyBuild(0,type)?'Built '+type+'!':'Cannot purchase '+type+' yet.');updateUI()}});addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-px,dy=e.clientY-py;px=e.clientX;py=e.clientY;yaw-=dx*.006;tilt=THREE.MathUtils.clamp(tilt+dy*.004,.18,.6)});renderer.domElement.addEventListener('wheel',e=>{zoom=THREE.MathUtils.clamp(zoom+e.deltaY*.006,3,8)},{passive:true});
 function nearestEnemy(u){let best=null,dist=Infinity;for(const v of units){if(v===u||v.hp<=0||v.owner===u.owner)continue;const d=v.g.position.distanceTo(u.g.position);if(d<dist&&d<7.5){best=v;dist=d}}return best}
 function step(dt){if(!running)return;seconds+=dt;const forward=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0),strafe=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0);if(forward||strafe){const f=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),r=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),delta=f.multiplyScalar(forward).addScaledVector(r,strafe).normalize();const next=avatar.position.clone().addScaledVector(delta,dt*7);const insideHome=Math.hypot(next.x,next.z-32)<8.5;const bridgeNorth= Math.abs(next.x)<2.2&&next.z>=0&&next.z<=32;const insideCenter=Math.hypot(next.x,next.z)<10.5;if(insideHome||bridgeNorth||insideCenter){avatar.position.copy(next);avatar.rotation.y=Math.atan2(-delta.x,-delta.z)}}for(const s of states){if(!s.alive)continue;s.money+=s.income*dt;if(s.id!==0){s.aiTimer-=dt;if(s.aiTimer<=0){s.aiTimer=1.5+Math.random()*2;s.target=states.filter(x=>x.alive&&x.id!==s.id).sort((a,b)=>a.hp-b.hp)[0]?.id??0;const roll=Math.random();if(s.money>=200&&s.gen<3&&roll<.24)buyBuild(s.id,'gen');else if(s.money>=150&&s.tower<2&&roll<.35)buyBuild(s.id,'tower');else if(s.money>=350&&s.auto<1&&roll<.38)buyBuild(s.id,'auto');else{const choices=troopTypes.filter(t=>t.cost<=s.money);if(choices.length)buyTroop(s.id,choices[Math.floor(Math.random()*choices.length)].id)}}}if(s.auto){s.spawnTimer+=dt;if(s.spawnTimer>=Math.max(2,8-s.auto*2)){s.spawnTimer=0;if(s.money>=50)buyTroop(s.id,'sword')}}}
 for(const s of states){if(!s.alive||!s.tower)continue;for(let n=0;n<s.tower;n++){const nearby=units.find(u=>u.hp>0&&u.owner!==s.id&&u.g.position.distanceTo(new THREE.Vector3(s.x,0,s.z))<10);if(nearby)nearby.hp-=dt*15}}
 for(const u of units){if(u.hp<=0)continue;u.cool-=dt;const home=states[u.owner],enemy=states[u.target];if(!enemy.alive){u.target=states.find(s=>s.alive&&s.id!==u.owner)?.id??u.owner}const target=states[u.target];if(!target||target.id===u.owner)continue;const foe=nearestEnemy(u);const destination=foe?foe.g.position: u.phase===0?new THREE.Vector3(0,0,0):new THREE.Vector3(target.x,0,target.z);const d=u.g.position.distanceTo(destination);if(d<(foe?u.range: u.phase===0?2:3.5)){if(u.phase===0&&!foe){u.phase=1;continue}if(u.cool<=0){u.cool=u.interval;if(foe)foe.hp-=u.dmg;else damage(target,u.dmg)}}else{const dir=destination.clone().sub(u.g.position);dir.y=0;dir.normalize();u.g.position.addScaledVector(dir,dt*u.speed);u.g.rotation.y=Math.atan2(-dir.x,-dir.z)}}for(let i=units.length-1;i>=0;i--){if(units[i].hp<=0){scene.remove(units[i].g);units.splice(i,1)}}updateUI()}
-function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;step(dt);const focus=avatar.position.clone().add(new THREE.Vector3(0,1.65,0));const x=Math.sin(yaw)*zoom*Math.cos(tilt),z=Math.cos(yaw)*zoom*Math.cos(tilt),y=Math.sin(tilt)*zoom;camera.position.lerp(focus.clone().add(new THREE.Vector3(x,y,z)),.18);camera.lookAt(focus);renderer.render(scene,camera);requestAnimationFrame(frame)}requestAnimationFrame(frame);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});updateUI();
+function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;step(dt);updateCommanderVisuals(dt);
+cameraTarget.getWorldPosition(cameraFocus);
+const x=Math.sin(yaw)*zoom*Math.cos(tilt),z=Math.cos(yaw)*zoom*Math.cos(tilt),y=Math.sin(tilt)*zoom;
+cameraDesired.copy(cameraFocus).add(new THREE.Vector3(x,y,z));
+const rayDirection=cameraDesired.clone().sub(cameraFocus),rayLength=rayDirection.length();
+cameraRay.set(cameraFocus,rayDirection.normalize());cameraRay.far=rayLength;
+const blockers=cameraRay.intersectObjects(cameraObstacles,false);
+if(blockers.length){cameraDesired.copy(cameraFocus).addScaledVector(rayDirection,Math.max(1.2,blockers[0].distance-.3))}
+const alpha=1-Math.exp(-8*dt);
+camera.position.lerp(cameraDesired,alpha);
+camera.lookAt(cameraFocus);renderer.render(scene,camera);requestAnimationFrame(frame)}requestAnimationFrame(frame);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});updateUI();
 </script></body></html>
