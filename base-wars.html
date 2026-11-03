@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BASE WARS — Alpha 0.2g</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BASE WARS — V1</title><style>
 *{box-sizing:border-box}body{margin:0;background:#0b1828;color:#eff8ff;font-family:system-ui,Arial;overflow:hidden}canvas{display:block}#ui{position:fixed;top:12px;left:12px;width:auto;background:#0b2034d9;border:1px solid #6cb8ef77;border-radius:12px;padding:12px 17px;pointer-events:none}h1{font-size:22px;margin:0 0 5px}h2{font-size:14px;color:#8bd3ff;margin:14px 0 6px}p{font-size:12px;color:#b9d2e5;margin:4px 0 9px}#money{font-size:25px;font-weight:900;color:#9bf0a7}#income{color:#9bd5ff;font-size:13px}button,select{background:#1b4668;border:1px solid #6db9ed77;color:white;padding:9px 10px;border-radius:9px;cursor:pointer;font:inherit}button{font-size:12px;font-weight:750}button:hover:not(:disabled){background:#277bb1}button:disabled{opacity:.4;cursor:not-allowed}.buy{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:5px 0}.buy span{font-size:12px}.buy button{min-width:105px}#target{width:100%}#message{font-size:12px;color:#ffe49a;min-height:18px}#help{position:fixed;bottom:12px;right:12px;background:#09243de9;border-radius:12px;padding:10px;font-size:12px}#start{position:fixed;inset:0;display:grid;place-items:center;background:#061527df;z-index:4}#start article{background:#102b43;padding:30px;border-radius:22px;text-align:center;max-width:430px;border:1px solid #6db9ed88}#start h1{font-size:38px}#start button{font-size:18px;padding:12px 24px;background:#1688ce}#end{position:fixed;inset:0;display:none;place-items:center;background:#061527dd;z-index:5}#end article{background:#102b43;padding:35px;border-radius:20px;text-align:center}@media(max-width:700px){#ui{width:auto;padding:10px}#help{max-width:40%;font-size:10px}}
 </style></head><body><div id="start"><article><h1>BASE WARS</h1><p>Build your island fortress. Earn money automatically. Buy troops and choose which enemy base to attack. Defeat three AI commanders!</p><p>Move with WASD, aim the camera by moving your mouse, and walk onto pads to buy buildings, troops, or select targets.</p><button id="begin">START BATTLE</button><p>Alpha 0.2d • Single-player</p></article></div>
 <div id="ui"><div id="money">$150</div><div id="income">+$0/sec</div><div id="stats">Base Health: 1000 HP</div><div id="message"></div></div><div id="help">WASD move · Mouse look · Walk onto pads to buy · Esc unlock mouse</div><div id="end"><article><h1 id="outcome"></h1><button id="again">PLAY AGAIN</button></article></div>
@@ -17,19 +17,32 @@ const buildTypes=[{id:'gen',name:'Generator +$5/sec',cost:200},{id:'tower',name:
 const buildings=[],units=[],pads=[];let running=false,finished=false,seconds=0,last=performance.now(),yaw=0,zoom=5.5,tilt=.48,drag=false,px=0,py=0,camFocus=new THREE.Vector3(0,0,0);
 function platform(x,z,r=10){cylinder(r,r,1.5,grass,x,-.75,z);cylinder(r-.5,r-2,3.5,dirt,x,-3,z)}
 platform(0,0,12);for(const p of bases)platform(p.x,p.z,10);
-box(29,1.4,32,grass,0,-.7,49);box(28,2.6,31,dirt,0,-2.7,49);for(let i=0;i<4;i++){const p=bases[i],a=Math.atan2(p.z,p.x),len=12;const bridge=box(5,.6,len,wood,p.x*.5,.05,p.z*.5);bridge.rotation.y=-a+Math.PI/2;for(let k=-5;k<=5;k+=2){const v=(k/11+.5);const x=p.x*v,z=p.z*v;const plank=box(5.4,.16,1.2,material('#caa47a'),x,.44,z);plank.rotation.y=-a+Math.PI/2}}
+// V1 mountain terrain: raised terraces and a climbable central switchback ramp.
+function terrainHeight(x,z){
+ if(z<33)return 0;
+ const ramp=Math.max(0,Math.min(1,(z-36)/29));
+ const level=z<40?0:z<49?2.2:z<58?4.6:7.1;
+ const center=Math.abs(x)<2.6;
+ const base=center?7.1*ramp:level;
+ const shoulder=Math.max(0,(Math.abs(x)-8)/8);
+ return base+Math.sin(z*.19+x*.31)*.24*shoulder;
+}
+const mountainRock=material('#737f7e'),mountainGrass=material('#70b56a'),pathMat=material('#bc986a');
+const verts=[],inds=[],cols=[];const W=34,Z0=32,Z1=72,nx=34,nz=40;
+for(let j=0;j<=nz;j++){const z=Z0+(Z1-Z0)*j/nz;for(let i=0;i<=nx;i++){const x=-W/2+W*i/nx;const edge=1.1*Math.sin(z*.27)+.55*Math.sin(z*.61+x*.4);const h=terrainHeight(x,z);verts.push(x,h,z);const path=Math.abs(x)<2.7;const tint=path?[.67,.51,.34]:[.38+.06*Math.sin(z*.4),.61,.34];cols.push(...tint)}}
+for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){const k=j*(nx+1)+i;inds.push(k,k+nx+1,k+1,k+1,k+nx+1,k+nx+2)}
+const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));geo.setIndex(inds);geo.computeVertexNormals();
+const land=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}));land.receiveShadow=true;scene.add(land);
+for(const side of [-1,1]){for(let z=34;z<72;z+=4){const h=terrainHeight(side*16,z);const cliff=box(2,h+5,4.2,mountainRock,side*16.8,(h-5)/2,z);cliff.rotation.z=side*.07}}
+for(let z=35;z<=69;z+=3){const h=terrainHeight(0,z);box(5,.09,2.8,pathMat,0,h+.05,z)}
+for(const [x,z] of [[-12,39],[12,40],[-12,50],[12,51],[-12,61],[12,62],[-8,69],[8,69]]){
+ const h=terrainHeight(x,z);const trunk=cylinder(.25,.33,2,wood,x,h+1,z);
+ make(new THREE.ConeGeometry(1.65,3.3,7),material('#327d4c'),x,h+3.5,z);
+ make(new THREE.DodecahedronGeometry(1.15,0),mountainRock,x+2,h+.6,z+.6);
+}
+for(const z of [41,50,59]){for(const side of [-1,1]){const h=terrainHeight(side*6,z);box(2,.5,2,stone,side*6,h+.25,z)}}
+for(let i=0;i<4;i++){const p=bases[i],a=Math.atan2(p.z,p.x),len=12;const bridge=box(5,.6,len,wood,p.x*.5,.05,p.z*.5);bridge.rotation.y=-a+Math.PI/2;for(let k=-5;k<=5;k+=2){const v=(k/11+.5);const x=p.x*v,z=p.z*v;const plank=box(5.4,.16,1.2,material('#caa47a'),x,.44,z);plank.rotation.y=-a+Math.PI/2}}
 cylinder(2,2,.6,material('#d9bc69'),0,.5,0);
-// Structured landscape: low perimeter ridges and rocky terraces leave pads/pathways clear.
-const hillGrass=material('#74b96b'),rockFace=material('#73817b'),shrub=material('#357d54');
-for(const [x,z,r,h] of [[-13,38,4,2.5],[13,38,4,2.2],[-13,51,4.4,3.4],[13,51,4,3],[-12,63,3.5,2.6],[12,63,3.6,2.8],[-7,67,4,2],[7,67,4,2]]){
- const mound=make(new THREE.ConeGeometry(r,h,7),hillGrass,x,h*.48,z);mound.rotation.y=x*.17;
- for(let k=0;k<3;k++){const a=k*2.4+x*.1;const rr=r*.68;const stoneMesh=make(new THREE.DodecahedronGeometry(.55+(k%2)*.35,0),rockFace,x+Math.cos(a)*rr,.3,z+Math.sin(a)*rr);stoneMesh.rotation.y=a}
-}
-for(const [x,z] of [[-13,34],[13,34],[-13,58],[13,58],[-10,68],[10,68]]){
- cylinder(.16,.24,1.4,wood,x,.7,z);const crown=make(new THREE.ConeGeometry(1.15,2.6,7),shrub,x,2.5,z);crown.rotation.y=x;
-}
-for(const z of [37,46,55,64]){box(1.4,.06,1.4,material('#c8b58c'),0,.07,z)}
-
 for(const s of states){const group=new THREE.Group();group.position.set(s.x,0,s.z);scene.add(group);s.group=group;const hq=box(4,4,4,mats[s.id],0,2,0,group);box(5,.7,5,stone,0,.4,0,group);const roof=make(new THREE.ConeGeometry(3.6,2,4),material('#e2e8ee'),0,5,0,group);roof.rotation.y=Math.PI/4;s.hqMesh=hq;const flag=box(.15,3,.15,stone,0,7,0,group);box(2,.9,.1,mats[s.id],1,8,0,group);const gen=box(2.2,1.6,2.2,material('#9edbe4'),-5,.8,-2,group);cylinder(.7,.7,.5,material('#ffe17b'),-5,1.9,-2,group);s.genMesh=gen;if(s.id!==0){for(let j=0;j<3;j++){const angle=(j-1)*.85;const x=5.5*Math.cos(angle),z=5.5*Math.sin(angle);const pad=cylinder(1.25,1.25,.15,stone,x,.12,z,group);pad.userData={base:s.id,index:j};s.pads.push(pad);pads.push(pad)}}}
 for(let i=0;i<14;i++){let a=i*2.3,r=60+i%3*12;let cloud=make(new THREE.SphereGeometry(4+i%3,8,6),material('#eaf8ff'),Math.cos(a)*r,-10-i%4,Math.sin(a)*r);cloud.scale.y=.25}
 const avatar=new THREE.Group();avatar.name='Commander';scene.add(avatar);
@@ -126,12 +139,10 @@ const tycoonDefs=[
 const tycoonOwned=new Set(),tycoonBuilding=new Set(),construction=[],tycoonPads=[];
 const tycoonGroup=new THREE.Group();scene.add(tycoonGroup);
 const groundLine=material('#a89170');
-for(const x of [-9,0,9])box(1,.045,30,groundLine,x,.05,49);
-for(const z of [39,49,59])box(28,.045,.85,groundLine,0,.05,z);
 function padLabel(txt){const canvas=document.createElement('canvas');canvas.width=512;canvas.height=128;const ctx=canvas.getContext('2d');ctx.clearRect(0,0,512,128);ctx.fillStyle='#102a40';ctx.fillRect(0,0,512,128);ctx.fillStyle='#f1faff';ctx.font='bold 32px Arial';ctx.textAlign='center';ctx.fillText(txt,256,55);const texture=new THREE.CanvasTexture(canvas);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false}));sprite.scale.set(4.4,1.1,1);return sprite}
-for(const def of tycoonDefs){const pad=cylinder(1.35,1.35,.16,material('#338f96'),def.at[0],.16,def.at[1],tycoonGroup);const label=padLabel(def.name+'  $'+def.cost);label.position.set(def.at[0],2.4,def.at[1]);tycoonGroup.add(label);pad.userData={tycoon:def.id};tycoonPads.push({pad,label,def});box(3,.08,3,material('#536e75'),def.at[0],.02,def.at[1],tycoonGroup)}
+for(const def of tycoonDefs){const pad=cylinder(1.35,1.35,.16,material('#338f96'),def.at[0],terrainHeight(...def.at)+.16,def.at[1],tycoonGroup);const label=padLabel(def.name+'  $'+def.cost);label.position.set(def.at[0],terrainHeight(...def.at)+2.4,def.at[1]);tycoonGroup.add(label);pad.userData={tycoon:def.id};tycoonPads.push({pad,label,def});box(3,.08,3,material('#536e75'),def.at[0],terrainHeight(...def.at)+.02,def.at[1],tycoonGroup)}
 function refreshTycoonPads(){for(const p of tycoonPads){const d=p.def,done=tycoonOwned.has(d.id),building=tycoonBuilding.has(d.id),locked=d.req?.some(r=>!tycoonOwned.has(r));p.pad.material.emissive=new THREE.Color(done?'#0b222a':locked?'#111111':'#117d68');p.pad.material.emissiveIntensity=done?.05:locked?.1:.65;p.pad.material.color.set(done?'#324753':locked?'#5c6267':'#2bbda2');p.label.visible=!done&&!building;p.pad.visible=!done&&!building}}
-function createTycoonStructure(def){const g=new THREE.Group();g.position.set(def.at[0],0,def.at[1]);tycoonGroup.add(g);const isGen=def.id.startsWith('gen'),isTower=def.id.startsWith('tower'),isWall=def.id.startsWith('wall'),isBarracks=def.id.startsWith('barracks');const h=def.id==='keep'?8:def.id==='command'?6:isTower?6:isGen?3.5:3;
+function createTycoonStructure(def){const g=new THREE.Group();g.position.set(def.at[0],terrainHeight(...def.at),def.at[1]);tycoonGroup.add(g);const isGen=def.id.startsWith('gen'),isTower=def.id.startsWith('tower'),isWall=def.id.startsWith('wall'),isBarracks=def.id.startsWith('barracks');const h=def.id==='keep'?8:def.id==='command'?6:isTower?6:isGen?3.5:3;
 if(isWall){box(6,2.2,1.2,stone,0,1.1,0,g);for(const x of [-2.5,0,2.5])box(1,1,1.6,metal,x,2.5,0,g)}
 else{box(isBarracks?5:3.7,h,isBarracks?3:3.5,isGen?material('#578a9b'):isTower?stone:armor,0,h/2,0,g);box(isBarracks?5.5:4.3,.5,isBarracks?3.5:4,metal,0,h+.15,0,g);box(1.2,1.9,.16,darkArmor,0,1,-1.85,g);
 if(isGen){for(const x of [-.9,.9]){cylinder(.5,.5,1.1,material('#7fe4e8'),x,h+.85,0,g);cylinder(.15,.15,1.5,metal,x,h+1,0,g)}}
@@ -151,9 +162,9 @@ const armyItems=[
 {id:'tank',name:'Tank',cost:200,at:[-10,60],req:'barracks2'},
 {id:'demo',name:'Demolition',cost:250,at:[10,60],req:'barracks2'}
 ];
-for(const item of armyItems){const mesh=cylinder(1.3,1.3,.18,material('#235b9a'),item.at[0],.18,item.at[1],tycoonGroup);const label=padLabel(item.name+' $'+item.cost);label.position.set(item.at[0],2.6,item.at[1]);tycoonGroup.add(label);armyPads.push({mesh,label,item})}
+for(const item of armyItems){const mesh=cylinder(1.3,1.3,.18,material('#235b9a'),item.at[0],terrainHeight(...item.at)+.18,item.at[1],tycoonGroup);const label=padLabel(item.name+' $'+item.cost);label.position.set(item.at[0],terrainHeight(...item.at)+2.6,item.at[1]);tycoonGroup.add(label);armyPads.push({mesh,label,item})}
 const targetPads=[];
-for(let i=1;i<4;i++){const x=(i-2)*4.5,z=29.5;const mesh=cylinder(1.05,1.05,.18,mats[i],x,.2,z,tycoonGroup);const label=padLabel(['','RED TARGET','GREEN TARGET','GOLD TARGET'][i]);label.position.set(x,2.4,z);tycoonGroup.add(label);targetPads.push({mesh,x,z,target:i})}
+for(let i=1;i<4;i++){const x=(i-2)*4.5,z=29.5;const mesh=cylinder(1.05,1.05,.18,mats[i],x,terrainHeight(x,z)+.2,z,tycoonGroup);const label=padLabel(['','RED TARGET','GREEN TARGET','GOLD TARGET'][i]);label.position.set(x,terrainHeight(x,z)+2.4,z);tycoonGroup.add(label);targetPads.push({mesh,x,z,target:i})}
 function interactNearby(){let nearest=null,distance=2.8;const consider=(x,z,action)=>{const d=Math.hypot(avatar.position.x-x,avatar.position.z-z);if(d<distance){distance=d;nearest=action}};for(const p of tycoonPads)if(!tycoonOwned.has(p.def.id))consider(p.def.at[0],p.def.at[1],()=>show(purchaseTycoon(p.def.id)?'Building '+p.def.name:'Locked or insufficient cash'));for(const p of armyPads)consider(p.item.at[0],p.item.at[1],()=>show(buyTroop(0,p.item.id)?'Deployed '+p.item.name:'Build barracks or earn more cash'));for(const p of targetPads)consider(p.x,p.z,()=>{states[0].target=p.target;show('Target: '+['','Red','Green','Gold'][p.target])});if(nearest){nearest();updateUI()}else show('Move closer to a pad')}
 function buyBuild(id,type){if(id===0){const first={gen:'gen1',tower:'tower1',armor:'keep',auto:'barracks1'};return purchaseTycoon(first[type])}const s=states[id],b=buildTypes.find(x=>x.id===type);if(!s.alive||s.money<b.cost)return false;if(type==='gen'&&s.gen>=4||type==='tower'&&s.tower>=2||type==='armor'&&s.armor>=2||type==='auto'&&s.auto>=2)return false;s.money-=b.cost;s[type]++;if(type==='gen'){s.income+=5;s.genMesh.scale.y=1+s.gen*.35;s.genMesh.position.y=.8+s.gen*.2}if(type==='armor'){s.hp+=300;box(5.4+s.armor*.3,.45,5.4+s.armor*.3,stone,0,1+s.armor*.8,0,s.group)}if(type==='tower'){const x=s.tower===1?-5:5,z=4;box(1.6,3,1.6,stone,x,1.5,z,s.group);box(2.4,.7,2.4,mats[id],x,3.3,z,s.group)}if(type==='auto'){box(2.5,1.4,2.5,material('#8aa9ba'),5,.7,-3+s.auto*2,s.group)}return true}
 function updateUI(){const s=states[0];document.getElementById('money').textContent='$'+Math.floor(s.money);document.getElementById('income').textContent='+$'+s.income+'/sec';document.getElementById('stats').textContent='Base Health: '+Math.max(0,Math.ceil(s.hp))+' HP';}
@@ -165,7 +176,7 @@ addEventListener('mousemove',e=>{if(!running||document.pointerLockElement!==rend
 renderer.domElement.addEventListener('wheel',e=>{zoom=THREE.MathUtils.clamp(zoom+e.deltaY*.006,3,8)},{passive:true});
 function nearestEnemy(u){let best=null,dist=Infinity;for(const v of units){if(v===u||v.hp<=0||v.owner===u.owner)continue;const d=v.g.position.distanceTo(u.g.position);if(d<dist&&d<7.5){best=v;dist=d}}return best}
 let standingPad=null,standingSince=0;
-function step(dt){if(!running)return;seconds+=dt;updateConstruction(dt);const forward=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0),strafe=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0);if(forward||strafe){const f=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),r=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),delta=f.multiplyScalar(forward).addScaledVector(r,strafe).normalize();const next=avatar.position.clone().addScaledVector(delta,dt*7);const insideHome=Math.hypot(next.x,next.z-32)<8.5||(Math.abs(next.x)<13.8&&next.z>=33&&next.z<=64);const bridgeNorth= Math.abs(next.x)<2.2&&next.z>=0&&next.z<=32;const insideCenter=Math.hypot(next.x,next.z)<10.5;if(insideHome||bridgeNorth||insideCenter){avatar.position.copy(next);avatar.rotation.y=Math.atan2(-delta.x,-delta.z)}}// Walk-on pads activate automatically once per entry; step away to use again.
+function step(dt){if(!running)return;seconds+=dt;updateConstruction(dt);const forward=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0),strafe=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0);if(forward||strafe){const f=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),r=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),delta=f.multiplyScalar(forward).addScaledVector(r,strafe).normalize();const next=avatar.position.clone().addScaledVector(delta,dt*7);const insideHome=Math.hypot(next.x,next.z-32)<8.5||(Math.abs(next.x)<15.8&&next.z>=33&&next.z<=71);const bridgeNorth= Math.abs(next.x)<2.2&&next.z>=0&&next.z<=32;const insideCenter=Math.hypot(next.x,next.z)<10.5;if(insideHome||bridgeNorth||insideCenter){avatar.position.copy(next);avatar.position.y=terrainHeight(next.x,next.z);avatar.rotation.y=Math.atan2(-delta.x,-delta.z)}}// Walk-on pads activate automatically once per entry; step away to use again.
 let active=null,dist=1.45;
 const near=(x,z,kind,id)=>{const d=Math.hypot(avatar.position.x-x,avatar.position.z-z);if(d<dist){dist=d;active=kind+':'+id}};
 for(const p of tycoonPads)if(!tycoonOwned.has(p.def.id)&&!tycoonBuilding.has(p.def.id)&&!p.def.req?.some(r=>!tycoonOwned.has(r)))near(p.def.at[0],p.def.at[1],'build',p.def.id);
