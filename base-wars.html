@@ -1,6 +1,6 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BASE WARS — V1.1</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BASE WARS — V1.2</title><style>
 *{box-sizing:border-box}body{margin:0;background:#0b1828;color:#eff8ff;font-family:system-ui,Arial;overflow:hidden}canvas{display:block}#ui{position:fixed;top:12px;left:12px;width:auto;background:#0b2034d9;border:1px solid #6cb8ef77;border-radius:12px;padding:12px 17px;pointer-events:none}h1{font-size:22px;margin:0 0 5px}h2{font-size:14px;color:#8bd3ff;margin:14px 0 6px}p{font-size:12px;color:#b9d2e5;margin:4px 0 9px}#money{font-size:25px;font-weight:900;color:#9bf0a7}#income{color:#9bd5ff;font-size:13px}button,select{background:#1b4668;border:1px solid #6db9ed77;color:white;padding:9px 10px;border-radius:9px;cursor:pointer;font:inherit}button{font-size:12px;font-weight:750}button:hover:not(:disabled){background:#277bb1}button:disabled{opacity:.4;cursor:not-allowed}.buy{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:5px 0}.buy span{font-size:12px}.buy button{min-width:105px}#target{width:100%}#message{font-size:12px;color:#ffe49a;min-height:18px}#help{position:fixed;bottom:12px;right:12px;background:#09243de9;border-radius:12px;padding:10px;font-size:12px}#start{position:fixed;inset:0;display:grid;place-items:center;background:#061527df;z-index:4}#start article{background:#102b43;padding:30px;border-radius:22px;text-align:center;max-width:430px;border:1px solid #6db9ed88}#start h1{font-size:38px}#start button{font-size:18px;padding:12px 24px;background:#1688ce}#end{position:fixed;inset:0;display:none;place-items:center;background:#061527dd;z-index:5}#end article{background:#102b43;padding:35px;border-radius:20px;text-align:center}@media(max-width:700px){#ui{width:auto;padding:10px}#help{max-width:40%;font-size:10px}}
-</style></head><body><div id="start"><article><h1>BASE WARS</h1><p>Build your island fortress. Earn money automatically. Buy troops and choose which enemy base to attack. Defeat three AI commanders!</p><p>Move with WASD, aim the camera by moving your mouse, and walk onto pads to buy buildings, troops, or select targets.</p><button id="begin">START BATTLE</button><p>V1.1 • Single-player</p></article></div>
+</style></head><body><div id="start"><article><h1>BASE WARS</h1><p>Build your island fortress. Earn money automatically. Buy troops and choose which enemy base to attack. Defeat three AI commanders!</p><p>Move with WASD, aim the camera by moving your mouse, and walk onto pads to buy buildings, troops, or select targets.</p><button id="begin">START BATTLE</button><p>V1.2 • Single-player</p></article></div>
 <div id="ui"><div id="money" >$150</div><div id="income">+$6/sec</div><div id="stats">Base Health: 1000 HP</div><div id="message"></div></div><div id="help">WASD move · Mouse look · Walk onto pads to buy · Esc unlock mouse</div><div id="end"><article><h1 id="outcome"></h1><button id="again">PLAY AGAIN</button></article></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
@@ -18,17 +18,36 @@ const buildings=[],units=[],pads=[];let running=false,finished=false,seconds=0,l
 function platform(x,z,r=10){cylinder(r,r,1.5,grass,x,-.75,z);cylinder(r-.5,r-2,3.5,dirt,x,-3,z)}
 platform(0,0,12);for(const p of bases)platform(p.x,p.z,10);
 // V1 mountain terrain: raised terraces and a climbable central switchback ramp.
-// V1.1: wide mountain with distinct economy, military, defense and command districts.
+// V1.2: wide mountain with distinct economy, military, defense and command districts.
+// Graded trails between intentionally level construction terraces.
+const buildSites=[
+[-17,43,6], [17,43,6],[-29,54,6],[-15,64,6],[29,54,6],[-30,80,6],[-16,93,6],[29,80,6],[16,93,6],[-12,103,6],[12,103,6],[0,109,6],
+[12,53,4],[26,53,4],[12,66,4],[26,66,4],[-4.5,36,3],[0,36,3],[4.5,36,3]
+];
+function smooth01(t){t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)}
+function baseSlope(z){
+ const anchors=[[31,0],[41,0],[51,3.2],[63,5.8],[73,3.8],[85,8],[96,5.5],[110,9]];
+ for(let i=1;i<anchors.length;i++)if(z<=anchors[i][0]){
+  const p=anchors[i-1],q=anchors[i];return p[1]+(q[1]-p[1])*smooth01((z-p[0])/(q[0]-p[0]))
+ }return 9
+}
 function terrainHeight(x,z){
  if(z<33)return 0;
- const rise=Math.max(0,Math.min(1,(z-33)/73));
- const ridge=7.5*rise;
- const relief=(Math.sin(x*.105+z*.08)*1.4+Math.sin(x*.23-z*.11)*.6);
- const road=Math.max(0,1-Math.abs(x)/6);
- return Math.max(0,ridge+relief*(1-road*.86));
+ const roadFactor=smooth01((Math.abs(x)-4)/12);
+ let h=baseSlope(z)+roadFactor*(1.3*Math.sin(x*.12+z*.09)+.7*Math.sin(x*.24-z*.12));
+ // Each building rests on a flat footprint, blending into hills outside it.
+ for(const [sx,sz,r] of buildSites){
+  const dx=Math.abs(x-sx),dz=Math.abs(z-sz),edge=Math.max(dx,dz);
+  if(edge<r+4){
+   const flat=baseSlope(sz)+smooth01((Math.abs(sx)-4)/12)*(1.3*Math.sin(sx*.12+sz*.09)+.7*Math.sin(sx*.24-sz*.12));
+   const mix=smooth01((edge-r)/4);
+   h=flat*(1-mix)+h*mix;
+  }
+ }
+ return Math.max(0,h)
 }
 const mountainRock=material('#737f7e'),mountainGrass=material('#70b56a'),pathMat=material('#bc986a');
-const verts=[],inds=[],cols=[];const W=84,Z0=31,Z1=110,nx=84,nz=79;
+const verts=[],inds=[],cols=[];const W=84,Z0=31,Z1=112,nx=126,nz=122;
 for(let j=0;j<=nz;j++){const z=Z0+(Z1-Z0)*j/nz;for(let i=0;i<=nx;i++){const x=-W/2+W*i/nx;const h=terrainHeight(x,z);verts.push(x,h,z);const road=Math.abs(x)<4.2;const tint=road?[.68,.53,.36]:[.34+.07*Math.sin(z*.15),.58+.03*Math.cos(x*.18),.31];cols.push(...tint)}}
 for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){const k=j*(nx+1)+i;inds.push(k,k+nx+1,k+1,k+1,k+nx+1,k+nx+2)}
 const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));geo.setIndex(inds);geo.computeVertexNormals();
@@ -45,9 +64,9 @@ for(const [x,z] of [[-36,41],[-33,53],[-36,66],[-32,82],[-35,100],[35,41],[33,53
  make(new THREE.DodecahedronGeometry(1.4,0),districtStone,x+2,h+.5,z+2);
 }
 // Wide winding access roads and visibly marked districts.
-for(let z=36;z<108;z+=3){const h=terrainHeight(0,z);box(7,.09,3.1,pathMat,0,h+.08,z)}
+for(let z=36;z<108;z+=2){const h=terrainHeight(0,z);const slab=box(7,.07,2.1,pathMat,0,h+.04,z);slab.rotation.x=Math.atan2(terrainHeight(0,z+1)-terrainHeight(0,z-1),2)}
 for(const [x,z,w,d] of [[-21,54,31,25],[21,54,31,25],[-21,83,31,26],[21,83,31,26]]){
- const h=terrainHeight(x,z);box(w,.14,d,material('#9caa80'),x,h-.22,z);
+ const h=terrainHeight(x,z);box(w,.07,d,material('#9caa80'),x,h-.28,z);
  for(let k=-1;k<=1;k++){const xx=x+k*8;const hh=terrainHeight(xx,z);box(1.5,.13,2.4,pathMat,xx,hh+.09,z)}
 }
 for(const z of [42,68,96])for(const side of [-1,1]){
