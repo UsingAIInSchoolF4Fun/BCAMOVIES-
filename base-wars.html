@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BASE WARS — V1</title><style>
 *{box-sizing:border-box}body{margin:0;background:#0b1828;color:#eff8ff;font-family:system-ui,Arial;overflow:hidden}canvas{display:block}#ui{position:fixed;top:12px;left:12px;width:auto;background:#0b2034d9;border:1px solid #6cb8ef77;border-radius:12px;padding:12px 17px;pointer-events:none}h1{font-size:22px;margin:0 0 5px}h2{font-size:14px;color:#8bd3ff;margin:14px 0 6px}p{font-size:12px;color:#b9d2e5;margin:4px 0 9px}#money{font-size:25px;font-weight:900;color:#9bf0a7}#income{color:#9bd5ff;font-size:13px}button,select{background:#1b4668;border:1px solid #6db9ed77;color:white;padding:9px 10px;border-radius:9px;cursor:pointer;font:inherit}button{font-size:12px;font-weight:750}button:hover:not(:disabled){background:#277bb1}button:disabled{opacity:.4;cursor:not-allowed}.buy{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:5px 0}.buy span{font-size:12px}.buy button{min-width:105px}#target{width:100%}#message{font-size:12px;color:#ffe49a;min-height:18px}#help{position:fixed;bottom:12px;right:12px;background:#09243de9;border-radius:12px;padding:10px;font-size:12px}#start{position:fixed;inset:0;display:grid;place-items:center;background:#061527df;z-index:4}#start article{background:#102b43;padding:30px;border-radius:22px;text-align:center;max-width:430px;border:1px solid #6db9ed88}#start h1{font-size:38px}#start button{font-size:18px;padding:12px 24px;background:#1688ce}#end{position:fixed;inset:0;display:none;place-items:center;background:#061527dd;z-index:5}#end article{background:#102b43;padding:35px;border-radius:20px;text-align:center}@media(max-width:700px){#ui{width:auto;padding:10px}#help{max-width:40%;font-size:10px}}
 </style></head><body><div id="start"><article><h1>BASE WARS</h1><p>Build your island fortress. Earn money automatically. Buy troops and choose which enemy base to attack. Defeat three AI commanders!</p><p>Move with WASD, aim the camera by moving your mouse, and walk onto pads to buy buildings, troops, or select targets.</p><button id="begin">START BATTLE</button><p>Alpha 0.2d • Single-player</p></article></div>
-<div id="ui"><div id="money">$150</div><div id="income">+$0/sec</div><div id="stats">Base Health: 1000 HP</div><div id="message"></div></div><div id="help">WASD move · Mouse look · Walk onto pads to buy · Esc unlock mouse</div><div id="end"><article><h1 id="outcome"></h1><button id="again">PLAY AGAIN</button></article></div>
+<div id="ui"><div id="money" >$150</div><div id="income">+$6/sec</div><div id="stats">Base Health: 1000 HP</div><div id="message"></div></div><div id="help">WASD move · Mouse look · Walk onto pads to buy · Esc unlock mouse</div><div id="end"><article><h1 id="outcome"></h1><button id="again">PLAY AGAIN</button></article></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
 const scene=new THREE.Scene();scene.background=new THREE.Color('#95c9ef');scene.fog=new THREE.Fog('#95c9ef',80,160);
@@ -11,36 +11,48 @@ const material=c=>new THREE.MeshStandardMaterial({color:c,roughness:.7});const m
 const make=(geo,mat,x,y,z,group=scene)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;group.add(m);return m};
 const box=(w,h,d,mat,x,y,z,group)=>make(new THREE.BoxGeometry(w,h,d),mat,x,y,z,group);
 const cylinder=(top,bottom,h,mat,x,y,z,group)=>make(new THREE.CylinderGeometry(top,bottom,h,8),mat,x,y,z,group);
-const bases=[{x:0,z:32},{x:32,z:0},{x:0,z:-32},{x:-32,z:0}];const states=bases.map((p,i)=>({...p,id:i,money:150,income:i===0?0:8,hp:1000,alive:true,gen:0,tower:0,armor:0,auto:0,spawnTimer:0,aiTimer:3+i,target:(i+1)%4,units:[],pads:[],structures:[]}));
+const bases=[{x:0,z:32},{x:32,z:0},{x:0,z:-32},{x:-32,z:0}];const states=bases.map((p,i)=>({...p,id:i,money:150,income:i===0?6:8,hp:1000,alive:true,gen:0,tower:0,armor:0,auto:0,spawnTimer:0,aiTimer:3+i,target:(i+1)%4,units:[],pads:[],structures:[]}));
 const troopTypes=[{id:'sword',name:'Swordsman',cost:50,hp:85,dmg:13,range:2.2,speed:4.1,interval:.9},{id:'archer',name:'Archer',cost:100,hp:55,dmg:15,range:8,speed:3.6,interval:1.4},{id:'tank',name:'Tank',cost:200,hp:270,dmg:20,range:2.5,speed:2.3,interval:1.3},{id:'demo',name:'Demolition',cost:250,hp:95,dmg:48,range:2.5,speed:2.8,interval:1.8}];
 const buildTypes=[{id:'gen',name:'Generator +$5/sec',cost:200},{id:'tower',name:'Guard Tower',cost:150},{id:'armor',name:'HQ Armor +300 HP',cost:400},{id:'auto',name:'Swordsman Factory',cost:350}];
 const buildings=[],units=[],pads=[];let running=false,finished=false,seconds=0,last=performance.now(),yaw=0,zoom=5.5,tilt=.48,drag=false,px=0,py=0,camFocus=new THREE.Vector3(0,0,0);
 function platform(x,z,r=10){cylinder(r,r,1.5,grass,x,-.75,z);cylinder(r-.5,r-2,3.5,dirt,x,-3,z)}
 platform(0,0,12);for(const p of bases)platform(p.x,p.z,10);
 // V1 mountain terrain: raised terraces and a climbable central switchback ramp.
+// V1.1: wide mountain with distinct economy, military, defense and command districts.
 function terrainHeight(x,z){
  if(z<33)return 0;
- const ramp=Math.max(0,Math.min(1,(z-36)/29));
- const level=z<40?0:z<49?2.2:z<58?4.6:7.1;
- const center=Math.abs(x)<2.6;
- const base=center?7.1*ramp:level;
- const shoulder=Math.max(0,(Math.abs(x)-8)/8);
- return base+Math.sin(z*.19+x*.31)*.24*shoulder;
+ const rise=Math.max(0,Math.min(1,(z-33)/73));
+ const ridge=7.5*rise;
+ const relief=(Math.sin(x*.105+z*.08)*1.4+Math.sin(x*.23-z*.11)*.6);
+ const road=Math.max(0,1-Math.abs(x)/6);
+ return Math.max(0,ridge+relief*(1-road*.86));
 }
 const mountainRock=material('#737f7e'),mountainGrass=material('#70b56a'),pathMat=material('#bc986a');
-const verts=[],inds=[],cols=[];const W=34,Z0=32,Z1=72,nx=34,nz=40;
-for(let j=0;j<=nz;j++){const z=Z0+(Z1-Z0)*j/nz;for(let i=0;i<=nx;i++){const x=-W/2+W*i/nx;const edge=1.1*Math.sin(z*.27)+.55*Math.sin(z*.61+x*.4);const h=terrainHeight(x,z);verts.push(x,h,z);const path=Math.abs(x)<2.7;const tint=path?[.67,.51,.34]:[.38+.06*Math.sin(z*.4),.61,.34];cols.push(...tint)}}
+const verts=[],inds=[],cols=[];const W=84,Z0=31,Z1=110,nx=84,nz=79;
+for(let j=0;j<=nz;j++){const z=Z0+(Z1-Z0)*j/nz;for(let i=0;i<=nx;i++){const x=-W/2+W*i/nx;const h=terrainHeight(x,z);verts.push(x,h,z);const road=Math.abs(x)<4.2;const tint=road?[.68,.53,.36]:[.34+.07*Math.sin(z*.15),.58+.03*Math.cos(x*.18),.31];cols.push(...tint)}}
 for(let j=0;j<nz;j++)for(let i=0;i<nx;i++){const k=j*(nx+1)+i;inds.push(k,k+nx+1,k+1,k+1,k+nx+1,k+nx+2)}
 const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));geo.setIndex(inds);geo.computeVertexNormals();
 const land=new THREE.Mesh(geo,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}));land.receiveShadow=true;scene.add(land);
-for(const side of [-1,1]){for(let z=34;z<72;z+=4){const h=terrainHeight(side*16,z);const cliff=box(2,h+5,4.2,mountainRock,side*16.8,(h-5)/2,z);cliff.rotation.z=side*.07}}
-for(let z=35;z<=69;z+=3){const h=terrainHeight(0,z);box(5,.09,2.8,pathMat,0,h+.05,z)}
-for(const [x,z] of [[-12,39],[12,40],[-12,50],[12,51],[-12,61],[12,62],[-8,69],[8,69]]){
- const h=terrainHeight(x,z);const trunk=cylinder(.25,.33,2,wood,x,h+1,z);
- make(new THREE.ConeGeometry(1.65,3.3,7),material('#327d4c'),x,h+3.5,z);
- make(new THREE.DodecahedronGeometry(1.15,0),mountainRock,x+2,h+.6,z+.6);
+const districtStone=material('#78867b'),treeMat=material('#367e4c');
+for(const side of [-1,1])for(let z=34;z<108;z+=5){
+ const x=side*(39+1.2*Math.sin(z*.15));const h=terrainHeight(x,z);
+ box(4,h+7,5.5,mountainRock,x,(h-7)/2,z);
 }
-for(const z of [41,50,59]){for(const side of [-1,1]){const h=terrainHeight(side*6,z);box(2,.5,2,stone,side*6,h+.25,z)}}
+for(const [x,z] of [[-36,41],[-33,53],[-36,66],[-32,82],[-35,100],[35,41],[33,53],[36,66],[32,82],[35,100],[-23,105],[23,105]]){
+ const h=terrainHeight(x,z);
+ cylinder(.26,.35,2.4,wood,x,h+1.2,z);
+ make(new THREE.ConeGeometry(1.9,4.2,7),treeMat,x,h+4.4,z);
+ make(new THREE.DodecahedronGeometry(1.4,0),districtStone,x+2,h+.5,z+2);
+}
+// Wide winding access roads and visibly marked districts.
+for(let z=36;z<108;z+=3){const h=terrainHeight(0,z);box(7,.09,3.1,pathMat,0,h+.08,z)}
+for(const [x,z,w,d] of [[-21,54,31,25],[21,54,31,25],[-21,83,31,26],[21,83,31,26]]){
+ const h=terrainHeight(x,z);box(w,.14,d,material('#9caa80'),x,h-.22,z);
+ for(let k=-1;k<=1;k++){const xx=x+k*8;const hh=terrainHeight(xx,z);box(1.5,.13,2.4,pathMat,xx,hh+.09,z)}
+}
+for(const z of [42,68,96])for(const side of [-1,1]){
+ const x=side*8;const h=terrainHeight(x,z);box(9,.12,2,pathMat,x,h+.08,z);
+}
 for(let i=0;i<4;i++){const p=bases[i],a=Math.atan2(p.z,p.x),len=12;const bridge=box(5,.6,len,wood,p.x*.5,.05,p.z*.5);bridge.rotation.y=-a+Math.PI/2;for(let k=-5;k<=5;k+=2){const v=(k/11+.5);const x=p.x*v,z=p.z*v;const plank=box(5.4,.16,1.2,material('#caa47a'),x,.44,z);plank.rotation.y=-a+Math.PI/2}}
 cylinder(2,2,.6,material('#d9bc69'),0,.5,0);
 for(const s of states){const group=new THREE.Group();group.position.set(s.x,0,s.z);scene.add(group);s.group=group;const hq=box(4,4,4,mats[s.id],0,2,0,group);box(5,.7,5,stone,0,.4,0,group);const roof=make(new THREE.ConeGeometry(3.6,2,4),material('#e2e8ee'),0,5,0,group);roof.rotation.y=Math.PI/4;s.hqMesh=hq;const flag=box(.15,3,.15,stone,0,7,0,group);box(2,.9,.1,mats[s.id],1,8,0,group);const gen=box(2.2,1.6,2.2,material('#9edbe4'),-5,.8,-2,group);cylinder(.7,.7,.5,material('#ffe17b'),-5,1.9,-2,group);s.genMesh=gen;if(s.id!==0){for(let j=0;j<3;j++){const angle=(j-1)*.85;const x=5.5*Math.cos(angle),z=5.5*Math.sin(angle);const pad=cylinder(1.25,1.25,.15,stone,x,.12,z,group);pad.userData={base:s.id,index:j};s.pads.push(pad);pads.push(pad)}}}
@@ -123,18 +135,18 @@ const dir=new THREE.Vector3(-s.x,0,-s.z).normalize();g.position.set(s.x+dir.x*5,
 const u={owner:id,type,g,hp:t.hp,maxHp:t.hp,dmg:t.dmg,range:t.range,speed:t.speed,interval:t.interval,cool:0,target:s.target,phase:0};units.push(u);s.units.push(u);return true}
 // --- Alpha 0.2b: player tycoon construction ---
 const tycoonDefs=[
-{id:'gen1',name:'Generator I',cost:80,time:1.2,at:[-5,35],income:6},
-{id:'barracks1',name:'Barracks I',cost:120,time:1.5,at:[5,35]},
-{id:'tower1',name:'Watchtower',cost:100,time:1.3,at:[-10,43]},
-{id:'wall1',name:'Front Walls',cost:60,time:1,at:[10,43]},
-{id:'gen2',name:'Generator II',cost:220,time:1.8,at:[-6,45],req:['gen1'],income:14},
-{id:'barracks2',name:'Barracks II',cost:350,time:2,at:[6,45],req:['barracks1']},
-{id:'tower2',name:'Heavy Turret',cost:400,time:2.2,at:[-10,53],req:['tower1']},
-{id:'wall2',name:'Rear Walls',cost:60,time:1,at:[10,53],req:['wall1']},
-{id:'gen3',name:'Generator III',cost:550,time:2.5,at:[-6,55],req:['gen2'],income:30},
-{id:'command',name:'Command Center',cost:600,time:2.5,at:[6,55],req:['gen2','barracks1']},
-{id:'armory',name:'Armory',cost:450,time:2,at:[-5,62],req:['command']},
-{id:'keep',name:'Fortress Keep',cost:1200,time:3,at:[5,62],req:['command','gen2']}
+{id:'gen1',name:'Starter Generator',cost:0,time:0,at:[-17,43],income:6},
+{id:'barracks1',name:'Starter Spawner',cost:0,time:0,at:[17,43]},
+{id:'gen2',name:'Generator II',cost:220,time:1.8,at:[-29,54],req:['gen1'],income:14},
+{id:'gen3',name:'Generator III',cost:550,time:2.5,at:[-15,64],req:['gen2'],income:30},
+{id:'barracks2',name:'Barracks II',cost:350,time:2,at:[29,54],req:['barracks1']},
+{id:'tower1',name:'Watchtower',cost:100,time:1.3,at:[-30,80]},
+{id:'tower2',name:'Heavy Turret',cost:400,time:2.2,at:[-16,93],req:['tower1']},
+{id:'wall1',name:'Front Walls',cost:60,time:1,at:[29,80]},
+{id:'wall2',name:'Rear Walls',cost:60,time:1,at:[16,93],req:['wall1']},
+{id:'command',name:'Command Center',cost:600,time:2.5,at:[-12,103],req:['gen2','barracks1']},
+{id:'armory',name:'Armory',cost:450,time:2,at:[12,103],req:['command']},
+{id:'keep',name:'Fortress Keep',cost:1200,time:3,at:[0,109],req:['command','gen2']}
 ];
 const tycoonOwned=new Set(),tycoonBuilding=new Set(),construction=[],tycoonPads=[];
 const tycoonGroup=new THREE.Group();scene.add(tycoonGroup);
@@ -153,18 +165,26 @@ if(def.id==='armory'){for(const x of [-1.3,1.3])box(1,1,1,wood,x,.5,-2.2,g)}
 g.scale.y=.04;construction.push({def,g,elapsed:0});return g}
 function purchaseTycoon(id){const def=tycoonDefs.find(d=>d.id===id),s=states[0];if(!def||!s.alive||tycoonOwned.has(id)||tycoonBuilding.has(id)||construction.length>=3||s.money<def.cost||def.req?.some(r=>!tycoonOwned.has(r)))return false;s.money-=def.cost;tycoonBuilding.add(id);createTycoonStructure(def);refreshTycoonPads();show('Constructing '+def.name);return true}
 function updateConstruction(dt){for(let i=construction.length-1;i>=0;i--){const a=construction[i];a.elapsed+=dt;const p=Math.min(1,a.elapsed/a.def.time);a.g.scale.y=.04+.96*(1-Math.pow(1-p,3));if(p>=1){const d=a.def,s=states[0];tycoonOwned.add(d.id);tycoonBuilding.delete(d.id);if(d.income)s.income+=d.income;if(d.id==='tower1'||d.id==='tower2')s.tower++;if(d.id==='barracks1'){s.barracksUnlocked=true;s.barracksTimer=0}if(d.id==='barracks2'){s.advancedTroops=true;s.barracksTimer=0}if(d.id==='barracks3'){s.eliteTroops=true;s.barracksTimer=0}if(d.id==='keep')s.hp+=500;show(d.name+' completed');construction.splice(i,1);refreshTycoonPads()}}}
+// Starter economy and troop spawner are owned and visible from the beginning.
+tycoonOwned.add('gen1');tycoonOwned.add('barracks1');
+states[0].barracksUnlocked=true;states[0].barracksTimer=0;
+for(const id of ['gen1','barracks1']){
+ const def=tycoonDefs.find(d=>d.id===id);const g=createTycoonStructure(def);
+ const idx=construction.findIndex(a=>a.g===g);if(idx>=0)construction.splice(idx,1);
+ g.scale.y=1;
+}
 refreshTycoonPads();
 // Troops and targeting are physical world purchases, not sidebar buttons.
 const armyPads=[];
 const armyItems=[
-{id:'sword',name:'Swordsman',cost:50,at:[-10,35],req:'barracks1'},
-{id:'archer',name:'Archer',cost:100,at:[10,35],req:'barracks1'},
-{id:'tank',name:'Tank',cost:200,at:[-10,60],req:'barracks2'},
-{id:'demo',name:'Demolition',cost:250,at:[10,60],req:'barracks2'}
+{id:'sword',name:'Swordsman',cost:50,at:[12,53],req:'barracks1'},
+{id:'archer',name:'Archer',cost:100,at:[26,53],req:'barracks1'},
+{id:'tank',name:'Tank',cost:200,at:[12,66],req:'barracks2'},
+{id:'demo',name:'Demolition',cost:250,at:[26,66],req:'barracks2'}
 ];
 for(const item of armyItems){const mesh=cylinder(1.3,1.3,.18,material('#235b9a'),item.at[0],terrainHeight(...item.at)+.18,item.at[1],tycoonGroup);const label=padLabel(item.name+' $'+item.cost);label.position.set(item.at[0],terrainHeight(...item.at)+2.6,item.at[1]);tycoonGroup.add(label);armyPads.push({mesh,label,item})}
 const targetPads=[];
-for(let i=1;i<4;i++){const x=(i-2)*4.5,z=29.5;const mesh=cylinder(1.05,1.05,.18,mats[i],x,terrainHeight(x,z)+.2,z,tycoonGroup);const label=padLabel(['','RED TARGET','GREEN TARGET','GOLD TARGET'][i]);label.position.set(x,terrainHeight(x,z)+2.4,z);tycoonGroup.add(label);targetPads.push({mesh,x,z,target:i})}
+for(let i=1;i<4;i++){const x=(i-2)*4.5,z=36;const mesh=cylinder(1.05,1.05,.18,mats[i],x,terrainHeight(x,z)+.2,z,tycoonGroup);const label=padLabel(['','RED TARGET','GREEN TARGET','GOLD TARGET'][i]);label.position.set(x,terrainHeight(x,z)+2.4,z);tycoonGroup.add(label);targetPads.push({mesh,x,z,target:i})}
 function interactNearby(){let nearest=null,distance=2.8;const consider=(x,z,action)=>{const d=Math.hypot(avatar.position.x-x,avatar.position.z-z);if(d<distance){distance=d;nearest=action}};for(const p of tycoonPads)if(!tycoonOwned.has(p.def.id))consider(p.def.at[0],p.def.at[1],()=>show(purchaseTycoon(p.def.id)?'Building '+p.def.name:'Locked or insufficient cash'));for(const p of armyPads)consider(p.item.at[0],p.item.at[1],()=>show(buyTroop(0,p.item.id)?'Deployed '+p.item.name:'Build barracks or earn more cash'));for(const p of targetPads)consider(p.x,p.z,()=>{states[0].target=p.target;show('Target: '+['','Red','Green','Gold'][p.target])});if(nearest){nearest();updateUI()}else show('Move closer to a pad')}
 function buyBuild(id,type){if(id===0){const first={gen:'gen1',tower:'tower1',armor:'keep',auto:'barracks1'};return purchaseTycoon(first[type])}const s=states[id],b=buildTypes.find(x=>x.id===type);if(!s.alive||s.money<b.cost)return false;if(type==='gen'&&s.gen>=4||type==='tower'&&s.tower>=2||type==='armor'&&s.armor>=2||type==='auto'&&s.auto>=2)return false;s.money-=b.cost;s[type]++;if(type==='gen'){s.income+=5;s.genMesh.scale.y=1+s.gen*.35;s.genMesh.position.y=.8+s.gen*.2}if(type==='armor'){s.hp+=300;box(5.4+s.armor*.3,.45,5.4+s.armor*.3,stone,0,1+s.armor*.8,0,s.group)}if(type==='tower'){const x=s.tower===1?-5:5,z=4;box(1.6,3,1.6,stone,x,1.5,z,s.group);box(2.4,.7,2.4,mats[id],x,3.3,z,s.group)}if(type==='auto'){box(2.5,1.4,2.5,material('#8aa9ba'),5,.7,-3+s.auto*2,s.group)}return true}
 function updateUI(){const s=states[0];document.getElementById('money').textContent='$'+Math.floor(s.money);document.getElementById('income').textContent='+$'+s.income+'/sec';document.getElementById('stats').textContent='Base Health: '+Math.max(0,Math.ceil(s.hp))+' HP';}
@@ -176,7 +196,7 @@ addEventListener('mousemove',e=>{if(!running||document.pointerLockElement!==rend
 renderer.domElement.addEventListener('wheel',e=>{zoom=THREE.MathUtils.clamp(zoom+e.deltaY*.006,3,8)},{passive:true});
 function nearestEnemy(u){let best=null,dist=Infinity;for(const v of units){if(v===u||v.hp<=0||v.owner===u.owner)continue;const d=v.g.position.distanceTo(u.g.position);if(d<dist&&d<7.5){best=v;dist=d}}return best}
 let standingPad=null,standingSince=0;
-function step(dt){if(!running)return;seconds+=dt;updateConstruction(dt);const forward=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0),strafe=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0);if(forward||strafe){const f=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),r=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),delta=f.multiplyScalar(forward).addScaledVector(r,strafe).normalize();const next=avatar.position.clone().addScaledVector(delta,dt*7);const insideHome=Math.hypot(next.x,next.z-32)<8.5||(Math.abs(next.x)<15.8&&next.z>=33&&next.z<=71);const bridgeNorth= Math.abs(next.x)<2.2&&next.z>=0&&next.z<=32;const insideCenter=Math.hypot(next.x,next.z)<10.5;if(insideHome||bridgeNorth||insideCenter){avatar.position.copy(next);avatar.position.y=terrainHeight(next.x,next.z);avatar.rotation.y=Math.atan2(-delta.x,-delta.z)}}// Walk-on pads activate automatically once per entry; step away to use again.
+function step(dt){if(!running)return;seconds+=dt;updateConstruction(dt);const forward=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0),strafe=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0);if(forward||strafe){const f=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),r=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),delta=f.multiplyScalar(forward).addScaledVector(r,strafe).normalize();const next=avatar.position.clone().addScaledVector(delta,dt*7);const insideHome=Math.hypot(next.x,next.z-32)<8.5||(Math.abs(next.x)<40&&next.z>=32&&next.z<=109);const bridgeNorth= Math.abs(next.x)<2.2&&next.z>=0&&next.z<=32;const insideCenter=Math.hypot(next.x,next.z)<10.5;if(insideHome||bridgeNorth||insideCenter){avatar.position.copy(next);avatar.position.y=terrainHeight(next.x,next.z);avatar.rotation.y=Math.atan2(-delta.x,-delta.z)}}// Walk-on pads activate automatically once per entry; step away to use again.
 let active=null,dist=1.45;
 const near=(x,z,kind,id)=>{const d=Math.hypot(avatar.position.x-x,avatar.position.z-z);if(d<dist){dist=d;active=kind+':'+id}};
 for(const p of tycoonPads)if(!tycoonOwned.has(p.def.id)&&!tycoonBuilding.has(p.def.id)&&!p.def.req?.some(r=>!tycoonOwned.has(r)))near(p.def.at[0],p.def.at[1],'build',p.def.id);
