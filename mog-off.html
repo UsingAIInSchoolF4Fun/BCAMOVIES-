@@ -115,7 +115,7 @@ if(!roundActive)$('scoreCards').replaceChildren();
 if(!roundActive)names.forEach(function(name,i){const c=document.createElement('div');c.className='score';const label=document.createElement('div');label.textContent=name;const number=document.createElement('strong');number.textContent=vals[i]+'/100';c.append(label,number);$('scoreCards').append(c)});
 if(!roundActive)$('winner').textContent='FEATURE GAME SCORE: '+(vals.reduce(function(x,y){return x+y},0)/70).toFixed(1)+'/10 — waiting for opponent to determine winner';
 const appearanceBase=vals.reduce(function(x,y){return x+y},0)/70;
-const posePoints=roundActive?Math.min(5,poseMoves.size)*1.25:0;
+const posePoints=roundActive?Math.min(5,poseMoves.size)*1.35:0;
 const latest=Number((roundActive?Math.min(10,Math.max(0,appearanceBase*.35+posePoints)):appearanceBase).toFixed(1));myScore=Math.max(myScore||0,latest);displayScore=Math.min(myScore,displayScore+0.35);if(conn&&conn.open)conn.send({type:'score',value:Number(displayScore.toFixed(1))});showLive();await stage('Analysis complete',100);if(!roundActive)$('results').classList.remove('hidden');if(!roundActive)$('status').textContent='Analysis complete. Waiting for opponent score if not yet received.';if(!roundActive)winnerCheck();
 }catch(e){$('status').textContent='Analysis failed: '+e.message}finally{btn.disabled=false;roundBusy=false;if(!roundActive)$('analysisProgress').classList.add('hidden')}
 };window.addEventListener('pagehide',function(){stop();if(peer)peer.destroy()});
