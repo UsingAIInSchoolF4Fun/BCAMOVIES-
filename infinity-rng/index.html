@@ -1,6 +1,6 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V4.8</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V4.9</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V4.8</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find a glowing trial circle for a luck boost</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · Shift — Sprint · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V4.9</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · Shift — Sprint · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script><script>
 "use strict";
 const A = [
@@ -30,6 +30,7 @@ for (let rank = 0; rank < 8; rank++)
 const BASE_BOOST = 1;
 let luckBoost = 1,
     luckExpires = 0;
+let volcanoZoneActive=false, lavaSlowUntil=0;
 
 function buildRollTable(boost = BASE_BOOST) {
     const weights = A.map((a, i) => {
@@ -62,7 +63,7 @@ function displayOdds(a) {
 
 function refreshLuck() {
     let now = Date.now(),
-        active = now < luckExpires ? luckBoost : 1;
+        active = Math.max(now < luckExpires ? luckBoost : 1,volcanoZoneActive ? 2 : 1);
     if (active !== rollTable.boost) {
         rollTable = buildRollTable(active);
         rollTable.boost = active;
@@ -84,6 +85,7 @@ const state = {
 };
 luckBoost = stored.luckBoost || 1;
 luckExpires = stored.luckExpires || 0;
+lavaSlowUntil = stored.lavaSlowUntil || 0;
 let auto = false,
     busy = false,
     world = null,
@@ -95,7 +97,8 @@ function save() {
         localStorage.setItem(saveKey, JSON.stringify({
             ...state,
             luckBoost,
-            luckExpires
+            luckExpires,
+            lavaSlowUntil
         }))
     } catch (e) {}
 }
@@ -184,7 +187,7 @@ function roll() {
     $("rollButton").disabled = true;
     $("rollLabel").textContent = "THE UNIVERSE IS CHOOSING…";
     let start = performance.now(),
-        duration = 2600;
+        duration = Date.now()<lavaSlowUntil ? 6500 : 2600;
 
     function tick(now) {
         let p = Math.min(1, (now - start) / duration);
@@ -958,50 +961,62 @@ for (let i = 0; i < 55; i++) {
     }
 })();
 
-const trialSites = [{
-    x: 75,
-    z: 65,
-    name: "Crystal Alignment",
-    type: 0
-}, {
-    x: -235,
-    z: 50,
-    name: "Frozen Memory",
-    type: 1
-}, {
-    x: 230,
-    z: -35,
-    name: "Ember Timing",
-    type: 2
-}, {
-    x: 45,
-    z: -240,
-    name: "Astral Sequence",
-    type: 3
-}, {
-    x: 20,
-    z: 250,
-    name: "Forest Spirits",
-    type: 4
-}];
-const trialMat = new T.MeshStandardMaterial({
-    color: 0x76e9ff,
-    emissive: 0x39caff,
-    emissiveIntensity: 1.1,
-    metalness: .3,
-    roughness: .15
-});
-for (const site of trialSites) {
-    let y = ground(site.x, site.z);
-    let disc = cyl(4.5, 4.5, .6, mats.stoneDark, scene, site.x, y + .3, site.z, 24);
-    disc.receiveShadow = true;
-    torus(3.7, .23, trialMat, scene, site.x, y + .7, site.z);
-    for (let j = 0; j < 5; j++) {
-        let a = j * 6.283 / 5;
-        let o = mesh(new T.OctahedronGeometry(.75), trialMat, scene, site.x + Math.cos(a) * 3, y + 2, site.z + Math.sin(a) * 3);
-        o.scale.y = 1.6
-    }
+
+const trialSites=[{x:75,z:65,name:"Crystal Spires",type:0},{x:-235,z:50,name:"Frozen Citadel",type:1},{x:230,z:-35,name:"Ember Fortress",type:2},{x:45,z:-240,name:"Astral Sanctuary",type:3},{x:20,z:250,name:"Forest Temple",type:4}];
+const trialMat=new T.MeshStandardMaterial({color:0x73eaff,emissive:0x28bfff,emissiveIntensity:1.1});
+const trialPlatforms=[];
+const solidObstacles=[];
+function addSolid(x,z,r){solidObstacles.push({x,z,r})}
+function canStand(x,z){return solidObstacles.every(o=>Math.hypot(x-o.x,z-o.z)>o.r+0.7)}
+// Five towering parkour sanctuaries. Only reaching the high altar awards luck.
+for(const site of trialSites){
+ const y=ground(site.x,site.z),altitude=y+13;
+ site.top=altitude;site.cooldown=0;
+ const stone=new T.MeshStandardMaterial({color:site.type===2?0x573d40:0x46536a,roughness:.85});
+ cyl(12,15,1.5,stone,scene,site.x,y+.4,site.z,16);
+ for(let j=0;j<8;j++){const a=j*Math.PI/4,px=site.x+Math.cos(a)*13,pz=site.z+Math.sin(a)*13;
+  cyl(.95,1.3,17,stone,scene,px,y+8,pz,8);sphere(1.3,trialMat,scene,px,y+17,pz);addSolid(px,pz,1.3)}
+ // Starting step is low; the remaining platforms ascend around the altar.
+ for(let j=0;j<9;j++){
+  const a=j*.62+.3,rad=8.8-j*.23,px=site.x+Math.cos(a)*rad,pz=site.z+Math.sin(a)*rad,top=y+1.6+j*1.4;
+  box(5.4,.65,5.4,stone,scene,px,top-.33,pz);
+  box(5.45,.12,5.45,trialMat,scene,px,top-.02,pz);
+  trialPlatforms.push({x:px,z:pz,top,w:5.4,d:5.4});
+ }
+ cyl(5.6,6.2,1.1,stone,scene,site.x,altitude-.55,site.z,18);
+ torus(5,.3,trialMat,scene,site.x,altitude+.1,site.z);
+ for(let j=0;j<6;j++){let a=j*Math.PI/3;cyl(.6,.8,4,stone,scene,site.x+Math.cos(a)*6,altitude+1.6,site.z+Math.sin(a)*6)}
+ const beacon=mesh(new T.OctahedronGeometry(2.1),trialMat,scene,site.x,altitude+4,site.z);beacon.scale.y=1.8;
+ trialPlatforms.push({x:site.x,z:site.z,top:altitude,w:10,d:10});
 }
+// Giant volcano with a broad wooden ramp and a dangerous timed lava eruption.
+const volcano={x:318,z:-295,r:66,height:64,cycle:300000,eruption:26000};
+const volcanoBase=ground(volcano.x,volcano.z);
+const volcanicRock=new T.MeshStandardMaterial({color:0x352d35,roughness:1,flatShading:true,side:T.DoubleSide});
+const molten=new T.MeshStandardMaterial({color:0xff521a,emissive:0xff3100,emissiveIntensity:1.8,transparent:true,opacity:.9,side:T.DoubleSide});
+const cone=mesh(new T.CylinderGeometry(15,volcano.r,volcano.height,20,8,true),volcanicRock,scene,volcano.x,volcanoBase+volcano.height/2,volcano.z);
+addSolid(volcano.x,volcano.z,14);
+const crater=cyl(17,17,1.2,volcanicRock,scene,volcano.x,volcanoBase+volcano.height,volcano.z,24);
+const lavaPool=cyl(13.7,13.7,.6,molten,scene,volcano.x,volcanoBase+volcano.height+.5,volcano.z,24);
+const lavaColumns=[];
+for(let j=0;j<16;j++){const a=j*Math.PI*2/16;const p=mesh(new T.ConeGeometry(2+rand(j,3)*2,8+rand(j,8)*8,6),molten,scene,volcano.x+Math.cos(a)*rand(j,7)*9,volcanoBase+volcano.height+4,volcano.z+Math.sin(a)*rand(j,11)*9);p.visible=false;lavaColumns.push(p)}
+// Continuous wide, brown timber bridge-ramp, rising from ground to crater rim.
+const volcanoRamp=[];
+const rampSteps=48;
+for(let j=0;j<rampSteps;j++){
+ const u=j/(rampSteps-1),a=u*Math.PI*3.5,rad=volcano.r+9-(volcano.r-21)*u;
+ const px=volcano.x+Math.cos(a)*rad,pz=volcano.z+Math.sin(a)*rad;
+ const top=volcanoBase+1+u*(volcano.height+1);
+ const deck=box(12,.85,8.2,mats.wood,scene,px,top-.43,pz);
+ deck.rotation.y=-a;volcanoRamp.push({x:px,z:pz,top,w:13,d:11});
+ if(j%3===0){for(const side of [-1,1]){const post=box(.8,3,.8,mats.wood,scene,px+Math.cos(a)*side*5,top+1,pz+Math.sin(a)*side*5);post.rotation.y=a}}
+}
+const volcanoTop=volcanoBase+volcano.height+1;
+const volcanoRing=torus(12,1.2,trialMat,scene,volcano.x,volcanoTop,volcano.z);
+const volcanoLabel=document.createElement("div");
+volcanoLabel.className="panel";volcanoLabel.style.cssText="position:fixed;left:50%;top:72px;transform:translateX(-50%);padding:8px 14px;font-size:12px;text-align:center;pointer-events:none;z-index:3";
+volcanoLabel.textContent="VOLCANO · eruption in 5:00";document.body.appendChild(volcanoLabel);
+let volcanoCycleStart=Date.now(),lastLavaDamage=0;
 // Animated vegetation: instanced blades and flowers sway as the breeze passes.
 const windStems = stems.instanceMatrix.array.slice(),
     windFlowers = flowers.map(f => f.instanceMatrix.array.slice());
@@ -1591,53 +1606,7 @@ renderAura = () => {
     }
 };
 renderAura();
-let trial = null,
-    trialStep = 0,
-    trialEnds = 0,
-    trialCooldown = 0;
-const trialPatterns = [
-    [0, 1, 2],
-    [2, 0, 1, 2],
-    [1, 2, 0, 1],
-    [0, 2, 1, 0, 2],
-    [1, 0, 2, 1]
-];
-
-function startTrial(site) {
-    if (Date.now() < trialCooldown) return;
-    trial = site;
-    trialStep = 0;
-    trialEnds = Date.now() + 25000;
-    document.getElementById("challengeStatus").textContent = site.name + ": press 1, 2, 3 in this order: " + trialPatterns[site.type].map(n => n + 1).join(" → ")
-}
-
-function trialInput(n) {
-    if (!trial) return;
-    let pattern = trialPatterns[trial.type];
-    if (Date.now() > trialEnds) {
-        trial = null;
-        document.getElementById("challengeStatus").textContent = "Trial expired. Return to a circle.";
-        return
-    }
-    if (n !== pattern[trialStep]) {
-        trial = null;
-        trialCooldown = Date.now() + 3500;
-        document.getElementById("challengeStatus").textContent = "Incorrect sequence. Try again.";
-        return
-    }
-    trialStep++;
-    if (trialStep === pattern.length) {
-        luckBoost = 2;
-        luckExpires = Date.now() + 180000;
-        refreshLuck();
-        save();
-        trial = null;
-        trialCooldown = Date.now() + 5000;
-        document.getElementById("challengeStatus").textContent = "TRIAL COMPLETE! ×2 luck for 3 minutes";
-        return
-    }
-    document.getElementById("challengeStatus").textContent = "Correct! " + trialStep + "/" + pattern.length + " — next key: " + (pattern[trialStep] + 1)
-}
+function awardTrial(site){if(Date.now()<site.cooldown)return;site.cooldown=Date.now()+180000;luckBoost=Math.max(luckBoost,2);luckExpires=Date.now()+180000;refreshLuck();save();$("challengeStatus").textContent=site.name+" conquered! ×2 luck for 3 minutes."}
 const keys = {},
     clock = new T.Clock();
 let yaw = 0,
@@ -1652,7 +1621,7 @@ let yaw = 0,
 window.addEventListener("keydown", e => {
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
     keys[e.code] = true;
-    if (["Digit1", "Digit2", "Digit3"].includes(e.code) && !e.repeat) trialInput(Number(e.code.slice(-1)) - 1)
+
 });
 window.addEventListener("keyup", e => keys[e.code] = false);
 let pointerLast = null,
@@ -1722,14 +1691,16 @@ function animate() {
         function legal(px, pz) {
             return Math.abs(px) <= 420 && Math.abs(pz) <= 420
         }
-        if (legal(nx, player.position.z)) player.position.x = nx;
-        if (legal(player.position.x, nz)) player.position.z = nz;
+        if (legal(nx, player.position.z)&&canStand(nx,player.position.z)) player.position.x = nx;
+        if (legal(player.position.x, nz)&&canStand(player.position.x,nz)) player.position.z = nz;
         player.position.x = Math.max(-420, Math.min(420, player.position.x));
         player.position.z = Math.max(-420, Math.min(420, player.position.z));
         let angle = Math.atan2(-dx, -dz);
         player.rotation.y += Math.atan2(Math.sin(angle - player.rotation.y), Math.cos(angle - player.rotation.y)) * Math.min(1, dt * 12)
     }
     let floor = ground(player.position.x, player.position.z);
+    for(const p of trialPlatforms.concat(volcanoRamp)){if(Math.abs(player.position.x-p.x)<p.w/2&&Math.abs(player.position.z-p.z)<p.d/2&&player.position.y>=p.top-1.5&&player.position.y<=p.top+2&&velocityY<=0)floor=Math.max(floor,p.top)}
+    if(Math.hypot(player.position.x-volcano.x,player.position.z-volcano.z)<17&&player.position.y>volcanoTop-3&&velocityY<=0)floor=Math.max(floor,volcanoTop);
     for (const p of parkourPlatforms) {
         if (Math.abs(player.position.x - p.x) < p.w / 2 && Math.abs(player.position.z - p.z) < p.d / 2 && player.position.y >= p.top - .5 && player.position.y <= p.top + 1.3 && velocityY <= 0) floor = Math.max(floor, p.top)
     }
@@ -1761,6 +1732,19 @@ function animate() {
             }
         }
     }
+    // Reward physical parkour completion instead of entering a code.
+    for(const site of trialSites){if(Math.hypot(player.position.x-site.x,player.position.z-site.z)<5.2&&Math.abs(player.position.y-site.top)<1.5)awardTrial(site)}
+    const elapsed=(Date.now()-volcanoCycleStart)%volcano.cycle;
+    const erupting=elapsed<volcano.eruption;
+    lavaPool.scale.y=erupting?2.8:1;
+    lavaPool.position.y=volcanoBase+volcano.height+(erupting?5:.5);
+    lavaColumns.forEach((o,i)=>{o.visible=erupting;o.position.y=volcanoTop+5+Math.abs(Math.sin(t*2+i))*8});
+    const radius=Math.hypot(player.position.x-volcano.x,player.position.z-volcano.z);
+    volcanoZoneActive=radius<13&&player.position.y>=volcanoTop-2;
+    if(erupting&&radius<22&&player.position.y>volcanoTop-13&&Date.now()-lastLavaDamage>2000){
+      lavaSlowUntil=Date.now()+300000;lastLavaDamage=Date.now();save();$("challengeStatus").textContent="LAVA HIT! Roll speed slowed for 5 minutes!";
+    }
+    if(frameN%18===0){const remaining=Math.ceil((volcano.cycle-elapsed)/1000),mm=Math.floor(remaining/60),ss=String(remaining%60).padStart(2,"0");volcanoLabel.textContent=erupting?"VOLCANO ERUPTING! Avoid the lava!":"VOLCANO · eruption in "+mm+":"+ss+(volcanoZoneActive?" · ×2 LUCK ACTIVE":"");}
     let stride = moving ? Math.sin(t * ((keys.ShiftLeft || keys.ShiftRight) ? 17 : 11)) * .65 : 0;
     arms[0].rotation.x = stride;
     arms[1].rotation.x = -stride;
@@ -1839,15 +1823,8 @@ function animate() {
     if (++frameN % 18 === 0) {
         refreshLuck();
         let remaining = Math.max(0, Math.ceil((luckExpires - Date.now()) / 1000));
-        document.getElementById("luckStatus").textContent = remaining ? "Luck ×" + luckBoost + " · " + Math.ceil(remaining / 60) + "m remaining" : "Luck ×1";
-        if (trial && Date.now() > trialEnds) {
-            trial = null;
-            document.getElementById("challengeStatus").textContent = "Trial timed out. Find a circle to retry."
-        }
-        if (!trial && Date.now() > trialCooldown) {
-            let site = trialSites.find(p => Math.hypot(player.position.x - p.x, player.position.z - p.z) < 6);
-            if (site) startTrial(site)
-        }
+        
+        const activeLuck=refreshLuck();$("luckStatus").textContent="Luck ×"+activeLuck+(volcanoZoneActive?" · VOLCANO ZONE":"")+(Date.now()<lavaSlowUntil?" · LAVA SLOW "+Math.ceil((lavaSlowUntil-Date.now())/60000)+"m":"");
         let b = biomeAt(player.position.x, player.position.z);
         if (b !== lastBiome) {
             $("biome").textContent = b;
