@@ -995,7 +995,7 @@ const volcanoBase=ground(volcano.x,volcano.z);
 const volcanicRock=new T.MeshStandardMaterial({color:0x352d35,roughness:1,flatShading:true,side:T.DoubleSide});
 const molten=new T.MeshStandardMaterial({color:0xff521a,emissive:0xff3100,emissiveIntensity:1.8,transparent:true,opacity:.9,side:T.DoubleSide});
 const cone=mesh(new T.CylinderGeometry(15,volcano.r,volcano.height,20,8,true),volcanicRock,scene,volcano.x,volcanoBase+volcano.height/2,volcano.z);
-addSolid(volcano.x,volcano.z,14);
+// Crater remains accessible via the wooden ramp.
 const crater=cyl(17,17,1.2,volcanicRock,scene,volcano.x,volcanoBase+volcano.height,volcano.z,24);
 const lavaPool=cyl(13.7,13.7,.6,molten,scene,volcano.x,volcanoBase+volcano.height+.5,volcano.z,24);
 const lavaColumns=[];
@@ -1744,7 +1744,7 @@ function animate() {
     if(erupting&&radius<22&&player.position.y>volcanoTop-13&&Date.now()-lastLavaDamage>2000){
       lavaSlowUntil=Date.now()+300000;lastLavaDamage=Date.now();save();$("challengeStatus").textContent="LAVA HIT! Roll speed slowed for 5 minutes!";
     }
-    if(frameN%18===0){const remaining=Math.ceil((volcano.cycle-elapsed)/1000),mm=Math.floor(remaining/60),ss=String(remaining%60).padStart(2,"0");volcanoLabel.textContent=erupting?"VOLCANO ERUPTING! Avoid the lava!":"VOLCANO · eruption in "+mm+":"+ss+(volcanoZoneActive?" · ×2 LUCK ACTIVE":"");}
+    if(Math.floor(t*3)%3===0){const remaining=Math.ceil((volcano.cycle-elapsed)/1000),mm=Math.floor(remaining/60),ss=String(remaining%60).padStart(2,"0");volcanoLabel.textContent=erupting?"VOLCANO ERUPTING! Avoid the lava!":"VOLCANO · eruption in "+mm+":"+ss+(volcanoZoneActive?" · ×2 LUCK ACTIVE":"");}
     let stride = moving ? Math.sin(t * ((keys.ShiftLeft || keys.ShiftRight) ? 17 : 11)) * .65 : 0;
     arms[0].rotation.x = stride;
     arms[1].rotation.x = -stride;
