@@ -58,7 +58,7 @@ const glowMats=[0xffc96a,0x6ad8ff,0xb78bff,0x69ffc0,0xff765d].map(c=>new T.MeshS
 
 // Separating the five regions: water-filled ravines and four raised crossing bridges.
 const channelMaterial=new T.MeshStandardMaterial({color:0x173d65,metalness:.35,roughness:.22,transparent:true,opacity:.9});
-function channel(x,z,w,d){let y=ground(x,z)-.4;let water=box(w,.16,d,channelMaterial,scene,x,y,z);water.receiveShadow=true;for(let side of [-1,1]){let edge=box(w>.5&&w>d?w:1.4,1.3,w>d?1.4:d,mats.stoneDark,scene,x+(w>d?0:side*(w/2+.5)),y+.4,z+(w>d?side*(d/2+.5):0));edge.castShadow=true}}
+function channel(x,z,w,d){let y=ground(x,z)+.25;let water=box(w,.16,d,channelMaterial,scene,x,y,z);water.receiveShadow=true;for(let side of [-1,1]){let edge=box(w>.5&&w>d?w:1.4,1.3,w>d?1.4:d,mats.stoneDark,scene,x+(w>d?0:side*(w/2+.5)),y+.4,z+(w>d?side*(d/2+.5):0));edge.castShadow=true}}
 channel(150,0,14,860);channel(-150,0,14,860);channel(0,150,860,14);channel(0,-150,860,14);
 function crossing(x,z,alongX){let g=new T.Group();g.position.set(x,ground(x,z)+1.2,z);scene.add(g);for(let j=-9;j<=9;j++){let px=alongX?j*2:0,pz=alongX?0:j*2;box(alongX?2.1:9,.55,alongX?9:2.1,mats.wood,g,px,Math.cos(j/10*Math.PI/2)*1.1,pz);if(j%3===0){for(let side of [-1,1]){let post=box(.4,2,.4,mats.stone,g,alongX?px:side*4.2,1.4,alongX?side*4.2:pz);post.castShadow=true}}}for(let side of [-1,1])box(alongX?39:.25,.22,alongX?.25:39,mats.gold,g,alongX?0:side*4.2,2.3,alongX?side*4.2:0)}
 crossing(150,0,true);crossing(-150,0,true);crossing(0,150,false);crossing(0,-150,false);
@@ -127,7 +127,7 @@ const keys={},clock=new T.Clock();let yaw=0,pitch=.32,distance=10,dragging=false
 
 let lastBiome="",frameN=0;function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;let x=Number(!!(keys.KeyD||keys.ArrowRight))-Number(!!(keys.KeyA||keys.ArrowLeft)),z=Number(!!(keys.KeyS||keys.ArrowDown))-Number(!!(keys.KeyW||keys.ArrowUp));let moving=x!==0||z!==0;if(moving){let dx=x*Math.cos(yaw)+z*Math.sin(yaw),dz=z*Math.cos(yaw)-x*Math.sin(yaw),len=Math.hypot(dx,dz),speed=(keys.ShiftLeft||keys.ShiftRight)?13:8;let nx=player.position.x+dx/len*dt*speed,nz=player.position.z+dz/len*dt*speed;
  // Channels are only crossable at the four bridges.
- function crossed(a,b,limit){return (a<limit-7&&b>limit+7)||(a>limit+7&&b<limit-7)||(Math.abs(b-limit)<7&&Math.abs(a-limit)>=7)}
+ function crossed(a,b,limit){return Math.abs(b-limit)<7||((a<limit-7&&b>=limit-7)||(a>limit+7&&b<=limit+7))}
  let blockedX=[-150,150].some(v=>crossed(player.position.x,nx,v)&&Math.abs(nz)>6);
  let blockedZ=[-150,150].some(v=>crossed(player.position.z,nz,v)&&Math.abs(nx)>6);
  if(!blockedX)player.position.x=nx;if(!blockedZ)player.position.z=nz;player.position.x=Math.max(-420,Math.min(420,player.position.x));player.position.z=Math.max(-420,Math.min(420,player.position.z));let angle=Math.atan2(-dx,-dz);player.rotation.y+=Math.atan2(Math.sin(angle-player.rotation.y),Math.cos(angle-player.rotation.y))*Math.min(1,dt*12)}let floor=ground(player.position.x,player.position.z);if(keys.Space&&onGround){velocityY=10;onGround=false}velocityY-=25*dt;player.position.y+=velocityY*dt;if(player.position.y<=floor){player.position.y=floor;velocityY=0;onGround=true}let stride=moving?Math.sin(t*((keys.ShiftLeft||keys.ShiftRight)?17:11))*.65:0;arms[0].rotation.x=stride;arms[1].rotation.x=-stride;legs[0].rotation.x=-stride;legs[1].rotation.x=stride;rig.position.y=moving&&onGround?Math.abs(Math.sin(t*11))*.075:0;cape.rotation.x=-.15+Math.sin(t*3)*.05+(moving?-.22:0);
