@@ -1153,7 +1153,7 @@ function sculptedWaterfall(x,z,width=9,drop=19){
  return fall;
 }
 function layeredMountainRange(cx,cz,style,count=7){
- const color=style==="frost"?scenicIce:style==="ember"?volcanicRock:scenicStone;
+ const color=style==="frost"?scenicIce:style==="ember"?mats.stoneDark:scenicStone;
  for(let i=0;i<count;i++){
   const a=i*2.399,rad=22+Math.sqrt(i)*14;
   const x=cx+Math.cos(a)*rad,z=cz+Math.sin(a)*rad;
