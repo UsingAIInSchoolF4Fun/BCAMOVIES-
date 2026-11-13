@@ -1,6 +1,6 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V10.0</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V11.0</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V10.0</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · R — Turn mode · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V11.0</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · R — Turn mode · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script><script>
 "use strict";
 const A = [
@@ -509,16 +509,42 @@ const landmarkPads = [
     [30, -270, 12],
     [40, 280, 12],
     [0, 0, 47],
-    [318,-295,90]
+    [318,-295,90],
+    [-285,240,35],[-300,-100,28],[-325,-280,35],
+    [270,90,34],[-340,55,33],[210,-275,32],
+    [-55,-45,22],[-350,10,22],[340,-105,22],[-55,-350,22],[310,345,22]
 ];
 
-function rawHeight(x, z) {
-    let r = Math.hypot(x, z);
-    // Broad rolling hills plus finer ridges, with a calm central spawn region.
-    const broad=Math.sin(x*.012+Math.cos(z*.008))*Math.cos(z*.014)*7.5;
-    const ridge=Math.sin(x*.025+z*.014)*Math.cos(z*.029-x*.008)*3.8;
-    const detail=Math.sin(x*.075+z*.031)*.95+Math.cos(z*.082-x*.047)*.65;
-    return (broad+ridge+detail)*Math.min(1,r/85)
+function rawHeight(x,z){
+ // Sculpted regions: one continent, dramatic ridge-lines, lowland basins and a raised volcanic massif.
+ const r=Math.hypot(x,z);
+ const broad=Math.sin(x*.009+Math.cos(z*.006))*Math.cos(z*.011)*9;
+ const ridge=Math.sin(x*.024+z*.012)*Math.cos(z*.021-x*.009)*4;
+ const detail=Math.sin(x*.064+z*.027)*1.1+Math.cos(z*.071-x*.041)*.75;
+ let y=(broad+ridge+detail)*Math.min(1,r/82);
+ const dome=(cx,cz,rx,rz,amp)=>{
+  const d=Math.hypot((x-cx)/rx,(z-cz)/rz);
+  if(d>=1)return 0;
+  const t=1-d*d;return amp*t*t*(3-2*t);
+ };
+ // Landmark-scale terrain, not randomized object placement.
+ y+=dome(-320,-260,190,175,54); // Sky Sanctuary ridge
+ y+=dome(300,-285,170,155,43);  // Ember massif
+ y+=dome(-325,50,145,190,32);   // Frostfall mountain foothills
+ y+=dome(280,90,150,155,22);    // Crystal Canyon cliffs
+ y+=dome(-285,240,155,160,17);  // Grove plateau
+ y+=dome(210,-270,155,130,26);  // Isles highland
+ y+=dome(-300,-100,120,125,19); // Temple shelf
+ // Central bowl with elevated natural rim.
+ y+=dome(0,0,140,140,-13);
+ y+=dome(0,0,62,62,13);
+ // Ravines and water corridors: wide, curving, readable from a distance.
+ const river=Math.abs(z-(65+24*Math.sin(x*.014)+12*Math.sin(x*.035)));
+ if(x>-310&&x<345&&river<20){
+  const f=1-river/20;
+  y-=13*f*f;
+ }
+ return y;
 }
 
 function height(x, z) {
@@ -1385,6 +1411,80 @@ function conceptIsles(){
  for(const side of [-1,1])cyl(.7,.9,8,mats.stone,g,x+side*3,y+6.5,z,8);box(8,1.3,2,conceptGold,g,x,y+10.5,z)}
 }
 conceptOrigin();conceptGrove();conceptTemple();conceptCanyon();conceptFrost();conceptSky();conceptIsles();
+
+// Landmark-scale environmental silhouettes and designed traversal scenery.
+const worldWater=new T.MeshStandardMaterial({color:0x2683a5,metalness:.36,roughness:.19,transparent:true,opacity:.84,side:T.DoubleSide});
+const worldFoam=new T.MeshBasicMaterial({color:0x9cefff,transparent:true,opacity:.55,side:T.DoubleSide});
+const worldStone=new T.MeshStandardMaterial({color:0x545468,roughness:.91,flatShading:true});
+const worldSnow=new T.MeshStandardMaterial({color:0xa5cde3,roughness:.75,flatShading:true});
+const worldLava=new T.MeshStandardMaterial({color:0xff6124,emissive:0xff3408,emissiveIntensity:1.8,roughness:.5});
+function authoredRidge(cx,cz,span,count,material,seed){
+ const g=scenicAt(cx,cz);
+ for(let i=0;i<count;i++){
+  const a=i*2.399+seed,rad=span*(.3+.7*(i/count));
+  const x=Math.cos(a)*rad,z=Math.sin(a)*rad;
+  const h=18+(i%5)*7,base=ground(cx+x,cz+z)-g.position.y;
+  const peak=mesh(new T.ConeGeometry(7+i%4*2,h,5),material,g,x,base+h/2-3,z);
+  peak.rotation.y=a;peak.rotation.z=Math.sin(i*3)*.12;
+ }
+}
+function authoredRiver(){
+ const positions=[],indices=[],foam=[];
+ const n=130;
+ for(let i=0;i<=n;i++){
+  const x=-385+i*770/n,z=65+24*Math.sin(x*.014)+12*Math.sin(x*.035);
+  const y=height(x,z)+1.6;
+  for(const side of [-1,1])positions.push(x,y,z+side*8);
+  foam.push(x,y+.08,z+7);
+  if(i<n){const j=i*2;indices.push(j,j+1,j+2,j+1,j+3,j+2)}
+ }
+ const geo=new T.BufferGeometry();
+ geo.setAttribute("position",new T.Float32BufferAttribute(positions,3));geo.setIndex(indices);geo.computeVertexNormals();
+ const river=mesh(geo,worldWater);river.castShadow=false;
+ // Four stone crossings, deliberately aligned with the river corridor.
+ for(const x of [-240,-75,105,260]){
+  const z=65+24*Math.sin(x*.014)+12*Math.sin(x*.035);
+  const y=height(x,z)+3.3;
+  const bridge=box(16,1.5,29,mats.stone,scene,x,y,z);
+  bridge.castShadow=false;
+  for(const side of [-1,1]){
+   box(16,1.3,.8,worldStone,scene,x,y+1.2,z+side*13);
+   for(let k=-1;k<=1;k++)cyl(.35,.5,3,worldStone,scene,x+k*6,y+1.8,z+side*13,8);
+  }
+ }
+}
+function authoredWaterfall(x,z,width,drop){
+ const top=height(x,z)+drop*.48;
+ const g=new T.PlaneGeometry(width,drop,12,20),p=g.attributes.position;
+ for(let i=0;i<p.count;i++)p.setZ(i,Math.sin(p.getX(i)*1.6+p.getY(i)*.7)*.4);
+ g.computeVertexNormals();
+ const f=mesh(g,worldFoam,scene,x,top-drop*.5,z);f.castShadow=false;
+ const pool=mesh(new T.CircleGeometry(width*.85,28),worldWater,scene,x,top-drop+.3,z);
+ pool.rotation.x=-Math.PI/2;pool.castShadow=false;
+}
+function authoredVolcanoCrown(){
+ const g=scenicAt(318,-295);
+ const base=48;
+ for(let i=0;i<14;i++){
+  const a=i*Math.PI*2/14,r=30+i%3*5;
+  const o=mesh(new T.ConeGeometry(6+i%3*2,35+i%4*6,5),worldStone,g,Math.cos(a)*r,base*.3,Math.sin(a)*r);
+  o.rotation.z=Math.sin(a*3)*.16;
+ }
+ for(let i=0;i<9;i++){
+  const a=i*Math.PI*2/9;
+  const stream=box(1.3,24+i%3*6,1.4,worldLava,g,Math.cos(a)*36,23,Math.sin(a)*36);
+  stream.rotation.z=Math.cos(a)*.25;
+ }
+}
+authoredRidge(-325,-280,110,22,worldSnow,1);
+authoredRidge(-340,55,95,20,worldSnow,2);
+authoredRidge(270,90,82,14,worldStone,3);
+authoredRidge(318,-295,110,19,worldStone,4);
+authoredRiver();
+authoredWaterfall(-170,80,18,22);
+authoredWaterfall(140,85,16,19);
+authoredWaterfall(285,125,20,24);
+authoredVolcanoCrown();
 const launchTowers=[
  {x:-55,z:-45,h:65,c:0xffd589,a:.9,name:"Origin"},
  {x:-350,z:10,h:78,c:0x9cecff,a:1.2,name:"Frost"},
