@@ -1382,7 +1382,7 @@ function conceptIsles(){
  const g=scenicAt(210,-275);
  for(let i=0;i<4;i++){const a=i*2.399,r=12+i*8,y=17+i*8,x=Math.cos(a)*r,z=Math.sin(a)*r;
  cyl(8+i*2,5+i,3.2,mats.stoneDark,g,x,y,z,10);cyl(7+i*2,8+i*2,1.3,conceptLeaf,g,x,y+2.2,z,10);
- conceptArch(g,x,z,6,8,mats.stone,conceptGold)}
+ for(const side of [-1,1])cyl(.7,.9,8,mats.stone,g,x+side*3,y+6.5,z,8);box(8,1.3,2,conceptGold,g,x,y+10.5,z)}
 }
 conceptOrigin();conceptGrove();conceptTemple();conceptCanyon();conceptFrost();conceptSky();conceptIsles();
 const launchTowers=[
