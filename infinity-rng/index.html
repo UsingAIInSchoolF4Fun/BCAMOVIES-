@@ -1,6 +1,6 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V8.0</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V8.1</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V8.0</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · R — Turn mode · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V8.1</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · R — Turn mode · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script><script>
 "use strict";
 const A = [
@@ -732,34 +732,17 @@ function biomeAt(x, z) {
     if (z > 160) return "Whispering Forest";
     return "The Origin"
 }
-for (let i = 0; i < 420; i++) {
-    // Large regional groves and rock fields, not random clutter at buildings.
-    const regions=[[-260,235,95],[-305,-120,88],[200,255,96],[235,-155,87],[-85,-270,90],[-100,260,78]];
-    const reg=regions[i%regions.length];
-    let a=rand(i,7)*Math.PI*2,rad=Math.sqrt(rand(i,91))*reg[2];
-    let x=reg[0]+Math.cos(a)*rad,z=reg[1]+Math.sin(a)*rad;
-    if(!clearForScenery(x,z,3))continue;
-    let biome = biomeAt(x, z),
-        v = rand(i, 37);
-    if (biome === "Whispering Forest") {
-        if (v < .86) tree(x, z, .45 + rand(i, 12) * 2.8, v < .18 ? "ancient" : v < .55 ? "broad" : "pine");
-        else rock(x, z, 1 + v * 2)
-    } else if (biome === "Frozen Expanse") {
-        if (v < .42) tree(x, z, .5 + rand(i, 42) * 2.3, "pine");
-        else if (v < .7) rock(x, z, 1 + v * 2, mats.snow);
-        else crystal(x, z, 1.5 + v, mats.ice)
-    } else if (biome === "Ember Wastes") {
-        if (v < .45) rock(x, z, 1 + v * 3, mats.stoneDark);
-        else crystal(x, z, 1.5 + v, mats.lava)
-    } else if (biome === "Astral Highlands") {
-        if (v < .5) rock(x, z, 1 + v * 3);
-        else crystal(x, z, 1.5 + v)
-    } else {
-        if (v < .45) tree(x, z, .5 + rand(i, 72) * 2.5, v < .15 ? "ancient" : v < .3 ? "pine" : "broad");
-        else if (v < .75) rock(x, z, 1 + v * 2);
-        else crystal(x, z, 1 + v)
-    }
-}
+// Curated, hand-placed grove compositions.
+for(const [kind,points] of [
+ ["ancient",[[-318,235,2.5],[-300,252,1.8],[-286,279,2.2],[-344,262,1.5],[-321,292,2.6]]],
+ ["broad",[[172,305,2.3],[194,326,1.7],[216,310,2.5],[237,331,1.9],[259,312,2.1]]],
+ ["pine",[[314,234,1.7],[335,249,2.4],[353,224,1.8],[377,254,2.1]]],
+ ["pine",[[-375,20,2.1],[-390,48,1.5],[-359,70,2.2],[-401,92,1.9]]]
+])for(const [x,z,size] of points)if(clearForScenery(x,z,3))tree(x,z,size,kind);
+for(const [x,z,size,mat] of [[-365,-125,2.5,mats.snow],[-345,-145,3.2,mats.snow],[155,-205,2.3,mats.stoneDark],[183,-220,3.5,mats.stoneDark]])
+ if(clearForScenery(x,z,3))rock(x,z,size,mat);
+for(const [x,z,size] of [[170,125,3.1],[184,143,2.2],[203,128,4.1],[226,154,2.8]])
+ if(clearForScenery(x,z,2))crystal(x,z,size);
 // Spawn plaza: symmetrical stone approach and four formal crystal gardens.
 for(let i=0;i<24;i++){
  let a=i*Math.PI/12,x=Math.cos(a)*38,z=Math.sin(a)*38;
@@ -800,53 +783,10 @@ const flowers = flowerMaterials.map(m => {
     return o
 });
 const dummy = new T.Object3D();
-for (let i = 0; i < 8500; i++) {
-    let x = (rand(i, 303) - .5) * 820,
-        z = (rand(i, 701) - .5) * 820;
-    if(!clearForScenery(x,z,1)){dummy.position.set(0,-500,0);dummy.scale.setScalar(.001);dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);continue;}
-    dummy.position.set(x, ground(x, z) + .25, z);
-    dummy.rotation.set(rand(i, 29) * .4, rand(i, 91) * 6, rand(i, 49) * .3);
-    dummy.scale.setScalar(.45 + rand(i, 57) * 1.8);
-    dummy.updateMatrix();
-    stems.setMatrixAt(i, dummy.matrix)
-}
+for(let i=0;i<8500;i++){dummy.position.set(0,-500,0);dummy.scale.setScalar(.001);dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);}
 stems.instanceMatrix.needsUpdate = true;
-flowers.forEach((f, j) => {
-    for (let i = 0; i < 180; i++) {
-        let x = (rand(i + j * 250, 13) - .5) * 760,
-            z = (rand(i + j * 250, 27) - .5) * 760;
-        if(!clearForScenery(x,z,1)){dummy.position.set(0,-500,0);dummy.scale.setScalar(.001);dummy.updateMatrix();f.setMatrixAt(i,dummy.matrix);continue;}
-        dummy.position.set(x, ground(x, z) + .45, z);
-        dummy.rotation.set(0, rand(i, 22) * 6, 0);
-        dummy.scale.setScalar(.65 + rand(i, 54) * 1.1);
-        dummy.updateMatrix();
-        f.setMatrixAt(i, dummy.matrix)
-    }
-    f.instanceMatrix.needsUpdate = true
-});
-for (let i = 0; i < 110; i++) {
-    let x = (rand(i, 111) - .5) * 790,
-        z = (rand(i, 222) - .5) * 790;
-    if (!clearForScenery(x,z,4)) continue;
-    let y = ground(x, z);
-    if (i % 4 === 0) {
-        let trunk = cyl(.2, .3, 3 + rand(i, 7) * 3, mats.wood, scene, x, y + .4, z, 7);
-        trunk.rotation.z = 1.48;
-        trunk.rotation.y = rand(i, 88) * 6
-    } else if (i % 4 === 1) {
-        for (let j = 0; j < 5; j++) {
-            let a = j * 1.26;
-            let leaf = mesh(new T.ConeGeometry(.28, 1.4, 4), mats.leaf, scene, x + Math.cos(a) * .3, y + .7, z + Math.sin(a) * .3);
-            leaf.rotation.z = Math.cos(a) * .45;
-            leaf.rotation.x = Math.sin(a) * .45
-        }
-    } else if (i % 4 === 2) {
-        for (let j = 0; j < 4; j++) rock(x + rand(i + j, 14) * 3, z + rand(i + j, 17) * 3, .2 + rand(i + j, 31) * .45, mats.stone)
-    } else {
-        cyl(.3, .45, 1.5, mats.stoneDark, scene, x, y + .75, z, 8);
-        sphere(.38, mats.gold, scene, x, y + 1.7, z)
-    }
-}
+// Removed randomly placed flowers.);
+// Removed unplanned randomly scattered scenery.
 
 // Landmarks with individual architecture and silhouettes: observatory, bridge, watchtowers, shrines and village.
 function landmarkGroup(x, z) {
@@ -1164,81 +1104,19 @@ function layeredMountainRange(cx,cz,style,count=7){
   if(style==="ember")spire(scene,x,cliff.top-2,z,2.5,h*.28,scenicPink);
  }
 }
-layeredMountainRange(-340,120,"frost",9);
-layeredMountainRange(-300,-170,"stone",8);
-layeredMountainRange(275,140,"stone",9);
-layeredMountainRange(215,-170,"ember",8);
-layeredMountainRange(-75,-310,"stone",8);
-sculptedWaterfall(-345,115,9,17);
-sculptedWaterfall(285,145,11,21);
-sculptedWaterfall(-315,-180,7,14);
-stoneStairRail(0,-46);
-stoneStairRail(105,175);
-environmentFX.push(waterfallMaterial);
-// Expose a shared material animation hook; no additional animation loop.
+// Floating cliffs and waterfalls disabled until grounded terrain integration.\n// Expose a shared material animation hook; no additional animation loop.
 const glowMats = [0xffc96a, 0x6ad8ff, 0xb78bff, 0x69ffc0, 0xff765d].map(c => new T.MeshStandardMaterial({
     color: c,
     emissive: c,
     emissiveIntensity: .9,
     roughness: .2
 }));
-for (let i = 0; i < 145; i++) {
-    let x = (rand(i, 410) - .5) * 790,
-        z = (rand(i, 611) - .5) * 790,
-        y = ground(x, z);
-    if (!clearForScenery(x,z,2)) continue;
-    let color = glowMats[(i + Math.floor(Math.abs(x) / 160)) % 5];
-    if (i % 3 === 0) {
-        cyl(.17, .3, 3, mats.stoneDark, scene, x, y + 1.5, z, 8);
-        sphere(.33, color, scene, x, y + 3.15, z)
-    } else if (i % 3 === 1) {
-        let o = mesh(new T.OctahedronGeometry(.4 + rand(i, 20) * .7, 0), color, scene, x, y + 1.3, z);
-        o.scale.y = 2.4
-    } else {
-        let a = rand(i, 78) * 6.28;
-        for (let j = 0; j < 5; j++) mesh(new T.OctahedronGeometry(.13 + rand(j, 90) * .15), color, scene, x + Math.cos(a + j) * 1.1, y + .3 + rand(j, 22) * .6, z + Math.sin(a + j) * 1.1)
-    }
-}
-for (let i = 0; i < 55; i++) {
-    let x = (rand(i, 981) - .5) * 770,
-        z = (rand(i, 982) - .5) * 770;
-    if (!clearForScenery(x,z,6)) continue;
-    let y = ground(x, z),
-        g = new T.Group();
-    g.position.set(x, y, z);
-    scene.add(g);
-    for (let j = 0; j < 4; j++) {
-        let a = j * Math.PI / 2;
-        box(.6, 3, .6, mats.stone, g, Math.cos(a) * 2, 1.5, Math.sin(a) * 2)
-    }
-    cyl(3.3, 3.3, .45, mats.stoneDark, g, 0, 3.2, 0, 8);
-    let orb = sphere(.65, glowMats[i % 5], g, 0, 4.4, 0);
-    orb.scale.y = 1.3
-}
+// Removed unplanned randomly scattered scenery.
+// Removed unplanned randomly scattered scenery.
 
 // One connected world: winding earth-colored paths replace island gaps and bridges.
 
-// Scatter vegetation after all helpers (ground, biomeAt, pathDistance) exist
-(function scatterVegetation() {
-    for (let i = 0; i < 380; i++) {
-        const a = rand(i, 77) * Math.PI * 2;
-        const r = 14 + rand(i, 88) * 210;
-        const x = Math.cos(a) * r + (rand(i, 11) - 0.5) * 16;
-        const z = Math.sin(a) * r + (rand(i, 22) - 0.5) * 16;
-        if (!clearForScenery(x,z,2)) continue;
-        if (Math.abs(x) > 270 || Math.abs(z) > 270) continue;
-        const h = ground(x, z);
-        if (h < -15 || h > 20) continue;
-        let biome = "Origin";
-        try { biome = biomeAt(x, z); } catch(e) {}
-        if (biome === "Ember Wastes" && rand(i, 33) > 0.4) continue;
-        if (rand(i, 44) > 0.58) addGrassClump(x, z);
-        else if (rand(i, 55) > 0.75) addFlower(x, z);
-    }
-})();
-
-
-const trialSites=[{x:75,z:65,name:"Crystal Spires",type:0},{x:-235,z:50,name:"Frozen Citadel",type:1},{x:230,z:-35,name:"Ember Fortress",type:2},{x:45,z:-240,name:"Astral Sanctuary",type:3},{x:20,z:250,name:"Forest Temple",type:4}];
+// Removed global vegetation scatter.\nconst trialSites=[{x:75,z:65,name:"Crystal Spires",type:0},{x:-235,z:50,name:"Frozen Citadel",type:1},{x:230,z:-35,name:"Ember Fortress",type:2},{x:45,z:-240,name:"Astral Sanctuary",type:3},{x:20,z:250,name:"Forest Temple",type:4}];
 const trialMat=new T.MeshStandardMaterial({color:0x73eaff,emissive:0x28bfff,emissiveIntensity:1.1});
 const trialPlatforms=[];
 const solidObstacles=[];
