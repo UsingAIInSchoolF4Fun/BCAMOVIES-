@@ -16,7 +16,7 @@ function trim(x,z,w,d){box(x,3.95,z,w,.16,d,M.dark,false)}
 function wall(x,z,w,d){box(x,2,z,w,4,d,M.wall);trim(x,z,w,d);box(x,.16,z,w,.22,d,M.dark,false)}
 function segmentX(x1,x2,z,doors=[]){let from=x1;for(const [a,b] of doors){if(a>from)wall((from+a)/2,z,a-from,.35);from=b}if(x2>from)wall((from+x2)/2,z,x2-from,.35)}
 function segmentZ(z1,z2,x,doors=[]){let from=z1;for(const [a,b] of doors){if(a>from)wall(x,(from+a)/2,.35,a-from);from=b}if(z2>from)wall(x,(from+z2)/2,.35,z2-from)}
-box(0,-.22,0,54,.4,54,M.floor,false);box(0,4.15,0,54,.24,54,M.dark,false);
+box(0,-.22,0,54,.4,54,M.floor,false);// Open roof removed to support the playable upper level.
 for(let i=-26;i<=26;i+=2){box(i,.008,0,.025,.018,52,M.concrete,false);box(0,.009,i,52,.018,.025,M.concrete,false)}
 wall(0,-26,52,.55);wall(-14,26,24,.55);wall(14,26,24,.55);const breachBarricade=box(0,2,26,4,4,.4,M.wood);breachBarricade.userData.isBreach=true;for(const y of [.5,1.25,2,2.75,3.5]){const plank=box(0,y,26.24,3.8,.19,.09,M.wood,false);plank.userData.breachDetail=true}for(const x of [-1.6,1.6]){const p=box(x,2,26.33,.12,3.8,.11,M.warning,false);p.userData.breachDetail=true}wall(-26,0,.55,52);wall(26,0,.55,52);
 segmentX(-25.5,25.5,-11,[[-2,2],[14,17]]);segmentX(-25.5,25.5,11,[[-18,-15],[-2,2]]);segmentZ(-25.5,25.5,-11,[[-3,0],[17,20]]);segmentZ(-25.5,25.5,11,[[-18,-15],[0,3]]);
