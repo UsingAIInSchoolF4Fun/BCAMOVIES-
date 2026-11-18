@@ -269,6 +269,19 @@ sun.color.setHex(0xffe0be);
 sun.intensity = 1.16;
 sun.shadow.mapSize.set(1536, 1536);
 renderer.toneMappingExposure = 1.13;
+
+// A continuous painted twilight sky replaces the featureless solid horizon.
+// One large background sphere, one shader draw call and no expensive post FX.
+const skyDomeMaterial=new T.ShaderMaterial({
+ uniforms:{uTime:{value:0}},
+ side:T.BackSide,depthWrite:false,depthTest:false,fog:false,
+ vertexShader:"varying vec3 vDirection;void main(){vDirection=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
+ fragmentShader:"uniform float uTime;varying vec3 vDirection;void main(){vec3 d=normalize(vDirection);float h=d.y;vec3 peach=vec3(.98,.62,.49);vec3 lilac=vec3(.53,.37,.67);vec3 indigo=vec3(.19,.22,.44);vec3 sky=mix(peach,lilac,smoothstep(-.15,.37,h));sky=mix(sky,indigo,smoothstep(.28,.89,h));float sun=max(dot(d,normalize(vec3(-.65,.21,.48))),0.0);sky+=vec3(.51,.23,.06)*pow(sun,11.0);float haze=sin(d.x*47.0+uTime*.025+sin(d.z*23.0)*1.8)*sin(d.z*31.0-uTime*.012);sky+=vec3(.055,.035,.075)*haze*(1.0-smoothstep(.35,.9,h));gl_FragColor=vec4(sky,1.0);}"
+});
+const skySphere=new T.Mesh(new T.SphereGeometry(1050,36,20),skyDomeMaterial);
+skySphere.renderOrder=-1000;skySphere.frustumCulled=false;skySphere.castShadow=false;
+skySphere.receiveShadow=false;scene.add(skySphere);
+
 for (const [c, x, y, z, d] of [
         [0x55aaff, -110, 30, 70, 100],
         [0xff8e70, 160, 35, 140, 110],
@@ -1973,7 +1986,7 @@ function buildGroundcover(){
   {x:275,z:-183,r:47,kind:"ember"},{x:-125,z:-218,r:55,kind:"astral"},
   {x:94,z:-73,r:36,kind:"astral"}
  ];
- const capacity=3000,tufts=new T.InstancedMesh(new T.ConeGeometry(.42,1.55,4),
+ const capacity=5500,tufts=new T.InstancedMesh(new T.ConeGeometry(.42,1.55,4),
   new T.MeshStandardMaterial({color:0xffffff,roughness:.95,flatShading:true,map:biomeTextures.foliage,side:T.DoubleSide}),capacity);
  const stems=new T.InstancedMesh(new T.CylinderGeometry(.07,.1,.85,5),
   new T.MeshStandardMaterial({color:0x628f63,roughness:.9}),capacity);
@@ -1989,14 +2002,14 @@ function buildGroundcover(){
  astral:{grass:[0x6b8a8c,0x8497b0,0x877ca6],flower:[0xb9a0fd,0xf4a7dd,0x92d9ff]}
  };
  for(const patch of patches){
-  const colors=palette[patch.kind],spacing=4.4,reach=Math.floor(patch.r/spacing);
+  const colors=palette[patch.kind],spacing=5.6,reach=Math.floor(patch.r/spacing);
   for(let iz=-reach;iz<=reach;iz++)for(let ix=-reach;ix<=reach;ix++){
    const angle=ix*3.19+iz*.91,x=patch.x+ix*spacing+Math.sin(angle)*1.25;
    const z=patch.z+iz*spacing+Math.cos(angle*1.1)*1.25;
    const d=Math.hypot(x-patch.x,z-patch.z),fade=d/patch.r;
    if(fade>1||pathDistance(x,z)<11||!clearForScenery(x,z,2))continue;
    if(worldColliders.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+3))continue;
-   if(trialSites.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+27))continue;
+   if(trialSites.some(p=>Math.hypot(x-p.x,z-p.z)<27))continue;
    const yy=ground(x,z);
    if(Math.abs(ground(x+1.5,z)-ground(x-1.5,z))>1.6)continue;
    const typeIndex=(Math.abs(ix*13+iz*7+patch.r|0))%3;
@@ -3141,6 +3154,7 @@ function animate() {
         t = clock.elapsedTime;
     animateWind(t);
     animateSpawnHub(t);
+    skyDomeMaterial.uniforms.uTime.value=t;
     animateBiomeGeometry(t);
     animateRealmGateBanners(t);
     animateMeadow(t);
