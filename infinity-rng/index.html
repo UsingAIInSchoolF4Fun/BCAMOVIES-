@@ -1507,6 +1507,7 @@ function buildRealmGateway(x,z,heading,label,base,accent,color){
   // Base heights follow the actual terrain even when the road slopes.
   const wx=x+Math.cos(heading)*side*10.5,wz=z-Math.sin(heading)*side*10.5;
   const localY=ground(wx,wz)-group.position.y;
+  registerCollider(wx,wz,1.15,11);
   cyl(.8,1.1,11,rock,group,side*10.5,localY+5.5,0,10);
   cyl(1.45,1.45,.7,metal,group,side*10.5,localY+10.95,0,10);
   const cap=sphere(.95,light,group,side*10.5,localY+12,0);cap.castShadow=false;
@@ -1523,7 +1524,7 @@ function buildRealmGateway(x,z,heading,label,base,accent,color){
  crest.castShadow=false;
  const crown=mesh(new T.OctahedronGeometry(.95),light,group,0,8,0);
  crown.scale.y=1.6;
- realmGates.push({crest,crown,moving,phase:x*.03});
+ realmGates.push({crest,crown,moving,light,phase:x*.03});
 }
 buildRealmGateway(29,138,-2.75,"FOREST","#1d6744","#cbffb2",0x67e998);
 buildRealmGateway(-170,43,1.57,"FROST","#346186","#d6fcff",0x81d9ff);
@@ -1544,6 +1545,7 @@ function animateRealmGateBanners(t){
  };
  const clothUpdate=(realmGateFrame++%3)===0;
  for(const gate of realmGates){
+  gate.light.emissiveIntensity=1.02+Math.sin(t*1.9+gate.phase)*.25;
   gate.crest.rotation.y=t*.26+gate.phase;
   gate.crest.rotation.z=Math.sin(t*.5+gate.phase)*.11;
   gate.crown.rotation.y=-t*.37+gate.phase;
@@ -1928,13 +1930,13 @@ function animateBiomeGeometry(t){
  if((biomeMotionFrame++%4)!==0)return;
  const changed=new Set();
  for(const o of biomeMotion){
-  const wind=Math.sin(t*1.05+o.phase)*.028+Math.sin(t*.46+o.phase*.53)*.017;
+  const wind=Math.sin(t*1.05+o.phase)*.052+Math.sin(t*.46+o.phase*.53)*.028;
   const crystal=o.type==="crystals"||o.type==="crystalSmall";
   biomePose.position.set(o.x,o.y,o.z);
   biomePose.rotation.set(crystal?Math.sin(t*.9+o.phase)*.015:wind,
                         crystal?Math.sin(t*.22+o.phase)*.085:Math.sin(t*.7+o.phase)*.025,
                         crystal?Math.cos(t*.9+o.phase)*.012:wind*.8);
-  const pulse=crystal?1+Math.sin(t*1.35+o.phase)*.028:1;
+  const pulse=crystal?1+Math.sin(t*1.35+o.phase)*.043:1;
   biomePose.scale.set(o.sx*pulse,o.sy*pulse,o.sz*pulse);
   biomePose.updateMatrix();o.inst.setMatrixAt(o.i,biomePose.matrix);changed.add(o.inst);
  }
