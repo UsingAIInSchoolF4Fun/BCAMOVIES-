@@ -1292,6 +1292,30 @@ function buildSpawnHub(){
    if(i%2===0)sphere(.22,glow,group,px,1.65,0);
   }
  }
+
+ // Matching short wooden bridges across the two shallow cyan channels.
+ // Plank decks are simple and have their own walking collision heights.
+ for(const side of [-1,1]){
+  const cx=side*42,cz=22;
+  const bridgeGroup=new T.Group();bridgeGroup.position.set(cx,ground(cx,cz)-base,cz);root.add(bridgeGroup);
+  box(15,.14,10,darkWater,bridgeGroup,0,.17,0);
+  for(let i=0;i<11;i++){
+   const px=(i-5)*1.25;
+   const plank=box(1.19,.34,8.5,timber,bridgeGroup,px,1.08+Math.cos(px/6.4*Math.PI/2)*.24,0);
+   plank.rotation.z=.008*Math.sin(i*2);
+  }
+  for(const front of [-1,1]){
+   for(const px of [-5.6,-2.8,0,2.8,5.6]){
+    box(.28,2.1,.33,timber,bridgeGroup,px,2.1,front*4.25);
+    sphere(.19,trim,bridgeGroup,px,3.17,front*4.25);
+   }
+   const rail=box(12.4,.25,.36,timber,bridgeGroup,0,2.82,front*4.25);
+   rail.castShadow=false;
+  }
+  for(const px of [-6.1,6.1]){
+   hubLantern(cx+px,cz-5.2,bridgeGroup.position.y+.2,2.4);
+  }
+ }
  // Front compass design: memorable spawn landmark and easy navigation.
  const compass=mesh(new T.RingGeometry(3.7,4.1,8),trim,root,0,2.57,18);
  compass.rotation.x=-Math.PI/2;
@@ -1327,6 +1351,10 @@ function animateSpawnHub(t){
  });
 }
 function hubWalkHeight(x,z){
+ // The paired bridge decks also carry the character, not just the visuals.
+ if(Math.abs(Math.abs(x)-42)<6.7&&Math.abs(z-22)<4.5){
+  return ground(Math.sign(x)*42,22)+1.35;
+ }
  const d=Math.hypot(x,z);
  if(d<31.1)return spawnHub.topY+.11;
  if(Math.abs(x)<12.5&&z>=29.6&&z<45.5){
