@@ -1,6 +1,6 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V11.6</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V12.0</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V11.6</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · R — Turn mode · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V12.0</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · R — Turn mode · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script><script>
 "use strict";
 const A = [
@@ -780,16 +780,7 @@ for(const [x,z,size,mat] of [[-365,-125,2.5,mats.snow],[-345,-145,3.2,mats.snow]
  if(clearForScenery(x,z,3))rock(x,z,size,mat);
 for(const [x,z,size] of [[170,125,3.1],[184,143,2.2],[203,128,4.1],[226,154,2.8]])
  if(clearForScenery(x,z,2))crystal(x,z,size);
-// Spawn plaza: symmetrical stone approach and four formal crystal gardens.
-for(let i=0;i<24;i++){
- let a=i*Math.PI/12,x=Math.cos(a)*38,z=Math.sin(a)*38;
- crystal(x,z,1.3+(i%4)*.4);
-}
-for (let i = 0; i < 8; i++) {
-    let a = i * Math.PI / 4;
-    cyl(1.2, 1.4, 7, mats.stone, scene, Math.cos(a) * 24, 3.5, Math.sin(a) * 24, 12);
-    sphere(.9, mats.gold, scene, Math.cos(a) * 24, 7.5, Math.sin(a) * 24)
-}
+// Spawn details are now designed as a single coordinated hub below.
 for (const [x, z] of [
         [-260, -60],
         [260, 30],
@@ -1027,7 +1018,287 @@ function district(x,z,kind){
  }
  return g;
 }
-district(0,0,"plaza");
+
+// INFINITY RNG V12.0 - designed spawn hub. Mirrored buildings, curved plaza,
+// stairs, lanterns, monumental crystal fountain, arches, banners, waterfalls.
+// All geometry uses shared, stylized materials rather than scattered props.
+function buildSpawnHub(){
+ const base=ground(0,0),top=base+2.4;
+ const root=new T.Group();root.position.y=base;scene.add(root);
+ function material(color,roughness=0.82,emissive=0x000000,emissiveIntensity=0){
+  return new T.MeshStandardMaterial({color,roughness,metalness:.08,emissive,emissiveIntensity});
+ }
+ function paintedTexture(style){
+  const canvas=document.createElement("canvas");canvas.width=canvas.height=512;
+  const g=canvas.getContext("2d");let seed=style==="paving"?19:style==="roof"?41:73;
+  const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+  g.fillStyle=style==="roof"?"#241b39":style==="wood"?"#3e2925":"#645a70";g.fillRect(0,0,512,512);
+  if(style==="paving"){
+   const w=64,h=48;
+   for(let row=0;row<11;row++)for(let col=-1;col<10;col++){
+    const xx=col*w+(row%2)*w*.5,yy=row*h;
+    const v=Math.floor(random()*30);
+    g.fillStyle="rgb("+(124+v)+","+(112+v)+","+(130+v)+")";
+    g.fillRect(xx+2,yy+2,w-4,h-4);
+    g.strokeStyle="rgba(247,215,198,.25)";g.lineWidth=2;g.strokeRect(xx+3,yy+3,w-6,h-6);
+    g.fillStyle="rgba(38,26,54,.12)";g.fillRect(xx+4,yy+h-9,w-8,5);
+   }
+  }else if(style==="roof"){
+   for(let row=0;row<13;row++)for(let col=-1;col<10;col++){
+    const x=col*64+(row%2)*32,y=row*43;
+    const v=Math.floor(random()*45);
+    g.fillStyle="rgb("+(69+v)+","+(43+v*.6|0)+","+(111+v)+")";
+    g.fillRect(x+2,y+2,60,39);
+    g.strokeStyle="rgba(197,150,246,.35)";g.lineWidth=2;g.strokeRect(x+3,y+3,57,36);
+    g.fillStyle="rgba(15,7,32,.22)";g.fillRect(x+3,y+33,57,7);
+   }
+  }else{
+   for(let i=0;i<115;i++){const y=random()*512,x=random()*512;
+    g.strokeStyle="rgba(233,176,117,"+(.05+random()*.18)+")";g.lineWidth=1+random()*3;
+    g.beginPath();g.moveTo(x,y);g.bezierCurveTo(x+23,y-5,x+40,y+8,x+95,y);g.stroke();
+   }
+  }
+  const tex=new T.CanvasTexture(canvas);tex.encoding=T.sRGBEncoding;
+  tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+  return tex;
+ }
+ const pavingTex=paintedTexture("paving"),roofTex=paintedTexture("roof"),woodTex=paintedTexture("wood");
+ const paving=new T.MeshStandardMaterial({color:0xf2dfeb,map:pavingTex,bumpMap:pavingTex,bumpScale:.11,roughness:.93});
+ const slate=new T.MeshStandardMaterial({color:0xffffff,map:roofTex,bumpMap:roofTex,bumpScale:.21,roughness:.78,side:T.DoubleSide});
+ const timber=new T.MeshStandardMaterial({color:0xd6a17e,map:woodTex,roughness:.87,bumpMap:woodTex,bumpScale:.1});
+ const stone=material(0x938899),edge=material(0x55516c),trim=material(0xdcb97f,.4);
+ const plaster=material(0xc8b1ab),violet=material(0x6531a9,.46,0x200844,.25);
+ const glow=material(0xc49bff,.16,0x8a3eff,1.5),cyan=material(0x75dfff,.22,0x1e96e9,1.1);
+ const goldLight=material(0xffce79,.24,0xffae4f,1.65),leaves=material(0x437951),bloom=material(0xf3a1d5);
+ const darkWater=material(0x174a79,.26,0x075e97,.4);
+ const animations={crystal:null,halo:[],banners:[],waterfalls:[],lights:[],motes:[]};
+ // One raised, walkable 31-unit plaza with stone rims and a subtly textured surface.
+ cyl(32.5,32.5,2.36,edge,root,0,1.18,0,64);
+ cyl(31.7,31.7,.23,stone,root,0,2.35,0,64);
+ cyl(31.35,31.35,.1,paving,root,0,2.46,0,64);
+ for(const [radius,thickness,mat] of [[30.8,.27,trim],[28.4,.13,violet],[18.5,.15,trim],[12.6,.2,violet]]){
+  const tor=torus(radius,thickness,mat,root,0,2.54,0);tor.rotation.x=Math.PI/2;
+ }
+ // Broad approach and six level staircase treads; walk height is matched below.
+ for(let i=0;i<6;i++){
+  const y=.4+i*.4,z=44-i*2.65,w=23+i*.5;
+  box(w,y,2.9,stone,root,0,y/2,z);
+  box(w,.12,2.85,paving,root,0,y+.03,z);
+  box(w,.09,.17,trim,root,0,y+.1,z+1.38);
+ }
+ box(24,.22,26,paving,root,0,.05,59);
+ for(const side of [-1,1]){
+  box(.9,2.1,17.5,stone,root,side*13.5,1.1,36.5);
+  box(.42,.18,17.7,trim,root,side*13.5,2.2,36.5);
+ }
+ function hubLantern(x,z,y=2.52,post=2.5){
+  const a=new T.Group();a.position.set(x,y,z);root.add(a);
+  cyl(.16,.22,post,timber,a,0,post/2,0,8);
+  box(.85,.22,.85,edge,a,0,post+.12,0);
+  box(.66,.9,.66,goldLight,a,0,post+.7,0);
+  for(const sx of [-1,1])for(const sz of [-1,1])
+   box(.07,1,.07,trim,a,sx*.31,post+.67,sz*.31);
+  const roof=cyl(0,.69,.55,edge,a,0,post+1.48,0,4);roof.rotation.y=Math.PI/4;
+  const light=sphere(.12,goldLight,a,0,post+.7,0);light.castShadow=false;
+  animations.lights.push(light);
+ }
+ for(const x of [-12,12])for(const z of [39.5,28,15])hubLantern(x,z,z>31?.2:2.52,2.2);
+ for(const a of [-Math.PI*.72,-Math.PI*.28,Math.PI*.72,Math.PI*.28]){
+  hubLantern(Math.cos(a)*27.2,Math.sin(a)*27.2,2.52,2.5);
+ }
+ // Central fountain: stacked dressed-stone basin, turquoise water and moving magic.
+ cyl(11.6,11.85,.8,edge,root,0,2.85,-4,56);
+ cyl(10.6,10.6,.12,trim,root,0,3.31,-4,56);
+ cyl(9.9,9.9,.12,darkWater,root,0,3.4,-4,56);
+ for(const rad of [8.5,10.55]){
+  const r=torus(rad,.25,rad===8.5?glow:stone,root,0,3.49,-4);r.rotation.x=Math.PI/2;
+ }
+ cyl(7.5,8.1,1.45,edge,root,0,4.2,-4,12);
+ cyl(7.1,7.6,.32,stone,root,0,4.99,-4,12);
+ cyl(6.7,6.9,.25,trim,root,0,5.25,-4,12);
+ const crystalRig=new T.Group();crystalRig.position.set(0,5.6,-4);root.add(crystalRig);
+ const crystalMat=new T.MeshStandardMaterial({color:0xb477fa,emissive:0x7231ff,emissiveIntensity:1.1,roughness:.16,metalness:.19,flatShading:true,transparent:true,opacity:.96,side:T.DoubleSide});
+ const innerMat=new T.MeshStandardMaterial({color:0xffabed,emissive:0xbc53ff,emissiveIntensity:1.55,metalness:.12,roughness:.2,flatShading:true});
+ let mainGem=mesh(new T.OctahedronGeometry(4.4,0),crystalMat,crystalRig,0,9,0);mainGem.scale.set(.95,2.15,.83);
+ let inner=mesh(new T.OctahedronGeometry(2,0),innerMat,crystalRig,0,8.6,0);inner.scale.set(.9,2.6,.9);
+ for(const [x,z,y,size] of [[-4,-1,4.8,2.7],[4,0,5.1,2.5],[-2,3,3.2,1.8],[2,-3,3.5,2.1]]){
+  const shard=mesh(new T.OctahedronGeometry(size,0),crystalMat,crystalRig,x,y,z);
+  shard.scale.set(.67,1.55,.6);shard.rotation.z=x<0?-.26:.26;
+ }
+ for(let i=0;i<3;i++){
+  let halo=torus(6+i*1.6,.12,i===1?trim:glow,crystalRig,0,6+i*1.3,0);
+  halo.rotation.set(.15+i*.19,i*1.17,.25+i*.17);animations.halo.push(halo);
+ }
+ animations.crystal=crystalRig;
+ const magicalLight=new T.PointLight(0xb06dff,2.7,47,2);magicalLight.position.set(0,14,-4);root.add(magicalLight);
+ // Animated water strips around fountain edges.
+ const waterCanvas=document.createElement("canvas");waterCanvas.width=128;waterCanvas.height=256;
+ const wc=waterCanvas.getContext("2d"),wg=wc.createLinearGradient(0,0,128,0);
+ wg.addColorStop(0,"#1676ba");wg.addColorStop(.45,"#8bebff");wg.addColorStop(.66,"#4bb9ed");wg.addColorStop(1,"#0c538e");
+ wc.fillStyle=wg;wc.fillRect(0,0,128,256);
+ for(let i=0;i<65;i++){wc.fillStyle="rgba(224,254,255,"+(.15+(i%4)*.12)+")";wc.fillRect((i*47)%128,(i*37)%256,1+(i%3),12+(i%5)*5);}
+ const fallingTex=new T.CanvasTexture(waterCanvas);fallingTex.encoding=T.sRGBEncoding;
+ fallingTex.wrapS=fallingTex.wrapT=T.RepeatWrapping;fallingTex.repeat.set(1,2);
+ const fallingMaterial=new T.MeshBasicMaterial({map:fallingTex,transparent:true,opacity:.88,side:T.DoubleSide,depthWrite:false});
+ for(let i=0;i<14;i++){
+  const a=i*Math.PI*2/14;
+  const sheet=mesh(new T.PlaneGeometry(3.8,1.8),fallingMaterial,root,Math.sin(a)*10.6,2.56,Math.cos(a)*10.6-4);
+  sheet.rotation.y=a;sheet.castShadow=false;
+ }
+ animations.waterfalls.push(fallingTex);
+ // Symmetrical stone archways behind the crystal with ivy and gold trim.
+ function hubArch(cx,z,width=7.4){
+  const height=8.6,localY=2.45;
+  for(const side of [-1,1]){
+   box(2,height,2.8,stone,root,cx+side*width,localY+height/2,z);
+   box(2.4,.6,3.2,trim,root,cx+side*width,localY+.48,z);
+   box(2.5,.48,3.4,edge,root,cx+side*width,localY+height+.15,z);
+  }
+  let round=mesh(new T.TorusGeometry(width,1.04,8,32,Math.PI),stone,root,cx,localY+height,z);
+  round.castShadow=false;
+  let gild=mesh(new T.TorusGeometry(width, .12,6,32,Math.PI),trim,root,cx,localY+height-.06,z+.62);
+  gild.castShadow=false;
+ }
+ hubArch(-20.5,-27,7.8);hubArch(20.5,-27,7.8);
+ // Real textured banners with infinity insignia; animate a restrained sway.
+ function bannerTexture(){
+  const can=document.createElement("canvas");can.width=256;can.height=512;
+  const ctx=can.getContext("2d");const grad=ctx.createLinearGradient(0,0,256,512);
+  grad.addColorStop(0,"#53229b");grad.addColorStop(.6,"#6b26bc");grad.addColorStop(1,"#2c0b59");
+  ctx.fillStyle=grad;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(242,0);ctx.lineTo(242,408);ctx.lineTo(128,504);ctx.lineTo(14,408);ctx.closePath();ctx.fill();
+  ctx.lineWidth=10;ctx.strokeStyle="#efbc6a";ctx.stroke();
+  ctx.fillStyle="#f6d4ff";ctx.font="bold 166px Georgia";ctx.textAlign="center";ctx.fillText("∞",128,267);
+  ctx.fillStyle="#ffc874";ctx.font="bold 74px Georgia";ctx.fillText("✦",128,414);
+  const texture=new T.CanvasTexture(can);texture.encoding=T.sRGBEncoding;return texture;
+ }
+ const bannerMat=new T.MeshBasicMaterial({map:bannerTexture(),transparent:true,side:T.DoubleSide,depthWrite:false});
+ for(const [x,z] of [[-11,-30],[11,-30],[-15,37],[15,37]]){
+  box(4.5,.3,.4,timber,root,x,15.9,z);
+  for(const side of [-1,1])sphere(.25,trim,root,x+side*2.4,15.9,z);
+  let banner=mesh(new T.PlaneGeometry(3.7,7.6),bannerMat,root,x,11.75,z+.25);
+  banner.castShadow=false;animations.banners.push(banner);
+ }
+ // Mirrored merchant cottages: framed plaster walls, shingled roofs,
+ // porch counters, warm lit windows, readable neon signs.
+ function shopBuilding(x,label){
+  const g=new T.Group();g.position.set(x,.35,-6);root.add(g);
+  const baseY=ground(x,-6)-base+.05;g.position.y=baseY;
+  box(23,1.1,17,edge,g,0,.55,0);
+  box(21.5,8.1,15.5,plaster,g,0,5.4,0);
+  for(const sx of [-1,1]){
+   box(.75,9,.82,timber,g,sx*10.7,5.6,7.9);
+   box(.6,9,.82,timber,g,sx*10.7,5.6,-7.9);
+   box(1.4,1.0,16,timber,g,sx*10.4,8.7,0);
+  }
+  for(const y of [2.4,8.5]){
+   box(22,.62,.8,timber,g,0,y,7.8);
+   box(22,.62,.8,timber,g,0,y,-7.8);
+  }
+  for(const xw of [-6.6,6.6]){
+   box(3.9,3.2,.24,edge,g,xw,5.1,7.99);
+   box(3.25,2.62,.25,goldLight,g,xw,5.1,8.14);
+   box(.26,3.1,.4,timber,g,xw,5.1,8.39);
+   box(3.9,.25,.4,timber,g,xw,5.1,8.39);
+  }
+  box(4.5,5.7,.38,edge,g,0,4.1,8.03);
+  box(3.9,5.15,.3,timber,g,0,4.0,8.29);
+  box(2.8,3.7,.12,material(0x371f3c,.5),g,0,3.8,8.48);
+  for(const side of [-1,1]){
+   const roof=box(13.5,.72,19.9,slate,g,side*5.6,11,0);
+   roof.rotation.z=-side*.53;
+   box(.65,12.3,.65,timber,g,side*7,6.1,8.5);
+   box(.6,3.4,.6,timber,g,side*10.5,1.9,10.8);
+   sphere(1.25,leaves,g,side*12.1,3,11.8);
+  }
+  cyl(.45,.5,19.8,timber,g,0,14.1,0,6).rotation.x=Math.PI/2;
+  box(21,.4,5.5,timber,g,0,8.25,10.8);
+  box(21,.28,5.5,violet,g,0,8.48,10.8);
+  box(18,.35,3.2,timber,g,0,3.1,10.5);
+  for(let i=0;i<6;i++){
+   const px=-7.7+i*3.05;
+   box(1.85,1.0,1.7,edge,g,px,4.05,10.5);
+   let gem=mesh(new T.OctahedronGeometry(.52,0),i%2?cyan:glow,g,px,4.9,10.5);
+   gem.scale.y=1.7;
+  }
+  // Legible, illuminated sign on the front gable.
+  const signCanvas=document.createElement("canvas");signCanvas.width=512;signCanvas.height=192;
+  const c=signCanvas.getContext("2d");c.clearRect(0,0,512,192);
+  c.textAlign="center";c.shadowColor="#ab58ff";c.shadowBlur=23;
+  c.font="bold 104px Arial";c.fillStyle="#e5bdff";c.fillText("∞",256,85);
+  c.font=label==="UPGRADES"?"bold 58px Arial":"bold 80px Arial";
+  c.fillStyle="#ffffff";c.shadowBlur=19;c.fillText(label,256,164);
+  const signTex=new T.CanvasTexture(signCanvas);signTex.encoding=T.sRGBEncoding;
+  const sign=mesh(new T.PlaneGeometry(13.5,5.1),new T.MeshBasicMaterial({map:signTex,transparent:true,depthWrite:false,side:T.DoubleSide}),g,0,11.3,10.6);
+  sign.castShadow=false;
+  const lamp=new T.PointLight(0xffb36d,1.5,22,2);lamp.position.set(0,6,9);g.add(lamp);
+  // Beds and trimmed shrubs are placed in matching pairs, away from walkways.
+  for(const sx of [-1,1]){
+   box(3.8,1,3.6,stone,g,sx*13.1,.65,11.4);
+   for(let i=0;i<4;i++){
+    sphere(.78+(i%2)*.18,i%3===0?bloom:leaves,g,sx*13.1+Math.cos(i*1.57)*.9,1.55,11.4+Math.sin(i*1.57)*.9);
+   }
+  }
+ }
+ shopBuilding(-43,"SHOP");shopBuilding(43,"UPGRADES");
+ // Waterfall cliffs and shallow pools in the rear corners, giving symmetry.
+ for(const side of [-1,1]){
+  const cx=side*45,cz=-39;
+  box(16,10,6,edge,root,cx,4,cz-2.5);
+  for(let i=0;i<5;i++){
+   box(3.05,7+(i%3)*1.5,6.1,stone,root,cx+(i-2)*3.05,4.1,cz-2.6);
+  }
+  const fall=mesh(new T.PlaneGeometry(12.5,10),fallingMaterial,root,cx,5,cz+1.1);
+  fall.castShadow=false;
+  cyl(8,8,.14,darkWater,root,cx,.1,cz+5.8,20);
+  for(let i=0;i<5;i++){
+   const a=i*1.256;
+   sphere(1.25,leaves,root,cx+Math.cos(a)*10,1.7,cz+Math.sin(a)*8);
+  }
+ }
+ // Front compass design: memorable spawn landmark and easy navigation.
+ const compass=mesh(new T.RingGeometry(3.7,4.1,8),trim,root,0,2.57,18);
+ compass.rotation.x=-Math.PI/2;
+ for(let i=0;i<4;i++){
+  const a=i*Math.PI/2;
+  let dart=mesh(new T.ConeGeometry(.77,4.1,3),i%2?glow:trim,root,Math.sin(a)*3.3,2.58,18+Math.cos(a)*3.3);
+  dart.rotation.x=Math.PI/2;dart.rotation.z=-a;dart.castShadow=false;
+ }
+ for(let i=0;i<16;i++){
+  const a=i*Math.PI/8,r=9.4;
+  const m=mesh(new T.OctahedronGeometry(.23+(i%3)*.08,0),i%3?glow:cyan,root,Math.cos(a)*r,8+(i%3)*.9,Math.sin(a)*r-4);
+  m.castShadow=false;animations.motes.push({mesh:m,phase:i*.91,x:m.position.x,y:m.position.y,z:m.position.z});
+ }
+ // Performance: tiny props do not need to cast dynamically calculated shadows.
+ root.traverse(o=>{if(o.isMesh&&o.geometry&&o.geometry.boundingSphere===null)o.geometry.computeBoundingSphere();
+   if(o.isMesh&&o.geometry&&o.geometry.boundingSphere&&o.geometry.boundingSphere.radius<1.3)o.castShadow=false;
+ });
+ return {baseY:base,topY:top,crystal:animations.crystal,halo:animations.halo,banners:animations.banners,
+  waterfalls:animations.waterfalls,lights:animations.lights,motes:animations.motes,magicalLight};
+}
+const spawnHub=buildSpawnHub();
+function animateSpawnHub(t){
+ spawnHub.crystal.rotation.y=t*.14;
+ spawnHub.crystal.position.y=5.6+Math.sin(t*1.45)*.18;
+ spawnHub.halo.forEach((ring,i)=>{ring.rotation.z+=.0015*(i%2?1:-1);ring.rotation.y+=.0025;});
+ spawnHub.waterfalls.forEach(tex=>{tex.offset.y=-(t*.23%1);});
+ spawnHub.banners.forEach((banner,i)=>{banner.rotation.y=Math.sin(t*1.3+i*1.4)*.06;banner.rotation.z=Math.sin(t*.9+i)*.015;});
+ spawnHub.lights.forEach((light,i)=>{light.scale.setScalar(1+Math.sin(t*5.5+i)*.045);});
+ spawnHub.magicalLight.intensity=2.6+Math.sin(t*1.7)*.24;
+ spawnHub.motes.forEach((m,i)=>{
+  m.mesh.position.set(m.x+Math.sin(t*.55+m.phase)*.7,m.y+Math.sin(t*1.3+m.phase)*.55,m.z+Math.cos(t*.55+m.phase)*.65);
+  m.mesh.rotation.y=t*.85+i;
+ });
+}
+function hubWalkHeight(x,z){
+ const d=Math.hypot(x,z);
+ if(d<31.1)return spawnHub.topY+.11;
+ if(Math.abs(x)<12.5&&z>=29.6&&z<45.5){
+  const step=Math.max(0,Math.min(5,Math.floor((45.5-z)/2.65)));
+  return spawnHub.baseY+.4+step*.4+.08;
+ }
+ return -Infinity;
+}
+
 district(-260,-60,"ruins");
 district(-235,50,"ice");
 district(260,30,"crystal");
@@ -1156,7 +1427,7 @@ const glowMats = [0xffc96a, 0x6ad8ff, 0xb78bff, 0x69ffc0, 0xff765d].map(c => new
 
 // Removed global vegetation scatter.
 const trialSites=[{x:75,z:65,name:"Crystal Spires",type:0},{x:-235,z:50,name:"Frozen Citadel",type:1},{x:230,z:-35,name:"Ember Fortress",type:2},{x:45,z:-240,name:"Astral Sanctuary",type:3},{x:20,z:250,name:"Forest Temple",type:4}];
-// V11.6 authored landscape: five distinct scenic compositions, not random scatter.
+// V12.0 authored landscape: five distinct scenic compositions, not random scatter.
 (function populateOpenWorld(){
  const trunkGeo=new T.CylinderGeometry(.25,.39,3.5,7),crownGeo=new T.ConeGeometry(2.1,6.5,8),rockGeo=new T.DodecahedronGeometry(1,0);
  const zones=[
@@ -1639,6 +1910,8 @@ for(const tower of launchTowers){
 let gliding=false,glideReady=0,glideBank=0;
 const glideVel=new T.Vector3();
 const player=new T.Group();scene.add(player);
+// Start on the front of the raised plaza rather than inside the crystal.
+player.position.set(0,spawnHub.topY+.5,21);
 const glideWings=new T.Group();player.add(glideWings);
 const sailMat=new T.MeshStandardMaterial({color:0xa8e6ff,emissive:0x1a6a9a,emissiveIntensity:.55,side:T.DoubleSide,transparent:true,opacity:.9,depthWrite:false});
 function makeWing(side){
@@ -2182,7 +2455,7 @@ sprintButton.onclick = () => {
 };
 const respawnButton=$("respawnButton");
 respawnButton.onclick=()=>{
- player.position.set(0,ground(0,0)+2,0);
+ player.position.set(0,spawnHub.topY+2,21);
  velocityY=0;onGround=false;gliding=false;glideVel.set(0,0,0);glideWings.visible=false;
  for(const k of Object.keys(keys))keys[k]=false;
  if(document.pointerLockElement===renderer.domElement)document.exitPointerLock();
@@ -2221,6 +2494,7 @@ function animate() {
     let dt = Math.min(clock.getDelta(), .05),
         t = clock.elapsedTime;
     animateWind(t);
+    animateSpawnHub(t);
     for(const fx of environmentFX)fx.uniforms.uTime.value=t;
     for (const c of cloudGroups) {
         c.g.position.x += c.speed * dt;
@@ -2292,6 +2566,8 @@ function animate() {
       glideWings.visible=false;player.rotation.z*=Math.max(0,1-8*dt);player.rotation.x*=Math.max(0,1-8*dt);
     }
     let floor = ground(player.position.x, player.position.z);
+    // The plaza and the broad staircase are real walkable collision surfaces.
+    floor=Math.max(floor,hubWalkHeight(player.position.x,player.position.z));
     for(const tw of launchTowers){
       const dx=player.position.x-tw.x,dz=player.position.z-tw.z,r=Math.hypot(dx,dz);
       if(Math.abs(r-tw.rampRadius)>3.4)continue;
