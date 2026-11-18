@@ -1958,6 +1958,86 @@ regionalWeather(300,-241,96,105,113,0xff9d35,"rise",2.6);
 regionalWeather(-100,-267,105,111,98,0xb9a2ff,"rise",.7);
 regionalWeather(293,303,97,83,87,0xffd19a,"rise",.43);
 
+
+// Designed groundcover patches give each biome texture at player height.
+// One tuft mesh + one stem mesh + one bloom mesh = three draw calls total.
+const meadowAnimations=[];
+function buildGroundcover(){
+ const patches=[
+  {x:73,z:126,r:64,kind:"forest"},{x:94,z:296,r:69,kind:"forest"},
+  {x:169,z:304,r:53,kind:"forest"},{x:-287,z:258,r:48,kind:"forest"},
+  {x:-126,z:128,r:49,kind:"forest"},{x:-68,z:84,r:36,kind:"forest"},
+  {x:-292,z:88,r:60,kind:"frost"},{x:-324,z:-130,r:56,kind:"frost"},
+  {x:212,z:74,r:55,kind:"crystal"},{x:317,z:135,r:56,kind:"crystal"},
+  {x:218,z:188,r:40,kind:"desert"},{x:308,z:318,r:51,kind:"desert"},
+  {x:275,z:-183,r:47,kind:"ember"},{x:-125,z:-218,r:55,kind:"astral"},
+  {x:94,z:-73,r:36,kind:"astral"}
+ ];
+ const capacity=3000,tufts=new T.InstancedMesh(new T.ConeGeometry(.42,1.55,4),
+  new T.MeshStandardMaterial({color:0xffffff,roughness:.95,flatShading:true,map:biomeTextures.foliage,side:T.DoubleSide}),capacity);
+ const stems=new T.InstancedMesh(new T.CylinderGeometry(.07,.1,.85,5),
+  new T.MeshStandardMaterial({color:0x628f63,roughness:.9}),capacity);
+ const heads=new T.InstancedMesh(new T.DodecahedronGeometry(.33,0),
+  new T.MeshStandardMaterial({color:0xffffff,emissive:0x38143f,emissiveIntensity:.15,roughness:.6,flatShading:true}),capacity);
+ let nTuft=0,nHead=0;
+ const dummy=new T.Object3D(),palette={
+ forest:{grass:[0x51ae6c,0x3e8c69,0x90c879],flower:[0xffa5dc,0xf4d17f,0xadacf2]},
+ frost:{grass:[0x93bfc8,0x78c7dc,0xa7daec],flower:[0xd9f7ff,0x9fe6ff,0xf5e6ff]},
+ crystal:{grass:[0x5d9a91,0x6a93ad,0x6e84a5],flower:[0xbb7cff,0xefb0ff,0x8ef5ff]},
+ desert:{grass:[0xa9ad68,0x9db17d,0xbdac72],flower:[0xffbc7b,0xf8d59d,0xe1ac85]},
+ ember:{grass:[0x8b7766,0x96766c,0xa78672],flower:[0xffb079,0xe98a89,0xffc974]},
+ astral:{grass:[0x6b8a8c,0x8497b0,0x877ca6],flower:[0xb9a0fd,0xf4a7dd,0x92d9ff]}
+ };
+ for(const patch of patches){
+  const colors=palette[patch.kind],spacing=4.4,reach=Math.floor(patch.r/spacing);
+  for(let iz=-reach;iz<=reach;iz++)for(let ix=-reach;ix<=reach;ix++){
+   const angle=ix*3.19+iz*.91,x=patch.x+ix*spacing+Math.sin(angle)*1.25;
+   const z=patch.z+iz*spacing+Math.cos(angle*1.1)*1.25;
+   const d=Math.hypot(x-patch.x,z-patch.z),fade=d/patch.r;
+   if(fade>1||pathDistance(x,z)<11||!clearForScenery(x,z,2))continue;
+   if(worldColliders.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+3))continue;
+   if(trialSites.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+27))continue;
+   const yy=ground(x,z);
+   if(Math.abs(ground(x+1.5,z)-ground(x-1.5,z))>1.6)continue;
+   const typeIndex=(Math.abs(ix*13+iz*7+patch.r|0))%3;
+   const size=.6+Math.abs(Math.sin(angle))*.58;
+   if(nTuft>=capacity||nHead>=capacity)continue;
+   dummy.position.set(x,yy+.68*size,z);
+   dummy.rotation.set(0,angle,0);dummy.scale.set(size,size,size);dummy.updateMatrix();
+   tufts.setMatrixAt(nTuft,dummy.matrix);
+   tufts.setColorAt(nTuft++,new T.Color(colors.grass[typeIndex]));
+   if((ix*11+iz*5+patch.r|0)%5===0){
+    dummy.position.set(x+.45,yy+.53*size,z+.35);dummy.rotation.set(0,0,0);
+    dummy.scale.set(size,size,size);dummy.updateMatrix();stems.setMatrixAt(nHead,dummy.matrix);
+    const bx=x+.45,by=yy+1.04*size,bz=z+.35;
+    dummy.position.set(bx,by,bz);dummy.scale.set(size,size,size);dummy.updateMatrix();
+    heads.setMatrixAt(nHead,dummy.matrix);
+    heads.setColorAt(nHead,new T.Color(colors.flower[typeIndex]));
+    if(nHead%2===0)meadowAnimations.push({mesh:heads,index:nHead,x:bx,y:by,z:bz,size,phase:angle});
+    nHead++;
+   }
+  }
+ }
+ tufts.count=nTuft;stems.count=heads.count=nHead;
+ for(const m of [tufts,stems,heads]){
+  m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;
+  m.castShadow=false;m.receiveShadow=false;scene.add(m);
+ }
+}
+buildGroundcover();
+const meadowDummy=new T.Object3D();let meadowFrame=0;
+function animateMeadow(t){
+ if((meadowFrame++%5)!==0)return;
+ for(const o of meadowAnimations){
+  const sway=Math.sin(t*1.15+o.phase)*.11;
+  meadowDummy.position.set(o.x+sway*.25,o.y+Math.sin(t*1.1+o.phase)*.09,o.z);
+  meadowDummy.scale.setScalar(o.size);
+  meadowDummy.rotation.set(sway,Math.sin(t*.5+o.phase)*.14,sway*.7);
+  meadowDummy.updateMatrix();o.mesh.setMatrixAt(o.index,meadowDummy.matrix);
+ }
+ if(meadowAnimations.length)meadowAnimations[0].mesh.instanceMatrix.needsUpdate=true;
+}
+
 const trialMat=new T.MeshStandardMaterial({color:0x73eaff,emissive:0x28bfff,emissiveIntensity:1.1});
 const trialPlatforms=[];
 const solidObstacles=[];
@@ -3063,6 +3143,7 @@ function animate() {
     animateSpawnHub(t);
     animateBiomeGeometry(t);
     animateRealmGateBanners(t);
+    animateMeadow(t);
     for(const m of biomeAtmosphere)m.uniforms.uTime.value=t;
     for(const fx of environmentFX)fx.uniforms.uTime.value=t;
     riverFlowMaterial.uniforms.uTime.value=t;
