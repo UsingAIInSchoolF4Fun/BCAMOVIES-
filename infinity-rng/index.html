@@ -1355,6 +1355,93 @@ function buildSpawnHub(){
   waterfalls:animations.waterfalls,lights:animations.lights,motes:animations.motes,magicalLight};
 }
 const spawnHub=buildSpawnHub();
+
+// V13 biome highways: one connected, grounded path network.
+const roadPaint=surfaceTexture("#a28b78","stone",87);
+roadPaint.repeat.set(1,1);
+const roadMats={
+ forest:new T.MeshStandardMaterial({color:0xd1bd9c,map:roadPaint,roughness:1,polygonOffset:true,polygonOffsetFactor:-1}),
+ frost:new T.MeshStandardMaterial({color:0xd2d9e6,map:roadPaint,roughness:1,polygonOffset:true,polygonOffsetFactor:-1}),
+ desert:new T.MeshStandardMaterial({color:0xf1cb91,map:roadPaint,roughness:1,polygonOffset:true,polygonOffsetFactor:-1}),
+ crystal:new T.MeshStandardMaterial({color:0xbca8df,map:roadPaint,roughness:.95,polygonOffset:true,polygonOffsetFactor:-1}),
+ ember:new T.MeshStandardMaterial({color:0x9b796a,map:roadPaint,roughness:1,polygonOffset:true,polygonOffsetFactor:-1}),
+ astral:new T.MeshStandardMaterial({color:0xb6a4d4,map:roadPaint,roughness:1,polygonOffset:true,polygonOffsetFactor:-1})
+};
+const routePosts=[];
+function buildRoad(route,id){
+ const pts=route.points.map(p=>new T.Vector3(p[0],0,p[1]));
+ const curve=new T.CatmullRomCurve3(pts,false,"centripetal",.45),length=curve.getLength();
+ const count=Math.max(12,Math.ceil(length/3)),v=[],uv=[],idx=[],edges=[[],[]],edgeUvs=[[],[]],edgeIdx=[[],[]],w=route.width;
+ for(let i=0;i<=count;i++){
+  const t=i/count,p=curve.getPoint(t),tan=curve.getTangent(t);
+  const len=Math.hypot(tan.x,tan.z)||1,nx=-tan.z/len,nz=tan.x/len;
+  for(const side of [-1,1]){
+   const x=p.x+nx*side*w*.5,z=p.z+nz*side*w*.5;
+   v.push(x,ground(x,z)+.14,z);uv.push(side<0?0:1,t*length/8);
+  }
+  for(let e=0;e<2;e++)for(const off of [-.17,.17]){
+   const side=e===0?-1:1;
+   const x=p.x+nx*(side*(w/2+.23)+off),z=p.z+nz*(side*(w/2+.23)+off);
+   edges[e].push(x,ground(x,z)+.19,z);edgeUvs[e].push(off<0?0:1,t*length/8);
+  }
+  if(i<count){
+   const a=i*2;
+   idx.push(a,a+1,a+2,a+1,a+3,a+2);
+   for(const e of edgeIdx)e.push(a,a+1,a+2,a+1,a+3,a+2);
+  }
+  if(i>7&&i<count-6&&i%18===2){
+   const side=(Math.floor(i/18)+id)%2?1:-1;
+   const x=p.x+nx*side*(w*.5+4.6),z=p.z+nz*side*(w*.5+4.6);
+   if(clearForScenery(x,z,1)&&!worldColliders.some(o=>Math.hypot(x-o.x,z-o.z)<o.r+2))
+    routePosts.push({x,y:ground(x,z),z});
+  }
+ }
+ function addRibbon(pos,tex,index,mat){
+  const geo=new T.BufferGeometry();
+  geo.setAttribute("position",new T.Float32BufferAttribute(pos,3));
+  geo.setAttribute("uv",new T.Float32BufferAttribute(tex,2));
+  geo.setIndex(index);geo.computeVertexNormals();
+  const m=mesh(geo,mat);m.castShadow=false;return m;
+ }
+ addRibbon(v,uv,idx,roadMats[route.theme]);
+ const colors={forest:0x8fa28a,frost:0xc4dbea,desert:0xd6ae7b,crystal:0x8d74b3,ember:0xa57556,astral:0x8278ad};
+ const border=new T.MeshStandardMaterial({color:colors[route.theme],roughness:.9,side:T.DoubleSide});
+ for(let e=0;e<2;e++)addRibbon(edges[e],edgeUvs[e],edgeIdx[e],border);
+}
+authoredRoutes.forEach(buildRoad);
+// Instancing keeps dozens of route lights inexpensive on school Chromebooks.
+(function buildWayLights(){
+ const count=routePosts.length;
+ const woodPosts=new T.InstancedMesh(new T.CylinderGeometry(.15,.23,3.1,7),mats.wood,count);
+ const flames=new T.InstancedMesh(new T.IcosahedronGeometry(.42,0),
+  new T.MeshStandardMaterial({color:0xffd493,emissive:0xffa442,emissiveIntensity:1.5}),count);
+ const roofs=new T.InstancedMesh(new T.ConeGeometry(.56,.65,6),mats.stoneDark,count);
+ const d=new T.Object3D();
+ for(let i=0;i<count;i++){
+  const p=routePosts[i];d.rotation.set(0,0,0);d.scale.set(1,1,1);
+  d.position.set(p.x,p.y+1.55,p.z);d.updateMatrix();woodPosts.setMatrixAt(i,d.matrix);
+  d.position.y=p.y+3.15;d.updateMatrix();flames.setMatrixAt(i,d.matrix);
+  d.position.y=p.y+3.66;d.updateMatrix();roofs.setMatrixAt(i,d.matrix);
+ }
+ [woodPosts,flames,roofs].forEach(o=>{o.instanceMatrix.needsUpdate=true;o.castShadow=false;scene.add(o);});
+})();
+function worldSign(x,z,label,color){
+ const g=new T.Group();g.position.set(x,ground(x,z),z);scene.add(g);
+ cyl(.23,.35,5.6,mats.wood,g,0,2.8,0,8);box(6,2.35,.4,mats.stoneDark,g,0,5.55,0);
+ const can=document.createElement("canvas");can.width=512;can.height=192;
+ const c=can.getContext("2d");c.fillStyle="#252139";c.fillRect(0,0,512,192);
+ c.strokeStyle=color;c.lineWidth=10;c.strokeRect(9,9,494,174);
+ c.fillStyle=color;c.textAlign="center";c.font="bold 67px Arial";c.fillText(label,256,122);
+ const tex=new T.CanvasTexture(can);tex.encoding=T.sRGBEncoding;
+ const face=mesh(new T.PlaneGeometry(5.65,2.03),
+  new T.MeshBasicMaterial({map:tex,side:T.DoubleSide}),g,0,5.55,.22);face.castShadow=false;
+}
+for(const p of [
+ [-60,24,"FROST","#b4e9ff"],[52,35,"DESERT","#ffde9d"],
+ [66,-34,"EMBER","#ff9569"],[-55,-63,"ASTRAL","#d6b7ff"],
+ [68,9,"CRYSTAL","#d8b0ff"],[8,72,"FOREST","#9bffc9"]
+])worldSign(p[0],p[1],p[2],p[3]);
+
 function animateSpawnHub(t){
  spawnHub.crystal.rotation.y=t*.14;
  spawnHub.crystal.position.y=5.6+Math.sin(t*1.45)*.18;
