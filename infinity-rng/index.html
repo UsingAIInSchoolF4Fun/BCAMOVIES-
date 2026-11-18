@@ -263,8 +263,8 @@ sun.shadow.bias = -.0005;
 scene.add(sun);
 const ambient = new T.AmbientLight(0x6a5a8a, 0.28);
 scene.add(ambient);
-scene.background.setHex(0x527e98);
-scene.fog.color.setHex(0x7098aa);
+scene.background.setHex(0x595878);
+scene.fog.color.setHex(0x767b96);
 sun.color.setHex(0xffd7a4);
 sun.intensity = .87;
 sun.shadow.mapSize.set(1536, 1536);
@@ -1173,6 +1173,9 @@ function buildSpawnHub(){
  }
  const bannerMat=new T.MeshBasicMaterial({map:bannerTexture(),transparent:true,side:T.DoubleSide,depthWrite:false});
  for(const [x,z] of [[-11,-30],[11,-30],[-15,37],[15,37]]){
+  const postBase=z>0?0:2.45;
+  cyl(.25,.3,15.9-postBase,timber,root,x,(15.9+postBase)/2,z,8);
+  box(.58,.55,.58,trim,root,x,15.9,z);
   box(4.5,.3,.4,timber,root,x,15.9,z);
   for(const side of [-1,1])sphere(.25,trim,root,x+side*2.4,15.9,z);
   let banner=mesh(new T.PlaneGeometry(3.7,7.6),bannerMat,root,x,11.75,z+.25);
@@ -1240,19 +1243,53 @@ function buildSpawnHub(){
   }
  }
  shopBuilding(-43,"SHOP");shopBuilding(43,"UPGRADES");
- // Waterfall cliffs and shallow pools in the rear corners, giving symmetry.
+ // Keep the character out of the fountain and building walls.
+ registerCollider(0,-4,8.1,18);
+ registerCollider(-43,-6,10.3,15);
+ registerCollider(43,-6,10.3,15);
+
+ // Rear waterfalls sit on their own real ground levels, never floating.
  for(const side of [-1,1]){
   const cx=side*45,cz=-39;
-  box(16,10,6,edge,root,cx,4,cz-2.5);
+  const area=new T.Group();area.position.set(cx,ground(cx,cz)-base,cz);root.add(area);
+  box(17,10,6,edge,area,0,4,-2.5);
   for(let i=0;i<5;i++){
-   box(3.05,7+(i%3)*1.5,6.1,stone,root,cx+(i-2)*3.05,4.1,cz-2.6);
+   box(3.1,7+(i%3)*1.5,6.1,stone,area,(i-2)*3.1,4.1,-2.6);
   }
-  const fall=mesh(new T.PlaneGeometry(12.5,10),fallingMaterial,root,cx,5,cz+1.1);
+  const fall=mesh(new T.PlaneGeometry(12.5,10),fallingMaterial,area,0,5,1.1);
   fall.castShadow=false;
-  cyl(8,8,.14,darkWater,root,cx,.1,cz+5.8,20);
+  cyl(8,8,.14,darkWater,area,0,.1,5.8,20);
   for(let i=0;i<5;i++){
    const a=i*1.256;
-   sphere(1.25,leaves,root,cx+Math.cos(a)*10,1.7,cz+Math.sin(a)*8);
+   sphere(1.25,leaves,area,Math.cos(a)*10,1.7,Math.sin(a)*8);
+  }
+ }
+ // A small number of deliberately placed ornamental trees frame the plaza.
+ function ornamentalTree(x,z,pink){
+  const g=new T.Group();g.position.set(x,ground(x,z)-base,z);root.add(g);
+  const trunk=material(0x76503d,.95),crown=pink?bloom:leaves;
+  cyl(.7,1.15,10,trunk,g,0,5,0,8);
+  for(let i=0;i<6;i++){
+   const a=i*Math.PI/3,dx=Math.cos(a)*3.8,dz=Math.sin(a)*3.3;
+   const branch=cyl(.24,.45,5.8,trunk,g,dx*.47,10.2,dz*.47,7);
+   branch.rotation.z=dx*.09;branch.rotation.x=dz*.09;
+   const leavesBall=sphere(3.25+(i%2)*.55,crown,g,dx,12.5+(i%3)*.45,dz);
+   leavesBall.scale.y=.78;
+  }
+  sphere(4.2,crown,g,0,14.3,0).scale.y=.76;
+  registerCollider(x,z,1.6,11);
+ }
+ ornamentalTree(-70,18,true);ornamentalTree(70,18,true);
+ ornamentalTree(-64,-33,false);ornamentalTree(64,-33,false);
+ // Low, mirrored flower gardens define the edge without blocking footpaths.
+ for(const side of [-1,1])for(const z of [18,29]){
+  const x=side*29;
+  const group=new T.Group();group.position.set(x,ground(x,z)-base,z);root.add(group);
+  box(7,.6,3.5,stone,group,0,.3,0);
+  for(let i=0;i<5;i++){
+   const px=(i-2)*1.25;
+   sphere(.7+(i%2)*.15,i%2?bloom:leaves,group,px,1,0);
+   if(i%2===0)sphere(.22,glow,group,px,1.65,0);
   }
  }
  // Front compass design: memorable spawn landmark and easy navigation.
