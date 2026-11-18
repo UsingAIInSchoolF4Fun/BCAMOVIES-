@@ -1587,47 +1587,118 @@ const glowMats = [0xffc96a, 0x6ad8ff, 0xb78bff, 0x69ffc0, 0xff765d].map(c => new
 // Removed global vegetation scatter.
 const trialSites=[{x:75,z:65,name:"Crystal Spires",type:0},{x:-235,z:50,name:"Frozen Citadel",type:1},{x:230,z:-35,name:"Ember Fortress",type:2},{x:45,z:-240,name:"Astral Sanctuary",type:3},{x:20,z:250,name:"Forest Temple",type:4}];
 // V13.0 authored landscape: five distinct scenic compositions, not random scatter.
+
+// V13 authored biome landscaping. Dense but orderly clusters with generous
+// trails, authored landmarks and no floating props. All uses instanced geometry.
 (function populateOpenWorld(){
- const trunkGeo=new T.CylinderGeometry(.25,.39,3.5,7),crownGeo=new T.ConeGeometry(2.1,6.5,8),rockGeo=new T.DodecahedronGeometry(1,0);
- const zones=[
-  {x:-285,z:265,rx:65,rz:48,count:38,kind:"forest",color:0x477d5d},
-  {x:245,z:300,rx:72,rz:50,count:43,kind:"forest",color:0x327755},
-  {x:-350,z:-145,rx:55,rz:48,count:22,kind:"frost",color:0xa3c8d9},
-  {x:165,z:-185,rx:50,rz:50,count:20,kind:"stone",color:0x6f656c},
-  {x:-355,z:115,rx:44,rz:42,count:18,kind:"frost",color:0x94b8ce}
+ const sites=[
+  {type:"broad",x:45,z:339,rx:65,rz:52,seed:1},
+  {type:"broad",x:129,z:343,rx:54,rz:48,seed:2},
+  {type:"pine",x:-12,z:301,rx:51,rz:56,seed:3},
+  {type:"pine",x:235,z:347,rx:66,rz:49,seed:4},
+  {type:"broad",x:-295,z:246,rx:68,rz:63,seed:5},
+  {type:"pine",x:-352,z:162,rx:63,rz:55,seed:6},
+  {type:"snow",x:-309,z:126,rx:65,rz:47,seed:7},
+  {type:"snow",x:-369,z:-68,rx:55,rz:60,seed:8},
+  {type:"snow",x:-302,z:-173,rx:65,rz:48,seed:9},
+  {type:"astral",x:-123,z:-304,rx:70,rz:53,seed:10},
+  {type:"astral",x:57,z:-333,rx:65,rz:58,seed:11},
+  {type:"ember",x:219,z:-251,rx:54,rz:63,seed:12},
+  {type:"ember",x:366,z:-162,rx:56,rz:52,seed:13},
+  {type:"crystal",x:293,z:100,rx:45,rz:48,seed:14},
+  {type:"crystal",x:322,z:177,rx:63,rz:49,seed:15},
+  {type:"crystal",x:209,z:130,rx:43,rz:55,seed:16},
+  {type:"cactus",x:297,z:264,rx:58,rz:59,seed:17},
+  {type:"cactus",x:350,z:356,rx:55,rz:44,seed:18},
+  {type:"rock",x:201,z:215,rx:48,rz:44,seed:19},
+  {type:"rock",x:-207,z:-275,rx:53,rz:48,seed:20}
  ];
- const occupied=[];
- const materials={forest:new T.MeshStandardMaterial({color:0x3e7954,roughness:1,flatShading:true}),frost:new T.MeshStandardMaterial({color:0x9cc6d7,roughness:1,flatShading:true}),stone:new T.MeshStandardMaterial({color:0x847a80,roughness:1,flatShading:true})};
- const trunkMat=new T.MeshStandardMaterial({color:0x65503e,roughness:1});
- const rockMat=new T.MeshStandardMaterial({color:0x8b9297,roughness:1,flatShading:true});
- for(const zone of zones){
-  const trunk=new T.InstancedMesh(trunkGeo,trunkMat,zone.count),crown=new T.InstancedMesh(crownGeo,materials[zone.kind],zone.count),rocks=new T.InstancedMesh(rockGeo,rockMat,zone.count);
-  const dummy=new T.Object3D();let treeCount=0,rockCount=0;
-  for(let i=0;i<zone.count*5&&(treeCount+rockCount)<zone.count;i++){
-   const u=(i+.5)/(zone.count*5),angle=i*2.399963+zone.x*.01;
-   const x=zone.x+Math.cos(angle)*Math.sqrt(u)*zone.rx,z=zone.z+Math.sin(angle)*Math.sqrt(u)*zone.rz;
-   if(!clearForScenery(x,z,12)||trialSites.some(p=>Math.hypot(x-p.x,z-p.z)<40))continue;
-   if(worldColliders.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+7))continue;
-   const radius=zone.kind==="stone"?4:5;
-   if(occupied.some(p=>Math.hypot(x-p.x,z-p.z)<radius+p.r))continue;
-   const y=ground(x,z),slope=Math.max(Math.abs(ground(x+3,z)-ground(x-3,z)),Math.abs(ground(x,z+3)-ground(x,z-3)));
-   if(!Number.isFinite(y)||slope>2.2)continue;
-   occupied.push({x,z,r:radius});
-   const scale=.8+(i%7)*.09;
-   if(zone.kind==="stone"||i%5===0){
-    dummy.position.set(x,y+.42*scale,z);dummy.scale.set(1.6*scale,.8*scale,1.3*scale);dummy.rotation.set(0,angle,0);
-    dummy.updateMatrix();rocks.setMatrixAt(rockCount++,dummy.matrix);
+ const total=900,occupied=[];
+ const brown=new T.MeshStandardMaterial({color:0x886347,roughness:1});
+ const foliage=new T.MeshStandardMaterial({color:0xffffff,roughness:.95,flatShading:true});
+ const greenCactus=new T.MeshStandardMaterial({color:0x4c8b6e,roughness:.94});
+ const rockMat=new T.MeshStandardMaterial({color:0xffffff,roughness:1,flatShading:true});
+ const amethyst=new T.MeshStandardMaterial({color:0xffffff,emissive:0x4c1b75,emissiveIntensity:.68,roughness:.26,flatShading:true});
+ const trunk=new T.InstancedMesh(new T.CylinderGeometry(.35,.55,4.5,7),brown,total);
+ const lower=new T.InstancedMesh(new T.ConeGeometry(2.8,7.2,8),foliage,total);
+ const upper=new T.InstancedMesh(new T.ConeGeometry(2.15,6.2,8),foliage,total);
+ const canopy=new T.InstancedMesh(new T.DodecahedronGeometry(1,1),foliage,total);
+ const rocks=new T.InstancedMesh(new T.DodecahedronGeometry(1,0),rockMat,total);
+ const crystals=new T.InstancedMesh(new T.OctahedronGeometry(1,0),amethyst,total);
+ const crystalSmall=new T.InstancedMesh(new T.OctahedronGeometry(1,0),amethyst,total);
+ const cactus=new T.InstancedMesh(new T.CylinderGeometry(.42,.51,4.2,8),greenCactus,total);
+ const arms=new T.InstancedMesh(new T.CylinderGeometry(.28,.34,2.6,7),greenCactus,total);
+ const counts={trunk:0,lower:0,upper:0,canopy:0,rocks:0,crystals:0,crystalSmall:0,cactus:0,arms:0};
+ const object=new T.Object3D();
+ const colors={
+  pine:[0x426c4b,0x2c604e,0x4c7f58],snow:[0xa8cdd5,0x87adb8,0xd4e2df],
+  astral:[0x746a9e,0x5b6b99,0x8575ad],ember:[0x77695f,0x615d64,0x8e736e],
+  broad:[0x4e9963,0x3f8454,0x71ad68]
+ };
+ const place=(name,x,y,z,sx,sy,sz,color)=>{
+  const i=counts[name]++,inst={trunk,lower,upper,canopy,rocks,crystals,crystalSmall,cactus,arms}[name];
+  if(i>=total)throw Error("Landscape instance overflow: "+name);
+  object.position.set(x,y,z);object.rotation.set(0,0,0);object.scale.set(sx,sy,sz);
+  object.updateMatrix();inst.setMatrixAt(i,object.matrix);
+  if(color!==undefined)inst.setColorAt(i,new T.Color(color));
+ };
+ for(const zone of sites){
+  const spacing=zone.type==="crystal"?11:zone.type==="cactus"?15:zone.type==="rock"?13:12;
+  const columns=Math.floor(zone.rx*2/spacing)+1,rows=Math.floor(zone.rz*2/spacing)+1;
+  for(let row=0;row<rows;row++)for(let col=0;col<columns;col++){
+   const jitterX=Math.sin((row*31+col)*1.7+zone.seed)*1.45;
+   const jitterZ=Math.sin((row*37+col)*1.31+zone.seed*2)*1.4;
+   const x=zone.x-zone.rx+col*spacing+(row%2)*spacing*.5+jitterX;
+   const z=zone.z-zone.rz+row*spacing+jitterZ;
+   const theta=(x-zone.x)/zone.rx,phi=(z-zone.z)/zone.rz;
+   if(theta*theta+phi*phi>1||!clearForScenery(x,z,7))continue;
+   if(trialSites.some(p=>Math.hypot(x-p.x,z-p.z)<37))continue;
+   if(worldColliders.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+5))continue;
+   if(occupied.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+4))continue;
+   const y=ground(x,z),sl=Math.max(
+    Math.abs(ground(x+3,z)-ground(x-3,z)),
+    Math.abs(ground(x,z+3)-ground(x,z-3)));
+   if(!Number.isFinite(y)||sl>2.9)continue;
+   const n=(row*11+col*5+zone.seed)%13,scale=.8+n*.041;
+   occupied.push({x,z,r:zone.type==="crystal"?4.5:zone.type==="rock"?4.2:5.2});
+   if(zone.type==="crystal"){
+    const hues=[0x9f6cff,0xe080ff,0x5fbfff,0xb786ec],hue=hues[n%4];
+    place("crystals",x,y+3.1*scale,z,1.25*scale,3.3*scale,1.1*scale,hue);
+    place("crystalSmall",x-2.15,y+1.8*scale,z+1.6,.76*scale,1.9*scale,.7*scale,hue);
+    registerCollider(x,z,1.5,6.3*scale);
+   }else if(zone.type==="rock"||zone.type==="ember"&&n%3===0){
+    const rockColor=zone.type==="ember"?0x655968:0xb2a18d;
+    place("rocks",x,y+1.05*scale,z,2.4*scale,1.4*scale,2.2*scale,rockColor);
+    registerCollider(x,z,2,1.8*scale);
+   }else if(zone.type==="cactus"){
+    place("cactus",x,y+2.1*scale,z,scale,scale,scale);
+    if(n%3!==0){
+     place("arms",x+1.05*scale,y+3.1*scale,z,.75*scale,.6*scale,.8*scale);
+     place("arms",x-1.05*scale,y+2.3*scale,z,.65*scale,.5*scale,.7*scale);
+    }
+    registerCollider(x,z,.95,4.4*scale);
    }else{
-    dummy.rotation.set(0,angle,0);dummy.scale.setScalar(scale);
-    dummy.position.set(x,y+1.65*scale,z);dummy.updateMatrix();trunk.setMatrixAt(treeCount,dummy.matrix);
-    dummy.position.y=y+5.95*scale;dummy.updateMatrix();crown.setMatrixAt(treeCount++,dummy.matrix);
+    const isBroad=zone.type==="broad",palette=colors[zone.type]||colors.pine;
+    const c=palette[n%palette.length];
+    place("trunk",x,y+2.25*scale,z,scale,scale,scale);
+    if(isBroad){
+     place("canopy",x,y+7.1*scale,z,3.7*scale,3.1*scale,3.7*scale,c);
+    }else{
+     place("lower",x,y+6.0*scale,z,scale,scale,scale,c);
+     place("upper",x,y+9.2*scale,z,.83*scale,.8*scale,.83*scale,c);
+    }
+    registerCollider(x,z,.8*scale,8*scale);
    }
   }
-  trunk.count=crown.count=treeCount;rocks.count=rockCount;
-  trunk.instanceMatrix.needsUpdate=crown.instanceMatrix.needsUpdate=rocks.instanceMatrix.needsUpdate=true;
-  scene.add(trunk,crown,rocks);
+ }
+ const instances={trunk,lower,upper,canopy,rocks,crystals,crystalSmall,cactus,arms};
+ for(const [type,m] of Object.entries(instances)){
+  m.count=counts[type];m.castShadow=false;m.receiveShadow=false;
+  m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;
+  if(m.count>0)scene.add(m);
  }
 })();
+
 const trialMat=new T.MeshStandardMaterial({color:0x73eaff,emissive:0x28bfff,emissiveIntensity:1.1});
 const trialPlatforms=[];
 const solidObstacles=[];
