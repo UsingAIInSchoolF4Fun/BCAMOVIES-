@@ -1062,18 +1062,7 @@ for(let i=0;i<10;i++){
  const side=i%2?-1:1,row=Math.floor(i/2);
  lantern(volcanoEntrance,side*12,-row*9);
 }
-// Elevated cliff-like terraces are decorative but remain attached to the same ground.
-for(const [x,z,kind] of [[-315,105,"ice"],[275,100,"crystal"],[-310,-180,"ruins"]]){
- const g=scenicAt(x,z);
- for(let i=0;i<13;i++){
-   let a=i*2.399,r=9+Math.sqrt(i)*6;
-   const px=Math.cos(a)*r,pz=Math.sin(a)*r;
-   const h=4+i%5*2.5;
-   cyl(3+i%3,5+i%4,h,scenicStone,g,px,h/2-1,pz,7);
-   if(i%3===0)spire(g,px,h-1,pz,2,4,kind==="ice"?scenicCyan:kind==="crystal"?scenicPink:scenicViolet);
- }
-}
-
+// Removed legacy concentric terraced cylinders that floated over the terrain.
 /* V8 environmental mesh pipeline: shaped rock formations, architectural trim,
    water shader, terrain decals and authored biome clusters.
    These are real Three.js vertex meshes rather than simple primitive stacks. */
@@ -1527,7 +1516,9 @@ function conceptIsles(){
  cyl(8+i*2,5+i,3.2,mats.stoneDark,g,x,y,z,10);cyl(7+i*2,8+i*2,1.3,conceptLeaf,g,x,y+2.2,z,10);
  for(const side of [-1,1])cyl(.7,.9,8,mats.stone,g,x+side*3,y+6.5,z,8);box(8,1.3,2,conceptGold,g,x,y+10.5,z)}
 }
-conceptOrigin();conceptGrove();conceptTemple();conceptCanyon();conceptFrost();conceptSky();conceptIsles();
+// Keep only landmark silhouettes that complement the map; the old origin
+// plaza, floating isles and scattered towers clashed with the approved hub.
+conceptGrove();conceptTemple();conceptSky();
 
 // Landmark-scale environmental silhouettes and designed traversal scenery.
 const worldWater=new T.MeshStandardMaterial({color:0x2683a5,metalness:.36,roughness:.19,transparent:true,opacity:.84,side:T.DoubleSide});
@@ -1535,73 +1526,94 @@ const worldFoam=new T.MeshBasicMaterial({color:0x9cefff,transparent:true,opacity
 const worldStone=new T.MeshStandardMaterial({color:0x545468,roughness:.91,flatShading:true});
 const worldSnow=new T.MeshStandardMaterial({color:0xa5cde3,roughness:.75,flatShading:true});
 const worldLava=new T.MeshStandardMaterial({color:0xff6124,emissive:0xff3408,emissiveIntensity:1.8,roughness:.5});
-function authoredRidge(cx,cz,span,count,material,seed){
- const g=scenicAt(cx,cz);
- for(let i=0;i<count;i++){
-  const a=i*2.399+seed,rad=span*(.3+.7*(i/count));
-  const x=Math.cos(a)*rad,z=Math.sin(a)*rad;
-  const h=18+(i%5)*7,base=ground(cx+x,cz+z)-g.position.y;
-  const peak=mesh(new T.ConeGeometry(7+i%4*2,h,5),material,g,x,base+h/2-3,z);
-  peak.rotation.y=a;peak.rotation.z=Math.sin(i*3)*.12;
- }
-}
+// Terrain-integrated rivers and soft scenic hills (no detached chunks).
+const worldBridges=[];
+const riverFlowMaterial=new T.ShaderMaterial({
+ uniforms:{uTime:{value:0}},side:T.DoubleSide,transparent:true,depthWrite:false,
+ vertexShader:"varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
+ fragmentShader:"uniform float uTime;varying vec2 vUv;void main(){float wave=sin(vUv.y*33.0-uTime*3.4+sin(vUv.x*10.0))*0.09;float glint=pow(max(0.0,sin(vUv.y*55.0-uTime*4.0+vUv.x*22.0)),9.0);vec3 water=mix(vec3(.025,.25,.48),vec3(.18,.66,.8),vUv.x*.38+.24)+wave+glint*.25;float edge=smoothstep(0.0,.12,vUv.x)*(1.0-smoothstep(.88,1.0,vUv.x));gl_FragColor=vec4(water,.77+.15*edge);}"
+});
 function authoredRiver(){
- const positions=[],indices=[],foam=[];
- const n=130;
+ const n=165,positions=[],uvs=[],indices=[];
  for(let i=0;i<=n;i++){
-  const x=-385+i*770/n,z=65+24*Math.sin(x*.014)+12*Math.sin(x*.035);
-  const y=height(x,z)+1.6;
-  for(const side of [-1,1])positions.push(x,y,z+side*8);
-  foam.push(x,y+.08,z+7);
-  if(i<n){const j=i*2;indices.push(j,j+1,j+2,j+1,j+3,j+2)}
+  const x=-385+770*i/n,z=65+24*Math.sin(x*.014)+12*Math.sin(x*.035);
+  for(const side of [-1,1]){
+   const zz=z+side*7.6;
+   positions.push(x,ground(x,zz)+.18,zz);uvs.push(side<0?0:1,i/8);
+  }
+  if(i<n){const j=i*2;indices.push(j,j+1,j+2,j+1,j+3,j+2);}
  }
  const geo=new T.BufferGeometry();
- geo.setAttribute("position",new T.Float32BufferAttribute(positions,3));geo.setIndex(indices);geo.computeVertexNormals();
- const river=mesh(geo,worldWater);river.castShadow=false;
- // Four stone crossings, deliberately aligned with the river corridor.
+ geo.setAttribute("position",new T.Float32BufferAttribute(positions,3));
+ geo.setAttribute("uv",new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();
+ const river=mesh(geo,riverFlowMaterial);river.castShadow=false;
+ // Short fords stay level with the ground and are actually traversable.
  for(const x of [-240,-75,105,260]){
   const z=65+24*Math.sin(x*.014)+12*Math.sin(x*.035);
-  const y=height(x,z)+3.3;
-  const bridge=box(16,1.5,29,mats.stone,scene,x,y,z);
-  bridge.castShadow=false;
-  for(const side of [-1,1]){
-   box(16,1.3,.8,worldStone,scene,x,y+1.2,z+side*13);
-   for(let k=-1;k<=1;k++)cyl(.35,.5,3,worldStone,scene,x+k*6,y+1.8,z+side*13,8);
+  for(let i=0;i<9;i++){
+   const zz=z+(i-4)*2.8,yy=ground(x,zz);
+   box(11.7,.38,2.55,mats.stone,scene,x,yy+.12,zz).castShadow=false;
+   if(i%2===0){
+    const leftY=ground(x-7.0,zz),rightY=ground(x+7.0,zz);
+    sphere(.64,worldStone,scene,x-7,leftY+.38,zz);
+    sphere(.64,worldStone,scene,x+7,rightY+.38,zz);
+   }
   }
  }
+ return river;
 }
-function authoredWaterfall(x,z,width,drop){
- const top=height(x,z)+drop*.48;
- const g=new T.PlaneGeometry(width,drop,12,20),p=g.attributes.position;
- for(let i=0;i<p.count;i++)p.setZ(i,Math.sin(p.getX(i)*1.6+p.getY(i)*.7)*.4);
- g.computeVertexNormals();
- const f=mesh(g,worldFoam,scene,x,top-drop*.5,z);f.castShadow=false;
- const pool=mesh(new T.CircleGeometry(width*.85,28),worldWater,scene,x,top-drop+.3,z);
- pool.rotation.x=-Math.PI/2;pool.castShadow=false;
-}
-function authoredVolcanoCrown(){
- const g=scenicAt(318,-295);
- const base=48;
- for(let i=0;i<14;i++){
-  const a=i*Math.PI*2/14,r=30+i%3*5;
-  const o=mesh(new T.ConeGeometry(6+i%3*2,35+i%4*6,5),worldStone,g,Math.cos(a)*r,base*.3,Math.sin(a)*r);
-  o.rotation.z=Math.sin(a*3)*.16;
+function groundedCascade(cx,cz,width=9,length=31){
+ // Water is draped on the actual terrain, never rendered as a floating wall.
+ const n=28,p=[],uv=[],idx=[];
+ for(let i=0;i<=n;i++){
+  const z=cz-length/2+length*i/n;
+  for(let side of [-1,1]){
+   const x=cx+side*width/2,y=ground(x,z)+.22;
+   p.push(x,y,z);uv.push(side<0?0:1,i*.22);
+  }
+  if(i<n){const a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}
  }
- for(let i=0;i<9;i++){
-  const a=i*Math.PI*2/9;
-  const stream=box(1.3,24+i%3*6,1.4,worldLava,g,Math.cos(a)*36,23,Math.sin(a)*36);
-  stream.rotation.z=Math.cos(a)*.25;
+ const geometry=new T.BufferGeometry();
+ geometry.setAttribute("position",new T.Float32BufferAttribute(p,3));
+ geometry.setAttribute("uv",new T.Float32BufferAttribute(uv,2));geometry.setIndex(idx);geometry.computeVertexNormals();
+ mesh(geometry,riverFlowMaterial).castShadow=false;
+ for(const side of [-1,1])for(let i=0;i<6;i++){
+  const z=cz-15+i*6,x=cx+side*(width*.72+1.2),y=ground(x,z);
+  const rock=sphere(1.7+(i%2)*.35,worldStone,scene,x,y+.2,z);rock.scale.set(1.3,.85,1.1);
  }
 }
-authoredRidge(-325,-280,110,22,worldSnow,1);
-authoredRidge(-340,55,95,20,worldSnow,2);
-authoredRidge(270,90,82,14,worldStone,3);
-authoredRidge(318,-295,110,19,worldStone,4);
+function softRockRidge(cx,cz,span,count,mat,phase=0){
+ // Rounded broad mountain shoulders, anchored to the exact existing terrain.
+ // Stay beyond reserved gameplay sites and principal trails.
+ for(let n=0;n<count;n++){
+  const a=phase+n*2.399963,rad=span*(.32+.1*(n%3));
+  const x=cx+Math.cos(a)*rad,z=cz+Math.sin(a)*rad;
+  if(!clearForScenery(x,z,17))continue;
+  const radius=17+(n%4)*4,height=9+(n%3)*3,rings=8,sides=24;
+  const coords=[],indexes=[];
+  for(let j=0;j<=rings;j++){
+   const u=j/rings,r=radius*u,alt=height*Math.pow(Math.max(0,1-u*u),2);
+   for(let k=0;k<=sides;k++){
+    const theta=k/sides*Math.PI*2,px=x+Math.cos(theta)*r,pz=z+Math.sin(theta)*r;
+    coords.push(px,ground(px,pz)+alt-.16,pz);
+    if(j<rings&&k<sides){const p=j*(sides+1)+k;indexes.push(p,p+1,p+sides+1,p+1,p+sides+2,p+sides+1);}
+   }
+  }
+  const geo=new T.BufferGeometry();geo.setAttribute("position",new T.Float32BufferAttribute(coords,3));
+  geo.setIndex(indexes);geo.computeVertexNormals();
+  const o=mesh(geo,mat);o.castShadow=false;
+  // Barrier avoids walking into visual-only slopes without geometric floor collision.
+  registerCollider(x,z,Math.min(7,radius*.4),height);
+ }
+}
 authoredRiver();
-authoredWaterfall(-170,80,18,22);
-authoredWaterfall(140,85,16,19);
-authoredWaterfall(285,125,20,24);
-authoredVolcanoCrown();
+groundedCascade(-285,132,10,35);
+groundedCascade(285,120,10,31);
+groundedCascade(150,87,8,24);
+softRockRidge(-320,-285,105,6,worldSnow,1.2);
+softRockRidge(-340,65,85,5,worldSnow,2.2);
+softRockRidge(265,95,75,5,worldStone,.5);
+softRockRidge(325,-300,85,5,worldStone,1.5);
 const launchTowers=[
  {x:-55,z:-45,h:65,c:0xffd589,a:.9,name:"Origin"},
  {x:-350,z:10,h:78,c:0x9cecff,a:1.2,name:"Frost"},
@@ -2247,6 +2259,7 @@ function animate() {
     animateWind(t);
     animateSpawnHub(t);
     for(const fx of environmentFX)fx.uniforms.uTime.value=t;
+    riverFlowMaterial.uniforms.uTime.value=t;
     for (const c of cloudGroups) {
         c.g.position.x += c.speed * dt;
         if (c.g.position.x > 450) c.g.position.x = -450
