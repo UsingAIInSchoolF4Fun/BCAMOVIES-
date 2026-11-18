@@ -1461,6 +1461,84 @@ function buildRoad(route,id){
  for(let e=0;e<2;e++)addRibbon(edges[e],edgeUvs[e],edgeIdx[e],border);
 }
 authoredRoutes.forEach(buildRoad);
+
+// Each biome now has an intentional architectural gateway with animated
+// cloth banners and a rotating magical crest. Roads pass under unobstructed.
+const realmGates=[];
+function gatewayBanner(label,base,accent){
+ const c=document.createElement("canvas");c.width=256;c.height=448;
+ const ctx=c.getContext("2d"),g=ctx.createLinearGradient(0,0,256,448);
+ g.addColorStop(0,base);g.addColorStop(.6,base);g.addColorStop(1,"#22152e");
+ ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(13,5);ctx.lineTo(243,5);
+ ctx.lineTo(243,350);ctx.lineTo(128,441);ctx.lineTo(13,350);ctx.closePath();ctx.fill();
+ ctx.strokeStyle=accent;ctx.lineWidth=10;ctx.stroke();
+ for(let i=0;i<9;i++){
+  ctx.fillStyle="rgba(255,255,255,"+(.025+i*.01)+")";
+  ctx.fillRect(25+i*23,14,3,340);
+ }
+ ctx.fillStyle=accent;ctx.shadowColor=accent;ctx.shadowBlur=19;
+ ctx.textAlign="center";ctx.font="bold 145px Georgia";ctx.fillText("✦",128,206);
+ ctx.font="bold 45px Arial";ctx.fillText(label,128,299);
+ ctx.shadowBlur=0;ctx.fillStyle="#f6deb6";ctx.font="bold 36px Georgia";ctx.fillText("∞",128,382);
+ const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;return t;
+}
+function buildRealmGateway(x,z,heading,label,base,accent,color){
+ const group=new T.Group();group.position.set(x,ground(x,z),z);
+ group.rotation.y=heading;scene.add(group);
+ const rock=new T.MeshStandardMaterial({color:0x8d8294,roughness:.82,map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.25});
+ const metal=new T.MeshStandardMaterial({color:0xd3b685,metalness:.52,roughness:.35});
+ const light=new T.MeshStandardMaterial({color,emissive:color,emissiveIntensity:1.05,roughness:.25});
+ const bannerMat=new T.MeshBasicMaterial({map:gatewayBanner(label,base,accent),side:T.DoubleSide,transparent:true,depthWrite:false});
+ const moving=[];
+ for(const side of [-1,1]){
+  // Base heights follow the actual terrain even when the road slopes.
+  const wx=x+Math.cos(heading)*side*10.5,wz=z-Math.sin(heading)*side*10.5;
+  const localY=ground(wx,wz)-group.position.y;
+  cyl(.8,1.1,11,rock,group,side*10.5,localY+5.5,0,10);
+  cyl(1.45,1.45,.7,metal,group,side*10.5,localY+10.95,0,10);
+  const cap=sphere(.95,light,group,side*10.5,localY+12,0);cap.castShadow=false;
+  box(.4,9,.45,metal,group,side*12.5,localY+5,0);
+  box(3.9,.22,.35,metal,group,side*12.5,localY+9.1,0);
+  const flagGeo=new T.PlaneGeometry(3.15,5.5,7,12);
+  const flag=mesh(flagGeo,bannerMat,group,side*12.5,localY+6.35,.28);
+  flag.castShadow=false;
+  moving.push({mesh:flag,base:Float32Array.from(flagGeo.attributes.position.array),phase:side*.9+x*.017});
+ }
+ box(21.2,1,.9,rock,group,0,11.3,0);
+ box(20.6,.2,1,metal,group,0,12,0);
+ const crest=mesh(new T.TorusGeometry(4.15,.23,8,46),light,group,0,7.7,0);
+ crest.castShadow=false;
+ const crown=mesh(new T.OctahedronGeometry(.95),light,group,0,8,0);
+ crown.scale.y=1.6;
+ realmGates.push({crest,crown,moving,phase:x*.03});
+}
+buildRealmGateway(29,138,-2.75,"FOREST","#1d6744","#cbffb2",0x67e998);
+buildRealmGateway(-170,43,1.57,"FROST","#346186","#d6fcff",0x81d9ff);
+buildRealmGateway(147,24,-1.57,"CRYSTAL","#4b246e","#efb5ff",0xb07bff);
+buildRealmGateway(146,-34,-1.57,"EMBER","#692b38","#ffd097",0xff965c);
+buildRealmGateway(158,152,-2.4,"DESERT","#85613c","#ffe0a1",0xf6c179);
+buildRealmGateway(-152,-147,.79,"ASTRAL","#3d3777","#d1c2ff",0xa6a4ff);
+let realmGateFrame=0;
+function animateRealmGateBanners(t){
+ const updateFlag=(flag,base,phase)=>{
+  const positions=flag.geometry.attributes.position;
+  for(let i=0;i<positions.count;i++){
+   const px=base[i*3],py=base[i*3+1];
+   const flutter=Math.sin(t*2.1+px*1.7+py*.7+phase)*.13;
+   positions.setZ(i,flutter*(.35+(2.75-py)/5.5));
+  }
+  positions.needsUpdate=true;
+ };
+ const clothUpdate=(realmGateFrame++%3)===0;
+ for(const gate of realmGates){
+  gate.crest.rotation.y=t*.26+gate.phase;
+  gate.crest.rotation.z=Math.sin(t*.5+gate.phase)*.11;
+  gate.crown.rotation.y=-t*.37+gate.phase;
+  gate.crown.position.y=8+Math.sin(t*1.3+gate.phase)*.25;
+  if(clothUpdate)for(const part of gate.moving)updateFlag(part.mesh,part.base,part.phase);
+ }
+}
+
 // Instancing keeps dozens of route lights inexpensive on school Chromebooks.
 (function buildWayLights(){
  const count=routePosts.length;
@@ -2984,6 +3062,7 @@ function animate() {
     animateWind(t);
     animateSpawnHub(t);
     animateBiomeGeometry(t);
+    animateRealmGateBanners(t);
     for(const m of biomeAtmosphere)m.uniforms.uTime.value=t;
     for(const fx of environmentFX)fx.uniforms.uTime.value=t;
     riverFlowMaterial.uniforms.uTime.value=t;
