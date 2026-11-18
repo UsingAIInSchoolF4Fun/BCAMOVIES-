@@ -1480,6 +1480,7 @@ function buildSunstoneDesert(){
  const gold=new T.MeshStandardMaterial({color:0xeac181,roughness:.43,metalness:.35});
  const turquoise=new T.MeshStandardMaterial({color:0x55cbd0,emissive:0x1a909e,emissiveIntensity:.85});
  const plant=new T.MeshStandardMaterial({color:0x417e61,roughness:.95});
+ const oasisWater=new T.MeshStandardMaterial({color:0x297ba4,metalness:.22,roughness:.17,transparent:true,opacity:.87});
  function part(x,z){const g=new T.Group();g.position.set(x,ground(x,z),z);scene.add(g);return g}
  // Monumental sandstone trading hall, walled and anchored to the landscape.
  const hall=part(303,265);
@@ -1525,7 +1526,7 @@ function buildSunstoneDesert(){
  // Enclosed oasis / water garden - deliberately set into a stone basin.
  const oasis=part(357,304);
  cyl(13.6,13.6,1.25,shadow,oasis,0,.58,0,32);
- cyl(11.5,11.5,.18,worldWater,oasis,0,1.28,0,32);
+ cyl(11.5,11.5,.18,oasisWater,oasis,0,1.28,0,32);
  const ring=torus(12.3,.42,gold,oasis,0,1.34,0);ring.rotation.x=Math.PI/2;
  for(let i=0;i<8;i++){
   const a=i*Math.PI/4,x=Math.cos(a)*17,z=Math.sin(a)*17;
