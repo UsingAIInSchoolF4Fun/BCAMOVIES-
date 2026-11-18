@@ -559,22 +559,9 @@ function height(x, z) {
     }
     return y
 }
-const pathSegments = [
-    [0, 0, 100, -105],
-    [0, 0, -115, 110],
-    [0, 0, 105, 230],
-    [0, 0, -245, -230],
-    [0, 0, 260, 30],
-    [0, 0, -260, -60],
-    [0, 0, 30, -270],
-    [0, 0, 40, 280],
-    [105, 230, 255, 180],
-    [105, 230, 40, 280],
-    [100, -105, 260, 30],
-    [-115, 110, -260, -60],
-    [-245, -230, 30, -270]
-];
-
+const authoredRoutes=[{"name":"Forest Trail","theme":"forest","width":9,"points":[[0,46],[4,89],[24,132],[61,189],[105,230]]},{"name":"Forest Temple","theme":"forest","width":7,"points":[[12,51],[26,105],[22,159],[20,213],[20,250]]},{"name":"Frost Citadel","theme":"frost","width":8,"points":[[-43,12],[-87,27],[-146,39],[-196,49],[-235,50]]},{"name":"Frost Tower","theme":"frost","width":7,"points":[[-233,54],[-286,45],[-317,23],[-350,10]]},{"name":"Snow Road","theme":"frost","width":8,"points":[[-44,-9],[-111,-21],[-181,-42],[-248,-64]]},{"name":"Ruins Road","theme":"desert","width":7,"points":[[-185,-44],[-227,-60],[-260,-60],[-285,-102]]},{"name":"Astral Road","theme":"astral","width":8,"points":[[-33,-37],[-92,-95],[-155,-153],[-209,-205],[-245,-230]]},{"name":"Astral Tower","theme":"astral","width":7,"points":[[-15,-44],[-14,-99],[3,-161],[37,-225],[30,-270],[-14,-320],[-55,-350]]},{"name":"Crystal Road","theme":"crystal","width":9,"points":[[44,5],[93,17],[150,28],[201,36],[260,30]]},{"name":"Crystal Gardens","theme":"crystal","width":7,"points":[[153,29],[202,81],[255,103],[285,120]]},{"name":"Desert Road","theme":"desert","width":9,"points":[[37,34],[77,78],[119,119],[166,160],[207,216],[255,280]]},{"name":"Ember Citadel","theme":"ember","width":7,"points":[[40,-25],[105,-32],[176,-32],[230,-35]]},{"name":"Volcano Road","theme":"ember","width":9,"points":[[30,-39],[98,-105],[157,-145],[216,-183],[285,-211],[318,-210]]},{"name":"Forest Watchtower","theme":"forest","width":7,"points":[[120,229],[179,269],[235,309],[310,345]]}];
+const pathSegments=[];
+for(const route of authoredRoutes){for(let i=1;i<route.points.length;i++)pathSegments.push([...route.points[i-1],...route.points[i]]);}
 function pathDistance(x, z) {
     let best = 1e9;
     for (const [ax, az, bx, bz] of pathSegments) {
