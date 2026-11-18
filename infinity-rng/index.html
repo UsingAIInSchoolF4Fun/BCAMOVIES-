@@ -266,9 +266,9 @@ scene.add(ambient);
 scene.background.setHex(0x595878);
 scene.fog.color.setHex(0x767b96);
 sun.color.setHex(0xffd7a4);
-sun.intensity = .87;
+sun.intensity = 1.08;
 sun.shadow.mapSize.set(1536, 1536);
-renderer.toneMappingExposure = 1;
+renderer.toneMappingExposure = 1.08;
 for (const [c, x, y, z, d] of [
         [0x55aaff, -110, 30, 70, 100],
         [0xff8e70, 160, 35, 140, 110],
@@ -447,7 +447,7 @@ for(const [material,color,kind,seed,depth] of materialSurfaces){
  material.roughness=kind==="wood"?.92:1;
  material.needsUpdate=true;
 }
-const terrainTexture=surfaceTexture("#c4c4c4","grass",47);
+const terrainTexture=surfaceTexture("#c4c4c4","stone",47);
 terrainTexture.repeat.set(1,1);
 const volcanoTexture=surfaceTexture("#4b3c39","stone",63);
 volcanoTexture.repeat.set(5,3);
@@ -601,15 +601,17 @@ for (let j = 0; j < verts.length; j += 3) {
         z = verts[j + 2],
         h = verts[j + 1],
         noise = (rand(Math.floor(x * 2), Math.floor(z * 2)) - .5) * .17;
-    if (x > 160) tone.setHex(h > 4 ? 0x8b5c49 : 0x6d4846);
-    else if (x < -160) tone.setHex(h > 2 ? 0xc4d8e7 : 0x718fa7);
-    else if (z < -160) tone.setHex(h > 5 ? 0x6e5c9c : 0x5a668e);
-    else if (z > 160) tone.setHex(h > 3 ? 0x477b4b : 0x39725c);
-    else tone.setHex(h > 4 ? 0x63876a : 0x5a946f);
-    if (pathDistance(x, z) < 6.8) {
-        tone.setHex(pathDistance(x, z) < 4.5 ? 0x786047 : 0x71664f)
-    }
-    tone.offsetHSL(0, 0, noise);
+    // Soft biome transitions: no harsh color borders between landscapes.
+    const blend=(a,b,value)=>{let u=Math.max(0,Math.min(1,(value-a)/(b-a)));return u*u*(3-2*u)};
+    tone.setHex(h>6?0x628f7c:0x5e9b78);
+    if(z>90)tone.lerp(new T.Color(h>5?0x41794c:0x377b55),blend(90,205,z));
+    if(z< -90)tone.lerp(new T.Color(h>6?0x786ca1:0x625788),blend(90,205,-z));
+    if(x< -105)tone.lerp(new T.Color(h>5?0xd9e6ed:0xa9bdcc),blend(105,200,-x));
+    if(x>105)tone.lerp(new T.Color(h>6?0x86699f:0x62577e),blend(105,200,x));
+    if(x>165&&z>145)tone.lerp(new T.Color(h>6?0xcaa77a:0xd7ba89),blend(145,225,z));
+    if(x>165&&z< -100)tone.lerp(new T.Color(h>6?0x76585b:0x665258),blend(100,195,-z));
+    if(pathDistance(x,z)<7.1)tone.lerp(new T.Color(0xa09182),.48);
+    tone.offsetHSL(0,0,noise*.33);
     groundColors.push(tone.r * .92, tone.g * .92, tone.b * .92)
 }
 geo.setAttribute("color", new T.Float32BufferAttribute(groundColors, 3)); // Use vertex-color-only unlit ground to avoid washed-out lighting and guarantee distinct biomes.
@@ -1377,12 +1379,12 @@ function buildRoad(route,id){
   const len=Math.hypot(tan.x,tan.z)||1,nx=-tan.z/len,nz=tan.x/len;
   for(const side of [-1,1]){
    const x=p.x+nx*side*w*.5,z=p.z+nz*side*w*.5;
-   v.push(x,ground(x,z)+.14,z);uv.push(side<0?0:1,t*length/8);
+   v.push(x,ground(x,z)+.25,z);uv.push(side<0?0:1,t*length/8);
   }
   for(let e=0;e<2;e++)for(const off of [-.17,.17]){
    const side=e===0?-1:1;
    const x=p.x+nx*(side*(w/2+.23)+off),z=p.z+nz*(side*(w/2+.23)+off);
-   edges[e].push(x,ground(x,z)+.19,z);edgeUvs[e].push(off<0?0:1,t*length/8);
+   edges[e].push(x,ground(x,z)+.29,z);edgeUvs[e].push(off<0?0:1,t*length/8);
   }
   if(i<count){
    const a=i*2;
