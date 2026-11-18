@@ -1,6 +1,6 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V13.0</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V13.1</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V13.0</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button><button id="mapButton" title="Toggle the redesigned world map (M)">MAP (M)</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · R — Turn mode · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V13.1</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button><button id="mapButton" title="Toggle the redesigned world map (M)">MAP (M)</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · R — Turn mode · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script><script>
 "use strict";
 const A = [
@@ -263,12 +263,12 @@ sun.shadow.bias = -.0005;
 scene.add(sun);
 const ambient = new T.AmbientLight(0x6a5a8a, 0.28);
 scene.add(ambient);
-scene.background.setHex(0x595878);
-scene.fog.color.setHex(0x767b96);
-sun.color.setHex(0xffd7a4);
-sun.intensity = 1.08;
+scene.background.setHex(0x63638a);
+scene.fog.color.setHex(0x8989a7);
+sun.color.setHex(0xffe0be);
+sun.intensity = 1.16;
 sun.shadow.mapSize.set(1536, 1536);
-renderer.toneMappingExposure = 1.08;
+renderer.toneMappingExposure = 1.13;
 for (const [c, x, y, z, d] of [
         [0x55aaff, -110, 30, 70, 100],
         [0xff8e70, 160, 35, 140, 110],
@@ -447,6 +447,59 @@ for(const [material,color,kind,seed,depth] of materialSurfaces){
  material.roughness=kind==="wood"?.92:1;
  material.needsUpdate=true;
 }
+
+// Neutral, high-frequency procedural patterns add relief without muddying biome tints.
+// Shared CanvasTextures and material instancing keep GPU and draw-call costs modest.
+function illustratedSurface(kind,seed=1){
+ const c=document.createElement("canvas");c.width=c.height=256;
+ const ctx=c.getContext("2d");let state=seed>>>0;
+ const rng=()=>{state=(1664525*state+1013904223)>>>0;return state/4294967296;};
+ ctx.fillStyle="#e6e6e6";ctx.fillRect(0,0,256,256);
+ if(kind==="foliage"){
+  for(let i=0;i<2100;i++){
+   const x=rng()*256,y=rng()*256,length=2+rng()*7;
+   ctx.strokeStyle=rng()>.5?"rgba(255,255,255,.28)":"rgba(16,31,31,.23)";
+   ctx.lineWidth=.5+rng()*1.25;ctx.beginPath();
+   ctx.moveTo(x,y);ctx.quadraticCurveTo(x+length*.7,y-length*.65,x+length,y-length*.45);ctx.stroke();
+  }
+ }else if(kind==="crystal"){
+  ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=1;
+  for(let i=0;i<125;i++){
+   const x=rng()*256,y=rng()*256;
+   ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+4+rng()*14,y-9-rng()*18);ctx.lineTo(x+13+rng()*18,y+8);ctx.stroke();
+  }
+ }else if(kind==="rock"){
+  for(let i=0;i<950;i++){
+   const x=rng()*256,y=rng()*256;
+   ctx.fillStyle=rng()>.5?"rgba(255,255,255,.14)":"rgba(0,0,0,.13)";
+   ctx.fillRect(x,y,2+rng()*10,1+rng()*4);
+  }
+  for(let i=0;i<55;i++){
+   let x=rng()*256,y=rng()*256;
+   ctx.strokeStyle="rgba(25,25,30,.25)";ctx.lineWidth=1.1;
+   ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+12,y+4);ctx.lineTo(x+15,y+10);ctx.stroke();
+  }
+ }else if(kind==="cactus"){
+  for(let x=4;x<256;x+=12){
+   ctx.strokeStyle="rgba(12,29,18,.17)";ctx.lineWidth=3;ctx.beginPath();
+   ctx.moveTo(x,0);ctx.lineTo(x,256);ctx.stroke();
+  }
+  for(let i=0;i<450;i++){
+   const x=rng()*256,y=rng()*256;ctx.fillStyle="rgba(255,255,255,.19)";
+   ctx.fillRect(x,y,1,2+rng()*6);
+  }
+ }
+ const t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;
+ t.wrapS=t.wrapT=T.RepeatWrapping;
+ t.anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(),4);
+ return t;
+}
+const biomeTextures={
+ foliage:illustratedSurface("foliage",131),
+ rock:illustratedSurface("rock",27),
+ crystal:illustratedSurface("crystal",43),
+ cactus:illustratedSurface("cactus",78)
+};
 const terrainTexture=surfaceTexture("#c4c4c4","stone",47);
 terrainTexture.repeat.set(1,1);
 const volcanoTexture=surfaceTexture("#4b3c39","stone",63);
@@ -603,15 +656,17 @@ for (let j = 0; j < verts.length; j += 3) {
         noise = (rand(Math.floor(x * 2), Math.floor(z * 2)) - .5) * .17;
     // Soft biome transitions: no harsh color borders between landscapes.
     const blend=(a,b,value)=>{let u=Math.max(0,Math.min(1,(value-a)/(b-a)));return u*u*(3-2*u)};
-    tone.setHex(h>6?0x628f7c:0x5e9b78);
-    if(z>90)tone.lerp(new T.Color(h>5?0x41794c:0x377b55),blend(90,205,z));
-    if(z< -90)tone.lerp(new T.Color(h>6?0x786ca1:0x625788),blend(90,205,-z));
-    if(x< -105)tone.lerp(new T.Color(h>5?0xd9e6ed:0xa9bdcc),blend(105,200,-x));
-    if(x>105)tone.lerp(new T.Color(h>6?0x86699f:0x62577e),blend(105,200,x));
-    if(x>165&&z>145)tone.lerp(new T.Color(h>6?0xcaa77a:0xd7ba89),blend(145,225,z));
-    if(x>165&&z< -100)tone.lerp(new T.Color(h>6?0x76585b:0x665258),blend(100,195,-z));
-    if(pathDistance(x,z)<7.1)tone.lerp(new T.Color(0xa09182),.48);
-    tone.offsetHSL(0,0,noise*.33);
+    // Distinct biome palettes, with blended transitions instead of hard edges.
+    tone.setHex(h>6?0x689b75:0x4caa77);
+    if(z>75)tone.lerp(new T.Color(h>5?0x3a925b:0x3aa76b),blend(75,190,z));
+    if(z< -75)tone.lerp(new T.Color(h>6?0x726ac1:0x5e65ae),blend(75,185,-z));
+    if(x< -90)tone.lerp(new T.Color(h>5?0xe7f3ff:0xb7d9eb),blend(90,195,-x));
+    if(x>90)tone.lerp(new T.Color(h>6?0x8c62c8:0x7755b3),blend(90,200,x));
+    if(x>162&&z>118)tone.lerp(new T.Color(h>6?0xe5b978:0xeacb8b),blend(118,215,z));
+    if(x>155&&z< -85)tone.lerp(new T.Color(h>6?0x84536f:0x68505e),blend(85,190,-z));
+    if(pathDistance(x,z)<6.7)tone.lerp(new T.Color(0xb7a396),.24);
+    // Tiny variations keep terrain from looking like one flat paint color.
+    tone.offsetHSL(0,0,noise*.24);
     groundColors.push(tone.r * .92, tone.g * .92, tone.b * .92)
 }
 geo.setAttribute("color", new T.Float32BufferAttribute(groundColors, 3)); // Use vertex-color-only unlit ground to avoid washed-out lighting and guarantee distinct biomes.
@@ -912,14 +967,14 @@ for(let i=0;i<28;i++){
 
 /* V7: Hand-composed scenic landmarks. All details share one continuous walkable terrain.
    Each district has its own architectural language and landscape silhouette. */
-const scenicStone=new T.MeshStandardMaterial({color:0x8a8c9d,roughness:1,map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.25});
+const scenicStone=new T.MeshStandardMaterial({color:0xb9a5bc,roughness:.86,map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.34});
 const scenicGold=new T.MeshStandardMaterial({color:0xd4a85f,metalness:.6,roughness:.35});
 const scenicViolet=new T.MeshStandardMaterial({color:0x8e54fa,emissive:0x6426c5,emissiveIntensity:1});
 const scenicCyan=new T.MeshStandardMaterial({color:0x76e9ff,emissive:0x18bfff,emissiveIntensity:1.1,roughness:.25});
 const scenicPink=new T.MeshStandardMaterial({color:0xff5a9e,emissive:0xb90e50,emissiveIntensity:1,roughness:.3});
 const scenicIce=new T.MeshStandardMaterial({color:0xd8f1ff,roughness:.72});
 const scenicWater=new T.MeshStandardMaterial({color:0x187dba,transparent:true,opacity:.78,metalness:.25,roughness:.16,side:T.DoubleSide});
-const scenicMoss=new T.MeshStandardMaterial({color:0x32734d,roughness:1});
+const scenicMoss=new T.MeshStandardMaterial({color:0x42a779,roughness:.92,map:biomeTextures.foliage,bumpMap:biomeTextures.foliage,bumpScale:.1});
 function scenicAt(x,z){const g=new T.Group();g.position.set(x,ground(x,z),z);scene.add(g);return g}
 function spire(parent,x,y,z,r=1,h=8,material=scenicCyan){
  const o=mesh(new T.ConeGeometry(r,h,6),material,parent,x,y+h/2,z);
@@ -1659,7 +1714,7 @@ const glowMats = [0xffc96a, 0x6ad8ff, 0xb78bff, 0x69ffc0, 0xff765d].map(c => new
 
 // Removed global vegetation scatter.
 const trialSites=[{x:75,z:65,name:"Crystal Spires",type:0},{x:-235,z:50,name:"Frozen Citadel",type:1},{x:230,z:-35,name:"Ember Fortress",type:2},{x:45,z:-240,name:"Astral Sanctuary",type:3},{x:20,z:250,name:"Forest Temple",type:4}];
-// V13.0 authored landscape: five distinct scenic compositions, not random scatter.
+// V13.1 authored landscape: five distinct scenic compositions, not random scatter.
 
 // V13 authored biome landscaping. Dense but orderly clusters with generous
 // trails, authored landmarks and no floating props. All uses instanced geometry.
@@ -1688,10 +1743,10 @@ const trialSites=[{x:75,z:65,name:"Crystal Spires",type:0},{x:-235,z:50,name:"Fr
  ];
  const total=900,occupied=[];
  const brown=new T.MeshStandardMaterial({color:0x886347,roughness:1});
- const foliage=new T.MeshStandardMaterial({color:0xffffff,roughness:.95,flatShading:true});
- const greenCactus=new T.MeshStandardMaterial({color:0x4c8b6e,roughness:.94});
- const rockMat=new T.MeshStandardMaterial({color:0xffffff,roughness:1,flatShading:true});
- const amethyst=new T.MeshStandardMaterial({color:0xffffff,emissive:0x4c1b75,emissiveIntensity:.68,roughness:.26,flatShading:true});
+ const foliage=new T.MeshStandardMaterial({color:0xffffff,roughness:.9,flatShading:true,map:biomeTextures.foliage,bumpMap:biomeTextures.foliage,bumpScale:.12,side:T.DoubleSide});
+ const greenCactus=new T.MeshStandardMaterial({color:0x62bb83,roughness:.82,map:biomeTextures.cactus,bumpMap:biomeTextures.cactus,bumpScale:.17});
+ const rockMat=new T.MeshStandardMaterial({color:0xffffff,roughness:.92,flatShading:true,map:biomeTextures.rock,bumpMap:biomeTextures.rock,bumpScale:.2});
+ const amethyst=new T.MeshStandardMaterial({color:0xffffff,emissive:0x6628aa,emissiveIntensity:.91,roughness:.18,metalness:.19,flatShading:true,map:biomeTextures.crystal,side:T.DoubleSide});
  const trunk=new T.InstancedMesh(new T.CylinderGeometry(.35,.55,4.5,7),brown,total);
  const lower=new T.InstancedMesh(new T.ConeGeometry(2.8,7.2,8),foliage,total);
  const upper=new T.InstancedMesh(new T.ConeGeometry(2.15,6.2,8),foliage,total);
@@ -1704,9 +1759,9 @@ const trialSites=[{x:75,z:65,name:"Crystal Spires",type:0},{x:-235,z:50,name:"Fr
  const counts={trunk:0,lower:0,upper:0,canopy:0,rocks:0,crystals:0,crystalSmall:0,cactus:0,arms:0};
  const object=new T.Object3D();
  const colors={
-  pine:[0x426c4b,0x2c604e,0x4c7f58],snow:[0xa8cdd5,0x87adb8,0xd4e2df],
-  astral:[0x746a9e,0x5b6b99,0x8575ad],ember:[0x77695f,0x615d64,0x8e736e],
-  broad:[0x4e9963,0x3f8454,0x71ad68]
+  pine:[0x50a963,0x2e8e6e,0x75bd78],snow:[0xc5eff2,0x92c7e9,0xe2f7fd],
+  astral:[0xb18cdb,0x7c86d1,0xbd97e3],ember:[0x986e72,0x655d78,0xb58a71],
+  broad:[0x52bd83,0x3b9e75,0x7aca70]
  };
  const place=(name,x,y,z,sx,sy,sz,color)=>{
   const i=counts[name]++,inst={trunk,lower,upper,canopy,rocks,crystals,crystalSmall,cactus,arms}[name];
