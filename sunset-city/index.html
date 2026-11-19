@@ -302,6 +302,12 @@ function terrainHeight(x,z){
    h=lerp(b.padY,h,t*t*(3-2*t));
   }
  }
+ // Parking bays are built on the same level-pad model.
+ for(const p of parkingLots){
+  if(p.padY===undefined||Math.abs(x-p.x)>p.w*.5+13||Math.abs(z-p.y)>p.h*.5+13)continue;
+  const edge=Math.max(Math.abs(x-p.x)-p.w*.5,Math.abs(z-p.y)-p.h*.5);
+  if(edge<10){const t=clamp(Math.max(0,edge)/10,0,1);h=lerp(p.padY,h,t*t*(3-2*t));}
+ }
  return h;
 }
 function terrainStyle(x,z,h){
@@ -321,7 +327,76 @@ function curveRoad(id,points,width,style){const ps=[];const src=points.map(p=>({
 function ringRoad(id,cx,cy,rx,ry,w=30,style='boulevard'){cx*=CITY_COMPACT;cy*=CITY_COMPACT;rx*=CITY_COMPACT;ry*=CITY_COMPACT;const pts=[];for(let i=0;i<=170;i++){let a=TAU*i/170;pts.push({x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry})}makeRoad(id,pts,w,style)}
 function nearestRoad(x,y){const r=roadSurfaceAt(x,y);return r?r.edge:1e9;}
 function roadsNear(x,y,max=20){return nearestRoad(x,y)<max;}
-function addBuilding(x,y,w,h,rot=0,kind='office',zone=null){const d=zone||DISTRICTS[0],colors=d.colors;let n=structures.length;structures.push({x,y,w,h,rot,kind,zone:d.name,color:colors[n%colors.length],roof:d.roof,seed:n,rad:Math.hypot(w,h)*.5})}
+function roadCrossesLot(x,y,w,h,rot,gap=13){
+ // Segment versus inflated, rotated building footprint: no road can pass through a wall.
+ if(!roadGridReady)return false;
+ const reach=Math.hypot(w,h)*.5+58;
+ const minI=Math.floor((x-reach)/ROAD_CELL),maxI=Math.floor((x+reach)/ROAD_CELL);
+ const minJ=Math.floor((y-reach)/ROAD_CELL),maxJ=Math.floor((y+reach)/ROAD_CELL);
+ const seen=new Set(),co=Math.cos(rot),si=Math.sin(rot);
+ for(let ix=minI;ix<=maxI;ix++)for(let iy=minJ;iy<=maxJ;iy++){
+  const list=roadGrid.get(roadKey(ix,iy));if(!list)continue;
+  for(const seg of list){
+   if(seen.has(seg))continue;seen.add(seg);
+   const dx=seg.a.x-x,dy=seg.a.y-y,ex=seg.b.x-x,ey=seg.b.y-y;
+   if(Math.min(Math.hypot(dx,dy),Math.hypot(ex,ey))>reach+Math.sqrt(seg.len2))continue;
+   let x0=dx*co+dy*si,y0=-dx*si+dy*co;
+   let x1=ex*co+ey*si,y1=-ex*si+ey*co;
+   const rx=w*.5+seg.half+gap,ry=h*.5+seg.half+gap;
+   let t0=0,t1=1;
+   const deltaX=x1-x0,deltaY=y1-y0;
+   if(Math.abs(deltaX)<1e-6){if(Math.abs(x0)>rx)continue;}
+   else{
+    let a=(-rx-x0)/deltaX,b=(rx-x0)/deltaX;
+    if(a>b)[a,b]=[b,a];t0=Math.max(t0,a);t1=Math.min(t1,b);
+   }
+   if(Math.abs(deltaY)<1e-6){if(Math.abs(y0)>ry)continue;}
+   else{
+    let a=(-ry-y0)/deltaY,b=(ry-y0)/deltaY;
+    if(a>b)[a,b]=[b,a];t0=Math.max(t0,a);t1=Math.min(t1,b);
+   }
+   if(t0<=t1)return true;
+  }
+ }
+ return false;
+}
+function buildingSiteValid(x,y,w,h,rot=0){
+ const r=Math.hypot(w,h)*.5;
+ if(coastDistance(x,y)<r+18||roadCrossesLot(x,y,w,h,rot,13))return false;
+ const co=Math.cos(rot),si=Math.sin(rot),samples=[];
+ for(const a of [-.5,.5])for(const b of [-.5,.5]){
+  const xx=x+a*w*co-b*h*si,yy=y+a*w*si+b*h*co;
+  if(coastDistance(xx,yy)<27)return false;
+  samples.push(rawTerrainHeight(xx,yy));
+ }
+ const base=rawTerrainHeight(x,y);
+ if(Math.max(...samples,base)-Math.min(...samples,base)>Math.min(15,Math.min(w,h)*.34))return false;
+ for(const old of structures){
+  if(Math.hypot(old.x-x,old.y-y)>old.rad+r+8)continue;
+  const dx=old.x-x,dy=old.y-y,lx=dx*co+dy*si,ly=-dx*si+dy*co;
+  if(Math.abs(lx)<(old.w+w)*.55&&Math.abs(ly)<(old.h+h)*.55)return false;
+ }
+ return true;
+}
+function addBuilding(x,y,w,h,rot=0,kind='office',zone=null){
+ if(!buildingSiteValid(x,y,w,h,rot))return false;
+ const d=zone||DISTRICTS[0],colors=d.colors,n=structures.length;
+ const padY=terrainHeight(x,y); // sampled before creating this building
+ structures.push({x,y,w,h,rot,kind,zone:d.name,color:colors[n%colors.length],roof:d.roof,seed:n,rad:Math.hypot(w,h)*.5,padY});
+ return true;
+}
+function addLandmark(x,y,w,h,rot=0,kind='office',zone=null){
+ if(addBuilding(x,y,w,h,rot,kind,zone))return;
+ // Keep landmarks accessible, but shift them off asphalt and steep hills if necessary.
+ for(const distance of [42,75,112,155,205]){
+  for(let i=0;i<16;i++){
+   const angle=i*TAU/16+0.17;
+   const nx=x+Math.cos(angle)*distance,ny=y+Math.sin(angle)*distance;
+   if(addBuilding(nx,ny,w,h,rot,kind,zone))return;
+  }
+ }
+}
+
 function insideBuilding(x,y,r=0){for(const b of structures){if(Math.hypot(x-b.x,y-b.y)>b.rad+r)continue;let cs=Math.cos(b.rot),sn=Math.sin(b.rot),dx=x-b.x,dy=y-b.y;let lx=dx*cs+dy*sn,ly=-dx*sn+dy*cs,ax=Math.abs(lx)-b.w*.5,ay=Math.abs(ly)-b.h*.5;if(Math.max(ax,ay)<r&&Math.hypot(Math.max(0,ax),Math.max(0,ay))<r+0.1)return true}return false}
 function buildWorld(){
   roads=[];roadSamples=[];structures=[];trees=[];streetProps=[];parkingLots=[];
@@ -344,17 +419,17 @@ function buildWorld(){
   curveRoad('EAST CLIFF ROAD',[[700,-510],[795,-320],[805,-80],[770,145],[730,480]],23,'coastal');
   rebuildRoadGrid(); // Grade and index the complete road network before placing structures.
   // Rural landmarks. Most of the island is wilderness, not high-rises.
-  addBuilding(83*CITY_COMPACT,218*CITY_COMPACT,73,46,.07,'market',DISTRICTS[0]);
-  addBuilding(-5*CITY_COMPACT,175*CITY_COMPACT,76,51,0,'hotel',DISTRICTS[0]);
-  addBuilding(177*CITY_COMPACT,65*CITY_COMPACT,65,51,.1,'hospital',DISTRICTS[0]);
-  addBuilding(-150*CITY_COMPACT,78*CITY_COMPACT,56,36,-.09,'arcade',DISTRICTS[0]);
-  addBuilding(55*CITY_COMPACT,-35*CITY_COMPACT,52,39,.11,'neon',DISTRICTS[0]);
-  addBuilding(-282*CITY_COMPACT,320*CITY_COMPACT,52,38,.06,'villa',DISTRICTS[1]);
-  addBuilding(-354*CITY_COMPACT,282*CITY_COMPACT,43,37,.13,'market',DISTRICTS[1]);
-  addBuilding(-230*CITY_COMPACT,392*CITY_COMPACT,44,33,-.1,'greenhouse',DISTRICTS[1]);
-  addBuilding(635*CITY_COMPACT,402*CITY_COMPACT,103,50,.06,'warehouse',DISTRICTS[2]);
-  addBuilding(570*CITY_COMPACT,460*CITY_COMPACT,77,44,-.11,'market',DISTRICTS[2]);
-  addBuilding(685*CITY_COMPACT,-176*CITY_COMPACT,122,35,.08,'airport',DISTRICTS[3]);
+  addLandmark(83*CITY_COMPACT,218*CITY_COMPACT,73,46,.07,'market',DISTRICTS[0]);
+  addLandmark(-5*CITY_COMPACT,175*CITY_COMPACT,76,51,0,'hotel',DISTRICTS[0]);
+  addLandmark(177*CITY_COMPACT,65*CITY_COMPACT,65,51,.1,'hospital',DISTRICTS[0]);
+  addLandmark(-150*CITY_COMPACT,78*CITY_COMPACT,56,36,-.09,'arcade',DISTRICTS[0]);
+  addLandmark(55*CITY_COMPACT,-35*CITY_COMPACT,52,39,.11,'neon',DISTRICTS[0]);
+  addLandmark(-282*CITY_COMPACT,320*CITY_COMPACT,52,38,.06,'villa',DISTRICTS[1]);
+  addLandmark(-354*CITY_COMPACT,282*CITY_COMPACT,43,37,.13,'market',DISTRICTS[1]);
+  addLandmark(-230*CITY_COMPACT,392*CITY_COMPACT,44,33,-.1,'greenhouse',DISTRICTS[1]);
+  addLandmark(635*CITY_COMPACT,402*CITY_COMPACT,103,50,.06,'warehouse',DISTRICTS[2]);
+  addLandmark(570*CITY_COMPACT,460*CITY_COMPACT,77,44,-.11,'market',DISTRICTS[2]);
+  addLandmark(685*CITY_COMPACT,-176*CITY_COMPACT,122,35,.08,'airport',DISTRICTS[3]);
   const important=structures.slice();
   const settlements=[
     {x:40,y:125,rx:220,ry:166,count:150,zone:0},
@@ -373,7 +448,7 @@ function buildWorld(){
     if(roadsNear(px,py,Math.max(w,h)*.63+14))continue;
     if(important.some(b=>Math.hypot(px-b.x,py-b.y)<b.rad+37))continue;
     if(structures.some(b=>Math.abs(px-b.x)<(w+b.w)*.60&&Math.abs(py-b.y)<(h+b.h)*.60))continue;
-    if(hash(id*7+14)<.16){parkingLots.push({x:px,y:py,w:w+9,h:h+8,rot:(hash(id+47)-.5)*.3});continue;}
+    if(hash(id*7+14)<.16){if(buildingSiteValid(px,py,w+9,h+8,0))parkingLots.push({x:px,y:py,w:w+9,h:h+8,rot:0,padY:terrainHeight(px,py)});continue;}
     const kind=region.zone===2?'warehouse':region.zone===3?'airport':region.zone===1?'villa':hash(id+32)>.73?'hotel':hash(id+52)>.44?'villa':'office';
     addBuilding(px,py,w,h,(hash(id+81)-.5)*.24,kind,zone);
   }
