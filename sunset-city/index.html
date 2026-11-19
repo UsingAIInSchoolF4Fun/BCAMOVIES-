@@ -941,6 +941,17 @@ function draw3Buffer(buf){if(!buf||!buf.count)return;let gl=webgl;gl.bindBuffer(
 function section3(x,z){return `${Math.floor(x/220)},${Math.floor(z/220)}`}
 function build3DCity(){
  let gl=webgl;
+ // Shared terrain samples are reused across adjacent triangles, line markings and buildings.
+ // Terrain and road grading remain deterministic for the entire static scene.
+ const elevationCache=new Map();
+ function surfaceY(x,z){
+   const key=x+','+z;
+   const cached=elevationCache.get(key);
+   if(cached!==undefined)return cached;
+   const height=terrainHeight(x,z);
+   elevationCache.set(key,height);
+   return height;
+ }
  let terrain=new Mesh3(),step=24;
  // Road surface is part of a single continuous height-mapped island mesh.
  // Roads are not overlapping floating strips: a junction is simply one asphalt surface.
@@ -952,15 +963,15 @@ function build3DCity(){
      const left=x+ix*delta,top=z+iz*delta,cx=left+delta*.5,cz=top+delta*.5;
      if(coastDistance(cx,cz)<-8)continue;
      const points=[
-       [left,terrainHeight(left,top),top],
-       [left+delta,terrainHeight(left+delta,top),top],
-       [left+delta,terrainHeight(left+delta,top+delta),top+delta],
-       [left,terrainHeight(left,top+delta),top+delta]
+       [left,surfaceY(left,top),top],
+       [left+delta,surfaceY(left+delta,top),top],
+       [left+delta,surfaceY(left+delta,top+delta),top+delta],
+       [left,surfaceY(left,top+delta),top+delta]
      ];
      const path=roadSurfaceAt(cx,cz);
      const color=path&&path.edge<.6
        ?path.seg.road.style==='mountain'?'#3b4b50':path.seg.road.style==='coastal'?'#3b4d56':'#364751'
-       :path&&path.edge<6?'#87968c':terrainStyle(cx,cz,terrainHeight(cx,cz));
+       :path&&path.edge<6?'#87968c':terrainStyle(cx,cz,surfaceY(cx,cz));
      terrain.tri(points[0],points[1],points[2],color);
      terrain.tri(points[0],points[2],points[3],color);
    }
@@ -979,7 +990,7 @@ function build3DCity(){
    if(Math.hypot(a.x-b.x,a.y-b.y)<.3)return;
    let pa=roadCrossSection(road,i,offset-width/2),pb=roadCrossSection(road,i,offset+width/2);
    let qa=roadCrossSection(road,i+1,offset-width/2),qb=roadCrossSection(road,i+1,offset+width/2);
-   const to3=v=>[v.x,terrainHeight(v.x,v.y)+lift,v.y];
+   const to3=v=>[v.x,surfaceY(v.x,v.y)+lift,v.y];
    tileAt((a.x+b.x)/2,(a.y+b.y)/2).quad(to3(pa),to3(pb),to3(qb),to3(qa),color,.12);
  }
  for(const road of roads){
@@ -1003,16 +1014,16 @@ function build3DCity(){
    for(const side of [-1,1]){
     const x=b.x+nx*road.width*.69*side,z=b.y+nz*road.width*.69*side;
     if(isWater(x,z))continue;
-    const mesh=tileAt(x,z),h=terrainHeight(x,z);
+    const mesh=tileAt(x,z),h=surfaceY(x,z);
     mesh.box(x,h+1.25,z,.85,2.5,.85,'#dcdcc9');
     mesh.box(x,h+2.3,z,1,.25,1,road.style==='mountain'?'#ffd38e':'#70d5cb',0,.65);
    }
   }
  }
- for(const park of parkingLots){let m=tileAt(park.x,park.y),base=terrainHeight(park.x,park.y);m.box(park.x,base+.18,park.y,park.w+4,.16,park.h+4,'#9eafa4',park.rot);m.box(park.x,base+.275,park.y,park.w,.07,park.h,'#485665',park.rot);for(let j=-2;j<=2;j++)m.box(park.x+j*8,base+.317,park.y,0.4,.03,12,'#e8d3ad',park.rot)}
+ for(const park of parkingLots){let m=tileAt(park.x,park.y),base=surfaceY(park.x,park.y);m.box(park.x,base+.18,park.y,park.w+4,.16,park.h+4,'#9eafa4',park.rot);m.box(park.x,base+.275,park.y,park.w,.07,park.h,'#485665',park.rot);for(let j=-2;j<=2;j++)m.box(park.x+j*8,base+.317,park.y,0.4,.03,12,'#e8d3ad',park.rot)}
  // Physical building geometry follows the very same rotated rectangles used by building collision code.
  for(const b of structures){let m=tileAt(b.x,b.y),zone=DISTRICTS.find(v=>v.name===b.zone),height=b.kind==='tower'?63:b.kind==='stadium'?17:b.kind==='airport'?8:b.kind==='villa'?8:b.kind==='hotel'?26:b.kind==='warehouse'?12:b.kind==='neon'?24:16+(hash(b.seed+404)*36);b.height=height;
-  let groundY=terrainHeight(b.x,b.y),rot=-b.rot,col=b.color;
+  let groundY=surfaceY(b.x,b.y),rot=-b.rot,col=b.color;
   m.box(b.x,groundY+1.05,b.y,b.w*.95,2.1,b.h*.95,'#56685c',rot);
   if(b.kind==='stadium'){m.cylinder(b.x,groundY+8,b.y,Math.max(b.w,b.h)*.49,16,16,'#c6c8bd');m.cylinder(b.x,groundY+17,b.y,Math.max(b.w,b.h)*.38,2,16,'#536a74');}
   else if(b.kind==='airport'){m.box(b.x,groundY+4,b.y,b.w,8,b.h,col,rot);m.box(b.x,groundY+9,b.y,b.w*.5,2,b.h*.8,'#d7e7e9',rot);}
@@ -1053,7 +1064,7 @@ function build3DCity(){
  }
  // Coniferous forests and alpine boulders use low-cost geometry.
  for(const t of trees){
-  const m=tileAt(t.x,t.y),base=terrainHeight(t.x,t.y),k=t.kind,scale=t.s;
+  const m=tileAt(t.x,t.y),base=surfaceY(t.x,t.y),k=t.kind,scale=t.s;
   if(k==='rock'){const rough=hash(t.x*3+t.y*7),radius=(3.7+rough*5.6)*scale;m.boulder(t.x,base+radius*.10,t.y,radius);continue;}
   if(k==='garden'){m.cylinder(t.x,base+.5,t.y,5.5,1,6,'#4d8d6b');continue}
   const height=(k==='palm'?12:k==='fir'?22:k==='pine'?18:12)*scale;
@@ -1068,10 +1079,10 @@ function build3DCity(){
    m.cylinder(t.x,base+height*.92,t.y,2.6*scale,4.1*scale,6,'#6aab7b');
   }
  }
- for(let p of streetProps){let m=tileAt(p.x,p.y),base=terrainHeight(p.x,p.y);if(p.kind==='lamp'){m.box(p.x,base+4.5,p.y,.28,9,.28,'#526373');m.box(p.x+.9,base+9.3,p.y,2,.18,.45,'#dfd5b8',0,.6)}else{m.box(p.x,base+5,p.y,12,9,.9,'#33415b',-p.a);m.box(p.x,base+5.4,p.y+0.6,11,5,.14,'#fcb787',-p.a,.32)}}
+ for(let p of streetProps){let m=tileAt(p.x,p.y),base=surfaceY(p.x,p.y);if(p.kind==='lamp'){m.box(p.x,base+4.5,p.y,.28,9,.28,'#526373');m.box(p.x+.9,base+9.3,p.y,2,.18,.45,'#dfd5b8',0,.6)}else{m.box(p.x,base+5,p.y,12,9,.9,'#33415b',-p.a);m.box(p.x,base+5.4,p.y+0.6,11,5,.14,'#fcb787',-p.a,.32)}}
  // Decorative crosswalks at key arterial intersections.
  const crossings=[[40,32],[-310,-340],[-340,90],[160,-180],[365,-65],[-450,130],[-60,285]];
- for(const [ax,az] of crossings){const x=ax*CITY_COMPACT,z=az*CITY_COMPACT;let m=tileAt(x,z);for(let j=-5;j<=5;j++){m.box(x+j*2.3,terrainHeight(x+j*2.3,z)+.25,z,1.3,.035,7.5,'#ddd5be')}}
+ for(const [ax,az] of crossings){const x=ax*CITY_COMPACT,z=az*CITY_COMPACT;let m=tileAt(x,z);for(let j=-5;j<=5;j++){m.box(x+j*2.3,surfaceY(x+j*2.3,z)+.25,z,1.3,.035,7.5,'#ddd5be')}}
  for(let [key,obj] of tiles){if(!obj.mesh.d.length)continue;g3.tiles.set(key,{x:obj.x,z:obj.z,draw:upload3(obj.mesh)});g3.stats.triangles+=obj.mesh.d.length/30}g3.stats.tiles=g3.tiles.size;
 }
 function perspective3(fovy,ratio,near,far){let f=1/Math.tan(fovy*.5),nf=1/(near-far);return [f/ratio,0,0,0,0,f,0,0,0,0,(far+near)*nf,-1,0,0,2*far*near*nf,0]}
