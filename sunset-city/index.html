@@ -867,6 +867,9 @@ function vehicle3(mesh,v,kind='traffic'){
   const xx=x+lx*co-lz*si,zz=z+lx*si+lz*co;
   mesh.box(xx,groundY+ly+bounce+sway*lx/width+tilt*lz/len,zz,w,h,d,paint,-a,glow);
  }
+ function point(lx,ly,lz){return [x+lx*co-lz*si,groundY+ly+bounce+sway*lx/width+tilt*lz/len,z+lx*si+lz*co]}
+ function panel(a,b,c,d,col,glow=0){mesh.quad(point(...a),point(...b),point(...c),point(...d),col,glow)}
+
  const lift=style==='rally'?1.1:style==='armored'?1.25:style==='super'||style==='hyper'?-.35:0;
  const wheelR=style==='armored'||style==='rally'?2.85:2.25;
  for(const left of [-1,1])for(const front of [-1,1]){
@@ -890,6 +893,34 @@ function vehicle3(mesh,v,kind='traffic'){
  const cabZ=style==='hatch'?len*.15:style==='muscle'?len*.15:style==='super'||style==='hyper'?len*.08:0;
  part(0,(baseY+bodyH/2+roofTop)/2,cabZ,cabWidth,Math.max(.85,roofTop-baseY-bodyH/2),cabLength,police?'#a6b9bf':'#355369');
  part(0,roofTop+.10,cabZ,cabWidth*.96,.22,cabLength*.92,style==='armored'?'#344754':color);
+
+ // Angled glass and aerodynamic nose make each chassis read as a vehicle, not a box.
+ const frontCab=cabZ-cabLength*.49,rearCab=cabZ+cabLength*.49;
+ const lowGlass=baseY+bodyH*.52,windY=roofTop-.22;
+ panel([-cabWidth*.47,windY,frontCab],[cabWidth*.47,windY,frontCab],[cabWidth*.50,lowGlass,frontCab-1.7],[-cabWidth*.50,lowGlass,frontCab-1.7],'#8fc4d3',.18);
+ panel([cabWidth*.47,windY,rearCab],[-cabWidth*.47,windY,rearCab],[-cabWidth*.51,lowGlass,rearCab+1.15],[cabWidth*.51,lowGlass,rearCab+1.15],'#729bad',.1);
+ const hoodY=lowGlass-.40;
+ panel([-width*.47,hoodY,frontCab-1.45],[width*.47,hoodY,frontCab-1.45],[width*.46,baseY+bodyH*.27,-len*.5],[-width*.46,baseY+bodyH*.27,-len*.5],color);
+ // Chrome/black grille, bumper, dual lamps and side mirrors.
+ part(0,baseY-.35,-len*.52,width*.74,.55,.13,'#152937');
+ part(0,baseY-.58,-len*.535,width*.50,.16,.14,'#9dabae');
+ for(const side of [-1,1]){
+   part(side*width*.37,baseY+.10,-len*.525,width*.17,.35,.15,'#fff7d7',.75);
+   part(side*width*.38,baseY+.12,len*.527,width*.19,.37,.15,'#ff6573',.78);
+   part(side*(cabWidth*.5+.36),roofTop-1.85,cabZ-cabLength*.18,.94,.46,1.3,'#2b3e4d');
+   part(side*width*.48,baseY+.06,0,.14,.22,len*.62,'#152e3b');
+   part(side*width*.30,baseY+bodyH*.52,-len*.32,.85,.10,len*.18,'#ffffff3b');
+ }
+ if(style==='muscle'||style==='super'){
+   for(const side of [-1,1]){
+    part(side*width*.15,baseY+bodyH*.52,-len*.31,width*.065,.08,len*.32,style==='muscle'?'#e0d8c3':'#263047');
+   }
+ }
+ if(style==='rally'||style==='armored'){
+   part(0,baseY-.6,-len*.54,width*.88,.55,.4,'#344856');
+   for(const side of [-1,1])part(side*width*.32,baseY+.20,-len*.56,2.0,1.0,.22,'#f2d78b',.7);
+ }
+
  for(const side of [-1,1]){
   part(side*cabWidth*.49,roofTop-.90,cabZ, .17,1.45,cabLength*.70,'#80b2c4',.11);
   part(side*width*.44,baseY+.5,0,.14,.37,len*.55,style==='hyper'?'#9cf7ec':'#ffffff66',style==='hyper'?.9:0);
