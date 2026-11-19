@@ -1,0 +1,44 @@
+name: INFINITY RNG browser smoke test
+on:
+  push:
+    paths:
+      - 'infinity-rng/**'
+      - '.github/workflows/infinity-rng-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check game startup in headless Chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v google-chrome || command -v chromium || true
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/infinity-server.log 2>&1 &
+          sleep 2
+          BROWSER="$(command -v google-chrome || command -v chromium || true)"
+          if [ -z "$BROWSER" ]; then
+            echo "No Chrome available"; exit 1
+          fi
+          for page in index.html v14-experimental.html; do
+            echo "--- TEST: $page ---"
+            "$BROWSER" --headless=new --no-sandbox --disable-dev-shm-usage --enable-webgl --enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader --disable-software-rasterizer=false --virtual-time-budget=15000 --dump-dom "http://127.0.0.1:8765/infinity-rng/$page" > "/tmp/${page}.dom" 2>"/tmp/${page}.log" || true
+            python3 - "$page" <<'PY'
+          import pathlib,sys,re,html
+          name=sys.argv[1]
+          dom=pathlib.Path('/tmp/'+name+'.dom').read_text(errors='replace')
+          log=pathlib.Path('/tmp/'+name+'.log').read_text(errors='replace')
+          loading=re.search(r'<div[^>]*id="loading"[^>]*>(.*?)</div>',dom,re.S|re.I)
+          snippet=html.unescape(re.sub('<[^>]+>',' ',loading.group(0)))[:500] if loading else 'MISSING LOADING NODE'
+          cls=re.search(r'class="([^"]*)"',loading.group(0)).group(1) if loading and 'class="' in loading.group(0) else 'unknown'
+          print('DOM_SIZE',len(dom),'LOADING_CLASS',cls,'LOADING_TEXT',snippet)
+          print('CANVAS_COUNT',dom.count('<canvas'))
+          print('CHROME_ERROR_LOG_TAIL',log[-2500:])
+          if not dom: print('NO DOM')
+          PY
+          done
+          echo "Browser inspection completed."
