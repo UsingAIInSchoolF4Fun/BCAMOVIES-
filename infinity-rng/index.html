@@ -64,6 +64,9 @@ body:not(.compact-ui) #challengeStatus{display:block}
  <label class="settings-line"><input type="checkbox" id="settingCoords"> Show coordinates</label>
  <label class="settings-line"><input type="checkbox" id="settingTips"> Show controls and notices</label>
  <label class="settings-line"><input type="checkbox" id="settingParkour"> Show parkour tracker</label>
+ <h3>BIOME EXPEDITIONS</h3>
+ <p>Find a glowing shrine in every region. Press <b>F</b> to start. Collect four numbered runes in 95 seconds and return to press F. The shrine awards a rare regional aura and one ×5 luck roll. Each shrine has a 20-minute cooldown.</p>
+ <div id="trialWinsSummary" style="font-size:11px;color:#b6dff8"></div>
  <h3>GAME CONTROLS</h3>
  <div class="settings-actions">
    <button id="sprintButton">SPRINT: OFF (E)</button>
@@ -269,6 +272,8 @@ for(const [id,key] of settingsFields){
 }
 applyHudPrefs();
 $("settingsButton").onclick=()=>{
+    $("trialWinsSummary").textContent="Regions conquered: "+
+      BIOME_REWARDS.filter(c=>(state.trialWins[c.id]||0)>0).length+" / "+BIOME_REWARDS.length;
     $("inventory").classList.remove("open");
     $("settingsPanel").classList.toggle("open");
     if($("settingsPanel").classList.contains("open")){
@@ -4025,6 +4030,210 @@ renderAura = () => {
     }
 };
 renderAura();
+
+// BIOME EXPEDITIONS · 7 playable timed rune challenges, one per region.
+// Players must activate a shrine with F, collect FOUR distant runes in order,
+// then RETURN to the shrine within 95 seconds. Winners earn a weighted 5×
+// themed aura roll and ONE consumable 5× boost for their next normal roll.
+const BIOME_TRIAL_SECONDS=95,BIOME_TRIAL_COOLDOWN=20*60*1000;
+const trialCourses=[];
+let activeBiomeTrial=null,trialInteractLatch=false;
+const trialPanel=document.createElement("div");
+trialPanel.id="biomeTrialHud";
+trialPanel.style.cssText="display:none;position:fixed;right:11px;bottom:91px;z-index:7;pointer-events:none;background:#111329e9;color:#fbf4ff;border:1px solid #be9affaa;border-radius:13px;padding:11px 13px;width:min(260px,43vw);font:11px/1.5 Arial,sans-serif;box-shadow:0 8px 30px #0009;";
+document.body.appendChild(trialPanel);
+const trialWinPanel=document.createElement("div");
+trialWinPanel.id="trialWinPopup";
+trialWinPanel.style.cssText="display:none;position:fixed;left:50%;top:25%;transform:translateX(-50%);z-index:8;pointer-events:none;min-width:260px;max-width:min(400px,85vw);text-align:center;background:#21143bea;color:white;border:1px solid #e8baff;border-radius:20px;padding:22px;box-shadow:0 0 50px #8b5ce3bb;font:13px/1.6 Arial,sans-serif";
+document.body.appendChild(trialWinPanel);
+const trialStageShimmer=[];
+function courseGroundSafe(x,z){
+ // Avoid colliders, cliff edges, towers and unreliably steep ground.
+ if(Math.abs(x)>393||Math.abs(z)>393)return false;
+ for(const collider of worldColliders){
+  if(Math.hypot(x-collider.x,z-collider.z)<collider.r+5.2)return false;
+ }
+ const mid=ground(x,z);
+ if(Math.abs(ground(x+2.5,z)-ground(x-2.5,z))>3.5)return false;
+ if(Math.abs(ground(x,z+2.5)-ground(x,z-2.5))>3.5)return false;
+ return Number.isFinite(mid);
+}
+function buildBiomeTrials(){
+ for(const region of BIOME_REWARDS){
+  const shrineY=ground(region.x,region.z),color=region.color;
+  const stone=new T.MeshStandardMaterial({color:0x69677c,roughness:.9,map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.13});
+  const baseMat=new T.MeshStandardMaterial({color,roughness:.48,emissive:color,emissiveIntensity:.2});
+  const emberMat=new T.MeshStandardMaterial({color,roughness:.21,metalness:.15,emissive:color,emissiveIntensity:1.1});
+  // The platform is rooted slightly into the precisely leveled site.
+  cyl(5.7,6,.65,stone,scene,region.x,shrineY+.26,region.z,18);
+  cyl(4.9,5,.13,baseMat,scene,region.x,shrineY+.66,region.z,18);
+  const dais=torus(4.25,.22,emberMat,scene,region.x,shrineY+.75,region.z);
+  dais.rotation.x=Math.PI/2;
+  for(let n=0;n<4;n++){
+   const a=n*Math.PI/2;
+   const x=region.x+Math.cos(a)*3.9,z=region.z+Math.sin(a)*3.9;
+   cyl(.45,.62,2.1,stone,scene,x,shrineY+1.7,z,8);
+   sphere(.41,emberMat,scene,x,shrineY+2.85,z).castShadow=false;
+  }
+  const core=mesh(new T.OctahedronGeometry(1.35,0),emberMat,scene,region.x,shrineY+3.7,region.z);
+  core.scale.y=1.7;core.castShadow=false;
+  const flags=[];
+  const checkpoints=[];
+  const angles=[.75,2.30,3.85,5.40];
+  for(let stage=0;stage<4;stage++){
+   let px=0,pz=0,found=false;
+   for(let attempt=0;attempt<24;attempt++){
+    const theta=angles[stage]+attempt*.29;
+    const radius=27+(stage%2)*4+(attempt%3)*3;
+    const tx=region.x+Math.cos(theta)*radius,tz=region.z+Math.sin(theta)*radius;
+    if(!courseGroundSafe(tx,tz))continue;
+    if(checkpoints.some(p=>Math.hypot(tx-p.x,tz-p.z)<17))continue;
+    px=tx;pz=tz;found=true;break;
+   }
+   if(!found){
+    // No giant floating obstacle if terrain is crowded: fall back to a
+    // compact, explicitly grounded rune closer to the central altar.
+    const angle=angles[stage],dist=12;
+    px=region.x+Math.cos(angle)*dist;pz=region.z+Math.sin(angle)*dist;
+   }
+   const py=ground(px,pz);
+   cyl(2.2,2.5,.75,stone,scene,px,py+.29,pz,12);
+   cyl(1.9,2,.12,baseMat,scene,px,py+.71,pz,12);
+   const marker=torus(1.72,.16,emberMat,scene,px,py+2.75,pz,24);
+   marker.rotation.y=stage*.22;marker.castShadow=false;
+   const rune=mesh(new T.OctahedronGeometry(.8,0),emberMat,scene,px,py+2.8,pz);
+   rune.castShadow=false;rune.scale.y=1.35;
+   // Numbered canvas icon makes the checkpoint order obvious.
+   const canvas=document.createElement("canvas");canvas.width=canvas.height=96;
+   const c=canvas.getContext("2d");c.clearRect(0,0,96,96);
+   c.font="bold 67px Arial";c.textAlign="center";c.lineWidth=5;
+   c.strokeStyle="#1b173a";c.strokeText(String(stage+1),48,70);
+   c.fillStyle="#fff8e5";c.fillText(String(stage+1),48,70);
+   const tex=new T.CanvasTexture(canvas);tex.encoding=T.sRGBEncoding;
+   const number=new T.Sprite(new T.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
+   number.position.set(px,py+6.2,pz);number.scale.set(2.3,2.3,1);
+   scene.add(number);
+   checkpoints.push({x:px,z:pz,y:py,marker,rune,number,mat:emberMat});
+   flags.push({marker,rune,py,phase:stage*.84,number});
+  }
+  trialCourses.push({...region,shrineY,core,flags,checkpoints,baseMat,emberMat});
+ }
+}
+buildBiomeTrials();
+
+function trialNotification(message){
+ trialWinPanel.textContent=message;
+ trialWinPanel.style.display="block";
+ clearTimeout(trialNotification.timer);
+ trialNotification.timer=setTimeout(()=>{trialWinPanel.style.display="none";},4300);
+}
+function themedRewardRoll(course){
+ // A 5× luck weighted distribution across the four challenge-exclusive tiers.
+ const normalWeights=[65,24,7,0.8],weights=normalWeights.map((w,i)=>w*Math.pow(5,i*.72));
+ const total=weights.reduce((a,b)=>a+b,0);
+ let pick=Math.random()*total,tier=0;
+ while(tier<weights.length-1&&pick>=weights[tier])pick-=weights[tier++];
+ const name=course.names[tier];
+ const aura=A[auraLookup.get(name)];
+ return {aura,tier,dropChance:weights[tier]/total};
+}
+function finishBiomeTrial(course){
+ const reward=themedRewardRoll(course),aura=reward.aura;
+ state.owned[aura[0]]=(state.owned[aura[0]]||0)+1;
+ state.pendingLuck=5;
+ state.trialWins[course.id]=(state.trialWins[course.id]||0)+1;
+ state.trialCooldowns[course.id]=Date.now()+BIOME_TRIAL_COOLDOWN;
+ refreshLuck();save();updateHUD();inventory();
+ activeBiomeTrial=null;
+ const rarity=["RARE","EPIC","LEGENDARY","MYTHICAL"][reward.tier];
+ const text="✦ "+course.name.toUpperCase()+" TRIAL COMPLETE ✦\n"+
+   "5× THEMED ROLL → "+aura[0]+"\n"+rarity+" · "+(reward.dropChance*100).toFixed(1)+"% tier chance\n"+
+   "PLUS: 5× LUCK ON YOUR NEXT NORMAL ROLL!";
+ trialWinPanel.style.whiteSpace="pre-line";
+ trialNotification(text);
+ // Display a special mini-roll animation without blocking the underlying game.
+ const time=performance.now(),duration=1250;
+ const frame=(now)=>{
+  const progress=(now-time)/duration;
+  if(progress<1){
+   const idx=Math.floor(now/110)%4;
+   $("result").textContent=course.names[idx].toUpperCase();
+   $("result").style.color=hex(course.color);
+   $("chance").textContent="5× "+course.name.toUpperCase()+" SHRINE ROLL...";
+   requestAnimationFrame(frame);
+  }else{
+   $("result").textContent=aura[0].toUpperCase();
+   $("result").style.color=hex(course.color);
+   $("chance").textContent=rarity+" · "+(reward.dropChance*100).toFixed(1)+"% THEMED DROP · ×5 NEXT ROLL";
+  }
+ };
+ requestAnimationFrame(frame);
+}
+function updateBiomeTrials(t){
+ const now=Date.now(),p=player.position;
+ const nearby=trialCourses
+  .map(c=>({course:c,dist:Math.hypot(p.x-c.x,p.z-c.z)}))
+  .sort((a,b)=>a.dist-b.dist)[0];
+ const course=activeBiomeTrial?.course;
+ const pressF=!!keys.KeyF&&!trialInteractLatch;
+ trialInteractLatch=!!keys.KeyF;
+ if(activeBiomeTrial&&now>=activeBiomeTrial.ends){
+  activeBiomeTrial=null;
+  trialNotification("RUNES FADING · Time expired! Start another run at the shrine.");
+ }
+ if(activeBiomeTrial){
+  const active=activeBiomeTrial,course=active.course;
+  if(active.stage<4){
+   const target=course.checkpoints[active.stage];
+   if(Math.hypot(p.x-target.x,p.z-target.z)<3.9&&
+      Math.abs(p.y-target.y)<5&&!gliding){
+    active.stage++;
+    trialNotification("RUNE "+active.stage+"/4 ACTIVATED");
+  }
+  }else if(pressF&&Math.hypot(p.x-course.x,p.z-course.z)<7.5&&!gliding){
+   finishBiomeTrial(course);
+  }
+ }else if(pressF&&nearby.dist<7.5&&!gliding){
+  const c=nearby.course,cooldown=state.trialCooldowns[c.id]||0;
+  if(now<cooldown){
+   trialNotification(c.name+" shrine recharges in "+Math.ceil((cooldown-now)/60000)+" minutes.");
+  }else if(state.pendingLuck>=5){
+   trialNotification("Use your saved ×5 normal roll first, then return for another trial.");
+  }else{
+   activeBiomeTrial={course:c,stage:0,ends:now+BIOME_TRIAL_SECONDS*1000};
+   trialNotification("TRIAL STARTED · Collect runes 1 → 4, then return and press F!");
+  }
+ }
+ for(const c of trialCourses){
+  c.core.rotation.y=t*.65;c.core.position.y=c.shrineY+3.7+Math.sin(t*1.45+c.x)*.26;
+  const selected=activeBiomeTrial?.course===c;
+  for(let i=0;i<c.checkpoints.length;i++){
+   const o=c.checkpoints[i],complete=selected&&i<activeBiomeTrial.stage;
+   const next=selected&&i===activeBiomeTrial.stage;
+   o.marker.rotation.z=t*(next?.88:.23)+i;
+   o.rune.rotation.y=-t*.8+i*.65;
+   o.rune.position.y=o.y+2.8+Math.sin(t*2.1+i)*.24;
+   o.marker.scale.setScalar(next?1.2:complete?.8:1);
+   o.rune.visible=!complete;
+   o.number.visible=!complete;
+  }
+ }
+ if(activeBiomeTrial){
+  const active=activeBiomeTrial,c=active.course,seconds=Math.max(0,Math.ceil((active.ends-now)/1000));
+  const next=active.stage>=4?"Return to the shrine and press F":
+    "Find rune "+(active.stage+1)+" of 4 (numbers mark the order)";
+  trialPanel.style.display="block";
+  trialPanel.innerHTML="<b style='color:#ffe0a2'>✦ "+c.name+" · "+seconds+"s</b><div>"+next+"</div><div style='color:#a6ecdb'>Reward: 5× themed aura roll + 5× next roll</div>";
+ }else if(nearby.dist<24){
+  const c=nearby.course,remaining=Math.max(0,(state.trialCooldowns[c.id]||0)-now);
+  trialPanel.style.display="block";
+  trialPanel.innerHTML="<b style='color:#ffe2a5'>✦ "+c.name+" Shrine</b>"+
+   "<div>"+(remaining?"Ready in "+Math.ceil(remaining/60000)+"m":
+    state.pendingLuck>=5?"Use your saved ×5 roll first":"Press F nearby to start a 95-second rune trial")+"</div>"+
+   "<div style='color:#a6ecdb'>Four runes · rare aura variants · 5× luck</div>";
+ }else trialPanel.style.display="none";
+}
+
 function awardTrial(site){
  if(site.discovered)return;
  site.discovered=true;
@@ -4117,6 +4326,7 @@ function animate() {
     animateWaterwheels(t);
     animateScenicFlocks(t);
     animateCliffBeacons(t);
+    updateBiomeTrials(t);
     riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
     for(const m of biomeAtmosphere)setWorldUniformTime(m,t,'biome particle effects');
