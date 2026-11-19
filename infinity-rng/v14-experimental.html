@@ -2107,7 +2107,7 @@ function animateSpawnHub(t){
  spawnHub.crystal.position.y=5.6+Math.sin(t*1.45)*.18;
  spawnHub.halo.forEach((ring,i)=>{ring.rotation.z+=.0015*(i%2?1:-1);ring.rotation.y+=.0025;});
  spawnHub.waterfalls.forEach(tex=>{tex.offset.y=-(t*.23%1);});
- spawnHub.spray.uniforms.uTime.value=t;
+ setWorldUniformTime(spawnHub.spray,t,'fountain spray');
  spawnHub.foam.scale.setScalar(1+Math.sin(t*2.8)*.019);
  spawnHub.banners.forEach((banner,i)=>{banner.rotation.y=Math.sin(t*1.3+i*1.4)*.06;banner.rotation.z=Math.sin(t*.9+i)*.015;});
  spawnHub.lights.forEach((light,i)=>{light.scale.setScalar(1+Math.sin(t*5.5+i)*.045);});
@@ -3908,14 +3908,23 @@ window.addEventListener("resize", () => {
 let lastBiome = "",
     frameN = 0;
 
+const missingWorldUniforms=new Set();
+function setWorldUniformTime(material,t,label){
+ const uniform=material&&material.uniforms&&material.uniforms.uTime;
+ if(uniform){uniform.value=t;return;}
+ if(!missingWorldUniforms.has(label)){
+   console.warn('INFINITY RNG: missing uTime uniform for '+label,material);
+   missingWorldUniforms.add(label);
+ }
+}
 function animate() {
     requestAnimationFrame(animate);
     let dt = Math.min(clock.getDelta(), .05),
         t = clock.elapsedTime;
     animateWind(t);
     animateSpawnHub(t);
-    skyDomeMaterial.uniforms.uTime.value=t;
-    for(const mist of mountainMistMaterials)mist.uniforms.uTime.value=t;
+    setWorldUniformTime(skyDomeMaterial,t,'sky');
+    for(const mist of mountainMistMaterials)setWorldUniformTime(mist,t,'mountain mist');
     animateBiomeGeometry(t);
     animateRealmGateBanners(t);
     animateWaystations(t);
@@ -3924,9 +3933,9 @@ function animate() {
     animateCliffBeacons(t);
     riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
-    for(const m of biomeAtmosphere)m.uniforms.uTime.value=t;
-    for(const fx of environmentFX)fx.uniforms.uTime.value=t;
-    riverFlowMaterial.uniforms.uTime.value=t;
+    for(const m of biomeAtmosphere)setWorldUniformTime(m,t,'biome particle effects');
+    for(const fx of environmentFX)setWorldUniformTime(fx,t,'legacy environment FX');
+    setWorldUniformTime(riverFlowMaterial,t,'river');
     for (const c of cloudGroups) {
         c.g.position.x += c.speed * dt;
         if (c.g.position.x > 450) c.g.position.x = -450
@@ -4136,7 +4145,7 @@ function animate() {
     const erupting=elapsed<volcano.eruption;
     lavaPool.scale.y=erupting?2.8:1;
     const eruptionProgress=elapsed/volcano.eruption;
-    flowingLavaMaterial.uniforms.uTime.value=t;
+    setWorldUniformTime(flowingLavaMaterial,t,'volcano lava');
     lavaFlows.forEach(stream=>{stream.mesh.visible=erupting&&eruptionProgress>.04;});
     lavaPool.position.y=volcanoBase+volcano.height+(erupting?5:.5);
     lavaColumns.forEach((o,i)=>{o.visible=erupting;o.position.y=volcanoTop+5+Math.abs(Math.sin(t*2+i))*8});
