@@ -644,6 +644,21 @@ function build3DCity(){
       const a1={x:a.x+nx*road.width*.34*side,y:a.y+nz*road.width*.34*side},b1={x:b.x+nx*road.width*.34*side,y:b.y+nz*road.width*.34*side};ribbon(a1,b1,.65,.265+rise,'#dce6dc');
     }}
  }}
+ // Road reflectors along mountain and coastal curves.
+ for(const road of roads){
+  if(road.style!=='mountain'&&road.style!=='coastal')continue;
+  for(let j=7;j<road.points.length;j+=road.style==='mountain'?14:23){
+   const a=road.points[j-1],b=road.points[j],dx=b.x-a.x,dz=b.y-a.y,len=Math.hypot(dx,dz)||1;
+   const nx=-dz/len,nz=dx/len;
+   for(const side of [-1,1]){
+    const x=b.x+nx*road.width*.69*side,z=b.y+nz*road.width*.69*side;
+    if(isWater(x,z))continue;
+    const mesh=tileAt(x,z),h=terrainHeight(x,z);
+    mesh.box(x,h+1.25,z,.85,2.5,.85,'#dcdcc9');
+    mesh.box(x,h+2.3,z,1,.25,1,road.style==='mountain'?'#ffd38e':'#70d5cb',0,.65);
+   }
+  }
+ }
  for(const park of parkingLots){let m=tileAt(park.x,park.y),base=terrainHeight(park.x,park.y);m.box(park.x,base+.18,park.y,park.w+4,.16,park.h+4,'#9eafa4',park.rot);m.box(park.x,base+.275,park.y,park.w,.07,park.h,'#485665',park.rot);for(let j=-2;j<=2;j++)m.box(park.x+j*8,base+.317,park.y,0.4,.03,12,'#e8d3ad',park.rot)}
  // Physical building geometry follows the very same rotated rectangles used by building collision code.
  for(const b of structures){let m=tileAt(b.x,b.y),zone=DISTRICTS.find(v=>v.name===b.zone),height=b.kind==='tower'?63:b.kind==='stadium'?17:b.kind==='airport'?8:b.kind==='villa'?8:b.kind==='hotel'?26:b.kind==='warehouse'?12:b.kind==='neon'?24:16+(hash(b.seed+404)*36);b.height=height;
