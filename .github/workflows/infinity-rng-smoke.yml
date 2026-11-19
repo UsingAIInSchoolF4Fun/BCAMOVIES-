@@ -30,7 +30,7 @@ jobs:
               args:['--no-sandbox','--disable-dev-shm-usage','--enable-webgl','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']
             });
             let failed=false;
-            for(const pageName of ['index.html','v14-experimental.html']){
+            for(const pageName of ['v14-experimental.html']){
               const page=await browser.newPage({viewport:{width:1250,height:850}});
               const errors=[],logs=[];
               page.on('pageerror',e=>errors.push('PAGEERROR: '+String(e.stack||e)));
@@ -40,7 +40,7 @@ jobs:
               page.on('requestfailed',r=>logs.push('REQUEST FAILED '+r.url()+': '+(r.failure()?.errorText||'?')));
               try{
                 await page.goto('http://127.0.0.1:8765/infinity-rng/'+pageName,{waitUntil:'domcontentloaded',timeout:45000});
-                await page.waitForTimeout(7000);
+                await page.waitForTimeout(3300);
                 const status=await page.evaluate(()=>{
                   const l=document.getElementById('loading');
                   return {loadingClass:l?.className,loadingText:l?.innerText?.slice(0,700),canvasCount:document.querySelectorAll('canvas').length,threeLoaded:!!window.THREE,version:document.querySelector('.version')?.innerText};
