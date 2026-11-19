@@ -149,14 +149,14 @@ function buildWorld(){
   ringRoad('CENTRAL ROUNDABOUT',40,25,84,84,27,'roundabout');
   ringRoad('HARBOR CIRCLE',420,425,72,72,23,'roundabout');
   ringRoad('GOLD COAST CIRCLE',525,-315,78,75,23,'roundabout');
-  for(const y of [-490,-245,0,245,490]){
-    curveRoad('EAST-WEST AVENUE '+y,[[-790,y],[-390,y+10],[0,y],[390,y-12],[790,y]],y===0?35:28,y===0?'boulevard':'urban');
+  for(const y of [-270,-135,0,135,270]){
+    curveRoad('EAST-WEST AVENUE '+y,[[-440,y],[-220,y+4],[0,y],[220,y-4],[440,y]],y===0?34:25,y===0?'boulevard':'urban');
   }
-  for(const x of [-600,-300,0,300,600]){
-    curveRoad('NORTH-SOUTH AVENUE '+x,[[x,-710],[x+12,-365],[x,0],[x-15,345],[x,690]],x===0?34:26,x===0?'highway':'urban');
+  for(const x of [-330,-165,0,165,330]){
+    curveRoad('NORTH-SOUTH AVENUE '+x,[[x,-435],[x+4,-220],[x,0],[x-4,220],[x,435]],x===0?34:25,x===0?'boulevard':'urban');
   }
-  curveRoad('DIAGONAL CONNECTOR',[[-710,505],[-475,390],[-235,200],[0,0],[245,-215],[480,-410],[690,-550]],30,'boulevard');
-  curveRoad('NEON CONNECTOR',[[-630,-330],[-410,-350],[-295,-270],[-110,-220],[75,-245],[300,-315],[475,-350]],25,'neon');
+  curveRoad('DIAGONAL CONNECTOR',[[-645,510],[-480,350],[-310,210],[-120,60],[120,-100],[300,-260],[550,-480]],27,'boulevard');
+  curveRoad('NEON CONNECTOR',[[-610,-330],[-415,-355],[-280,-285],[-130,-240],[70,-235],[270,-310],[445,-350]],25,'neon');
   curveRoad('BAYFRONT DRIVE',[[-770,160],[-740,330],[-620,520],[-400,625],[-90,675],[260,645],[560,570]],24,'coastal');
   curveRoad('AIRFIELD ROAD',[[-125,-700],[0,-630],[125,-520],[160,-380]],25,'industrial');
   curveRoad('HARBOR FREIGHT ROUTE',[[700,510],[570,480],[430,440],[275,490],[190,610]],25,'industrial');
@@ -179,15 +179,15 @@ function buildWorld(){
   const important=structures.slice();
   // Varied lots: irregular roof silhouettes, plazas, gardens, and nonuniform spacing.
   let id=0;
-  for(let y=-590;y<=590;y+=66)for(let x=-735;x<=735;x+=66){
+  for(let y=-600;y<=600;y+=62)for(let x=-730;x<=730;x+=62){
     id++;let jitterX=(hash(id+101)-.5)*23,jitterY=(hash(id+201)-.5)*23;
     const px=(x+jitterX)*CITY_COMPACT,py=(y+jitterY)*CITY_COMPACT;
     if(coastDistance(px,py)<60||Math.hypot(px,py)<115||Math.hypot(px+420*CITY_COMPACT,py-390*CITY_COMPACT)<86||Math.hypot(px-520*CITY_COMPACT,py+290*CITY_COMPACT)<94)continue;
     const zone=DISTRICTS.reduce((best,d)=>Math.hypot(px-d.x,py-d.y)<Math.hypot(px-best.x,py-best.y)?d:best,DISTRICTS[0]);
-    const bsize=22+hash(id+19)*19,w=bsize*(.75+hash(id+21)*.9),h=bsize*(.73+hash(id+23)*1.1);
-    if(roadsNear(px,py,Math.max(w,h)*.52+9))continue;
+    const bsize=20+hash(id+19)*17,w=bsize*(.72+hash(id+21)*.86),h=bsize*(.70+hash(id+23)*1.00);
+    if(roadsNear(px,py,Math.max(w,h)*.62+11))continue;
     if(important.some(b=>Math.hypot(px-b.x,py-b.y)<b.rad+45))continue;
-     if(terrainHeight(px,py)>51&&hash(id+257)<.97)continue; // Open off-road mountain ridges.
+     if(terrainHeight(px,py)>42&&hash(id+257)<.98)continue; // Open off-road mountain ridges.
      if(structures.some(b=>Math.abs(px-b.x)<(w+b.w)*.46&&Math.abs(py-b.y)<(h+b.h)*.46))continue;
     if(hash(id+31)<.22){parkingLots.push({x:px,y:py,w:w+12,h:h+13,rot:(hash(id+47)-.5)*.3});continue}
     if(hash(id+57)<.10){trees.push({x:px,y:py,kind:'garden',s:1.7});continue}
@@ -657,7 +657,7 @@ function build3DCity(){
   function buildingLocal(lx,ly,lz){return [b.x+lx*co-lz*si,groundY+ly,b.y+lx*si+lz*co]}
   if(!['stadium','airport'].includes(b.kind)){
    let floors=Math.max(1,Math.floor(height/6));for(let floor=0;floor<floors;floor++){
-     let y=groundY+4+floor*5.8;for(let side of [-1,1]){
+     let y=4+floor*5.8;for(let side of [-1,1]){
        let count=Math.max(2,Math.floor(b.w/8));for(let i=0;i<count;i++){let wx=(i+.5-count/2)*b.w/count,pt=buildingLocal(wx,y,side*(b.h/2+.08));m.box(pt[0],pt[1],pt[2],Math.min(3.7,b.w/count*.65),2.55,.10,b.kind==='neon'?'#dc9bef':(floor+i)%6===0?'#f8d19a':'#9ad0d8',rot,b.kind==='neon'?.24:0);}
        count=Math.max(1,Math.floor(b.h/11));for(let i=0;i<count;i++){let wz=(i+.5-count/2)*b.h/count,pt=buildingLocal(side*(b.w/2+.08),y,wz);m.box(pt[0],pt[1],pt[2],.10,2.55,Math.min(3.7,b.h/count*.64),'#a1c9ce',rot);}
      }
