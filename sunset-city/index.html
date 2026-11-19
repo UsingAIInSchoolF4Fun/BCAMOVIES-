@@ -474,19 +474,27 @@ function draw3Buffer(buf){if(!buf||!buf.count)return;let gl=webgl;gl.bindBuffer(
 function section3(x,z){return `${Math.floor(x/220)},${Math.floor(z/220)}`}
 function build3DCity(){
  let gl=webgl;
- let terrain=new Mesh3();let n=192,pts=[];
- for(let i=0;i<=n;i++){let a=i*TAU/n,rad=shorelineRadius(a),out=[Math.cos(a)*rad*1.23,Math.sin(a)*rad*.92];pts.push(out)}
- for(let i=0;i<n;i++){
-   let a=pts[i],b=pts[i+1],ia=Math.atan2(a[1]/.92,a[0]/1.23),ib=Math.atan2(b[1]/.92,b[0]/1.23),c=[0,0.02,0];
-   terrain.tri(c,[b[0],.02,b[1]],[a[0],.02,a[1]],'#648e6f');
-   let t1=[a[0]*.945,.057,a[1]*.945],t2=[b[0]*.945,.057,b[1]*.945];
-   terrain.quad(t1,t2,[b[0],.065,b[1]],[a[0],.065,a[1]],'#cdb68e');
-   let aa=[a[0]*1.003,.055,a[1]*1.003],bb=[b[0]*1.003,.055,b[1]*1.003];
-   terrain.quad([a[0],.08,a[1]],[b[0],.08,b[1]],bb,aa,'#e2f0cc',.24);
+ let terrain=new Mesh3(),step=30;
+ // Mountain slopes are real vertex heights, not flat ground with decorative objects.
+ for(let z=-1200;z<1200;z+=step)for(let x=-1500;x<1500;x+=step){
+   const cx=x+step*.5,cz=z+step*.5,shore=coastDistance(cx,cz);
+   if(shore< -7)continue;
+   const v0=[x,terrainHeight(x,z),z],v1=[x+step,terrainHeight(x+step,z),z];
+   const v2=[x+step,terrainHeight(x+step,z+step),z+step],v3=[x,terrainHeight(x,z+step),z+step];
+   const color=terrainStyle(cx,cz,terrainHeight(cx,cz));
+   terrain.tri(v0,v1,v2,color);terrain.tri(v0,v2,v3,color);
  }
  g3.ground=upload3(terrain);
  const tiles=new Map();function tileAt(x,z){let key=section3(x,z);if(!tiles.has(key))tiles.set(key,{x:Math.floor(x/220)*220+110,z:Math.floor(z/220)*220+110,mesh:new Mesh3()});return tiles.get(key).mesh;}
- function ribbon(a,b,w,y,col,extra=0){const dx=b.x-a.x,dz=b.y-a.y,length=Math.hypot(dx,dz);if(length<.05)return;let nx=-dz/length,nz=dx/length;const L=[a.x+nx*w/2,y,a.y+nz*w/2],R=[a.x-nx*w/2,y,a.y-nz*w/2],L2=[b.x+nx*w/2,y,b.y+nz*w/2],R2=[b.x-nx*w/2,y,b.y-nz*w/2];tileAt((a.x+b.x)/2,(a.y+b.y)/2).quad(L,R,R2,L2,col,extra)}
+ function ribbon(a,b,w,y,col,extra=0){
+   const dx=b.x-a.x,dz=b.y-a.y,length=Math.hypot(dx,dz);if(length<.05)return;
+   let nx=-dz/length,nz=dx/length;
+   const x0=a.x+nx*w/2,z0=a.y+nz*w/2,x1=a.x-nx*w/2,z1=a.y-nz*w/2;
+   const x2=b.x+nx*w/2,z2=b.y+nz*w/2,x3=b.x-nx*w/2,z3=b.y-nz*w/2;
+   const L=[x0,terrainHeight(x0,z0)+y,z0],R=[x1,terrainHeight(x1,z1)+y,z1];
+   const L2=[x2,terrainHeight(x2,z2)+y,z2],R2=[x3,terrainHeight(x3,z3)+y,z3];
+   tileAt((a.x+b.x)/2,(a.y+b.y)/2).quad(L,R,R2,L2,col,extra);
+ }
  for(let road of roads){let p=road.points;for(let i=0;i<p.length-1;i++){
     const a=p[i],b=p[i+1];if(Math.hypot(a.x-b.x,a.y-b.y)<.1)continue;
     ribbon(a,b,road.width+7,.14,road.style==='coastal'?'#c5ad91':'#75858c');
