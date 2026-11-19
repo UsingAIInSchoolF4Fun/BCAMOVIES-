@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V7 — MOUNTAIN ISLAND PURSUIT</title>
+<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V8 — ISLAND PURSUIT REBUILT</title>
 <style>
 :root{--ink:#0c1a2b;--panel:#101f30f2;--line:#ffffff29;--cyan:#63e6e5;--orange:#ffb36b;--muted:#a8bbc9;--green:#89f4ac}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#081b2b;color:#fff;font-family:Inter,Arial,Helvetica,sans-serif;user-select:none;touch-action:none}
@@ -28,7 +28,7 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 <body>
 <canvas id="game" aria-label="3D third-person police chase driving game"></canvas><div id="tint"></div>
 <div id="hud">
-  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V7 MOUNTAIN ISLAND</small></div><div class="hudMid">
+  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V8 DRIVING REBUILD</small></div><div class="hudMid">
    <div class="pill"><label>SURVIVAL</label><strong id="survive">00:00</strong></div><div class="pill cash"><label>RUN EARNINGS</label><strong id="earn">$0</strong></div><div class="pill heat"><label>HEAT LEVEL</label><strong id="stars">★☆☆☆☆</strong></div></div></div>
   <div id="hudLeft"><div class="meter"><div class="meterhead"><span>CAR INTEGRITY</span><span id="healthText">100%</span></div><div class="track"><div class="fill" id="healthbar"></div></div></div><div class="meter"><div class="meterhead"><span>NITRO</span><span id="boostText">100%</span></div><div class="track"><div class="fill boost" id="boostbar"></div></div></div><div class="tips"><b>W/S</b> accelerate / brake<br><b>A/D</b> steer &nbsp; <b>SHIFT</b> boost<br><b>SPACE</b> handbrake drift<br><b>ESC</b> pause<br><b>MOUNTAINS</b> drive off-road<br><b>OCEAN</b> ends your run</div></div>
   <button id="escapeBtn" type="button">Ⅱ PAUSE</button>
@@ -47,13 +47,13 @@ function hash(a){let n=Math.sin(a*127.1+5.7)*43758.5453;return n-Math.floor(n)}
 function rand(a,b){return a+Math.random()*(b-a)}
 function angleTurn(from,to,rate){let delta=Math.atan2(Math.sin(to-from),Math.cos(to-from));return from+clamp(delta,-rate,rate)}
 const CARS=[
- {id:'compact',name:'STREET COMPACT',desc:'Starter getaway car',price:0,speed:186,accel:144,turn:2.15,armor:100,boost:85,weight:1.0,color:'#5ee2db',rating:[2,2,2]},
- {id:'taxi',name:'CITY RUNNER',desc:'Quick through tight streets',price:1800,speed:212,accel:167,turn:2.45,armor:107,boost:95,weight:1.0,color:'#f4c45c',rating:[3,2,3]},
- {id:'muscle',name:'V8 PHANTOM',desc:'Strong acceleration, heavy hits',price:5100,speed:241,accel:204,turn:1.95,armor:164,boost:96,weight:1.3,color:'#f07765',rating:[4,4,2]},
- {id:'rally',name:'RALLY STORM',desc:'Control off-road and on sand',price:9700,speed:248,accel:203,turn:2.85,armor:148,boost:128,weight:1.15,color:'#a2e77f',rating:[4,3,5]},
- {id:'super',name:'NEON GT',desc:'The perfect high-speed escape',price:17400,speed:299,accel:249,turn:2.35,armor:126,boost:135,weight:0.9,color:'#ad86ff',rating:[5,2,4]},
- {id:'armored',name:'IRONCLAD SUV',desc:'Ram through the police',price:28500,speed:223,accel:164,turn:1.85,armor:260,boost:120,weight:2.4,color:'#a7bdca',rating:[3,5,2]},
- {id:'hyper',name:'ECLIPSE X',desc:'Maximum speed and nitro',price:46500,speed:347,accel:289,turn:2.75,armor:145,boost:160,weight:1.0,color:'#f38abb',rating:[5,3,5]}
+ {id:'compact',name:'COVE HATCH',desc:'Light city hatchback · nimble, cheap, stable',price:0,speed:183,accel:146,turn:2.65,armor:100,boost:79,weight:.90,grip:.88,offroad:.72,brake:1.2,turbo:1.35,style:'hatch',width:8.2,length:15.0,color:'#4de0cf',rating:[2,2,4],trait:'URBAN GRIP'},
+ {id:'taxi',name:'METRO GT',desc:'Street sedan · precise steering, strong braking',price:1800,speed:208,accel:153,turn:2.44,armor:116,boost:88,weight:1.12,grip:.95,offroad:.63,brake:1.5,turbo:1.35,style:'sedan',width:9.3,length:19.3,color:'#f3c44e',rating:[3,3,4],trait:'ROAD HOLD'},
+ {id:'muscle',name:'V8 PHANTOM',desc:'Classic muscle · powerful launch, loose rear end',price:5100,speed:236,accel:243,turn:1.81,armor:175,boost:100,weight:1.64,grip:.64,offroad:.68,brake:.94,turbo:1.5,style:'muscle',width:10.7,length:20.0,color:'#f87565',rating:[4,4,2],trait:'RAM POWER'},
+ {id:'rally',name:'DUNE RANGER',desc:'Rally buggy · trails, hills, jumps, dirt control',price:9700,speed:224,accel:202,turn:2.64,armor:159,boost:124,weight:1.25,grip:.86,offroad:1.04,brake:1.10,turbo:1.49,style:'rally',width:10.5,length:18.0,color:'#97e879',rating:[3,4,5],trait:'OFFROAD ACE'},
+ {id:'super',name:'NOVA SPYDER',desc:'Mid-engine supercar · fast corners, low armor',price:17400,speed:289,accel:241,turn:2.22,armor:125,boost:131,weight:.89,grip:1.06,offroad:.45,brake:1.38,turbo:1.53,style:'super',width:10.7,length:19.2,color:'#ae8dff',rating:[5,2,5],trait:'TRACK GRIP'},
+ {id:'armored',name:'IRONCLAD 4X4',desc:'Heavy armored truck · slow, near unstoppable',price:28500,speed:186,accel:134,turn:1.66,armor:314,boost:109,weight:2.9,grip:.82,offroad:.93,brake:.82,turbo:1.30,style:'armored',width:12.0,length:23.8,color:'#b2c7d4',rating:[2,5,2],trait:'TANK ARMOR'},
+ {id:'hyper',name:'ECLIPSE X',desc:'Electric hypercar · rapid boost, high top speed',price:46500,speed:318,accel:297,turn:2.42,armor:148,boost:165,weight:1.04,grip:1.02,offroad:.40,brake:1.35,turbo:1.76,style:'hyper',width:11.8,length:21.6,color:'#ff8bd3',rating:[5,3,5],trait:'BOOST BEAST'}
 ];
 const SAVEKEY='sunsetCityIslandPursuitV5';
 function defaultSave(){return {wallet:0,owned:['compact'],selected:'compact',best:0,total:0,runs:0,upgrades:{engine:0,armor:0,nitro:0},paint:{}}}
@@ -295,8 +295,8 @@ function drawWorldBase(){
 }
 function randomRoadSample(x=0,y=0,minD=120,maxD=1000){let choices=[];for(let j=0;j<80;j++){const p=roadSamples[Math.floor(Math.random()*roadSamples.length)],d=Math.hypot(p.x-x,p.y-y);if(d>minD&&d<maxD&&coastDistance(p.x,p.y)>35)choices.push(p)}return choices.length?choices[Math.floor(Math.random()*choices.length)]:roadSamples[Math.floor(Math.random()*roadSamples.length)]}
 function showBanner(title,desc,duration=1.8){$('bannerTitle').textContent=title;$('bannerDesc').textContent=desc;$('runbanner').classList.add('show');bannerEnd=now+duration}
-function carStats(c){return {maxSpeed:c.speed*(1+save.upgrades.engine*.065),accel:c.accel*(1+save.upgrades.engine*.08),turn:c.turn,health:c.armor*(1+save.upgrades.armor*.20),boost:c.boost*(1+save.upgrades.nitro*.22)}}
-function spawnPlayer(){let template=CARS.find(c=>c.id===save.selected)||CARS[0],s=carStats(template);return {x:-65*CITY_COMPACT,y:137*CITY_COMPACT,a:0,speed:0,vx:0,vy:0,health:s.health,maxHealth:s.health,nitro:s.boost,maxNitro:s.boost,template,color:save.paint[template.id]||template.color,hitCooldown:0,driftScore:0,water:0,slip:0}}
+function carStats(c){return {maxSpeed:c.speed*(1+save.upgrades.engine*.063),accel:c.accel*(1+save.upgrades.engine*.078),turn:c.turn,health:c.armor*(1+save.upgrades.armor*.20),boost:c.boost*(1+save.upgrades.nitro*.22),grip:c.grip,offroad:c.offroad,brake:c.brake,turbo:c.turbo}}
+function spawnPlayer(){let template=CARS.find(c=>c.id===save.selected)||CARS[0],s=carStats(template);return {x:-65*CITY_COMPACT,y:137*CITY_COMPACT,a:0,speed:0,vx:0,vy:0,health:s.health,maxHealth:s.health,nitro:s.boost,maxNitro:s.boost,template,color:save.paint[template.id]||template.color,hitCooldown:0,driftScore:0,water:0,slip:0,lean:0,pitch:0,bump:0,wheelSpin:0,steer:0}}
 function spawnCop(){const p=randomRoadSample(car.x,car.y,190,370),d=Math.hypot(car.x-p.x,car.y-p.y);if(!p||d<120)return;let a=Math.atan2(car.x-p.x,-(car.y-p.y));cops.push({x:p.x,y:p.y,a,speed:33+wave*4,hp:85+wave*12,hitCooldown:0,stun:0,type:wave>=4&&Math.random()<.26?'heavy':'patrol',phase:Math.random()*TAU})}
 function spawnTraffic(n=20){for(let k=0;k<n;k++){let road=roads[Math.floor(Math.random()*roads.length)];if(!road||road.points.length<3)continue;const i=Math.floor(rand(0,road.points.length-1)),p=road.points[i];if(coastDistance(p.x,p.y)<30)continue;traffic.push({road:road.id,roadRef:road,pathIndex:i,dir:Math.random()<.5?1:-1,x:p.x,y:p.y,a:0,speed:rand(44,83),color:['#e7b66c','#d5e5e8','#94c7c2','#d38a7b','#94afce','#f3d3ae'][k%6],near:false,hitCooldown:0})}}
 function spark(x,y,n=9,color='#ffc988',scale=1){if(particles.length>240)return;for(let i=0;i<n;i++){let a=rand(-Math.PI,Math.PI),v=rand(30,140)*scale;particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:rand(.2,.55),life:.55,col:color,size:rand(1.5,3.6)})}}
@@ -310,21 +310,22 @@ function updateCar(dt){if(!car)return;
  car.hitCooldown=Math.max(0,car.hitCooldown-dt);car.slip=Math.max(0,car.slip-dt);
  const s=carStats(car.template),offroad=!onRoad(car.x,car.y),beach=coastDistance(car.x,car.y)<52,grade=slopeAt(car.x,car.y,car.a);
  const throttle=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0),steer=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),drifting=!!keys[' '];
- let boosting=!!keys.shift&&car.nitro>1&&throttle>0&&Math.abs(car.speed)>25;
+ let boosting=!!keys.shift&&car.nitro>1&&throttle>0&&Math.abs(car.speed)>25;car.steer=steer;
  if(boosting){car.nitro=Math.max(0,car.nitro-dt*34);if(Math.random()<dt*26)spark(car.x-Math.sin(car.a)*15,car.y+Math.cos(car.a)*15,2,'#65e9ff',.4)}else car.nitro=Math.min(s.boost,car.nitro+dt*5);
- if(throttle>0)car.speed+=(s.accel*(boosting?1.72:1)*(offroad?car.template.id==='rally'?.96:.76:1))*dt;
- else if(throttle<0)car.speed-=s.accel*.72*dt;
+ if(throttle>0)car.speed+=(s.accel*(boosting?s.turbo:1)*(offroad?s.offroad:1))*dt;
+ else if(throttle<0)car.speed-=s.accel*(car.speed>0?s.brake:.60)*dt;
  else car.speed*=Math.pow(.984,dt*60);
  car.speed-=grade*(throttle>0?58:38)*dt;
- let max=s.maxSpeed*(boosting?1.22:1)*(offroad?(car.template.id==='rally'?.94:.79):1)*(beach?.84:1)*(car.slip>0?.48:1);
+ let max=s.maxSpeed*(boosting?1+.22*s.turbo:1)*(offroad?s.offroad:1)*(beach?.85:1)*(car.slip>0?.56:1);
  car.speed=clamp(car.speed,-100,max);
  if(drifting)car.speed*=Math.pow(.991,dt*60);
- let speedRatio=clamp(Math.abs(car.speed)/155,.18,1.28);
+ let speedRatio=clamp(Math.abs(car.speed)/135,.16,1.0);
  if(Math.abs(car.speed)>9)car.a+=steer*s.turn*speedRatio*(drifting?1.55:1)*(car.speed<0?-.7:1)*dt;
  let dirX=Math.sin(car.a),dirY=-Math.cos(car.a),targetX=dirX*car.speed,targetY=dirY*car.speed;
- const grip=drifting?.075:offroad?.12:.20;
+ const grip=(drifting?.055:offroad?.15:.28)*s.grip;
  car.vx=lerp(car.vx,targetX,clamp(grip*dt*60,0,1));car.vy=lerp(car.vy,targetY,clamp(grip*dt*60,0,1));
- const oldX=car.x,oldY=car.y;
+ car.lean=lerp(car.lean,-steer*clamp(Math.abs(car.speed)/190,0,1)*2.6,clamp(dt*5,0,1));car.pitch=lerp(car.pitch,grade*8,clamp(dt*4,0,1));car.bump=lerp(car.bump,0,clamp(dt*3.2,0,1));car.wheelSpin+=Math.abs(car.speed)*dt*.13;
+  const oldX=car.x,oldY=car.y;
  // Continuous substep collision prevents fast cars tunneling through narrow buildings.
  const steps=Math.min(18,Math.max(1,Math.ceil(Math.hypot(car.vx,car.vy)*dt/5)));
  for(let step=0;step<steps;step++){
@@ -343,7 +344,7 @@ function updateCar(dt){if(!car)return;
       if(vNormal<0){car.vx-=(1.38)*vNormal*nxw;car.vy-=(1.38)*vNormal*nyw;}
       car.vx*=.63;car.vy*=.63;
       car.speed=Math.sin(car.a)*car.vx-Math.cos(car.a)*car.vy;
-      if(impact>35){damage(Math.max(2,impact*.045));showBanner('BUILDING COLLISION!','Solid walls — steer around them.',.95)}
+      car.bump=clamp(impact*.028,0,5);if(impact>35){damage(Math.max(2,impact*.045));showBanner('BUILDING COLLISION!','Solid walls — steer around them.',.95)}
       break;
    }
    car.x=nx;car.y=ny;
@@ -383,7 +384,7 @@ function updateCops(dt){copTimer-=dt;let wanted=Math.min(5,1+Math.floor(runningS
  }
 }
 function bodyVelocity(v){return v===car?[car.vx,car.vy]:[Math.sin(v.a)*v.speed+(v.knockVX||0),-Math.cos(v.a)*v.speed+(v.knockVY||0)]}
-function vehicleRadius(v){return v===car&&v.template.id==='armored'?12.1:v.type==='heavy'?12.5:10.2}
+function vehicleRadius(v){return v===car?clamp((v.template.width+v.template.length)*.35,8.3,12.7):v.type==='heavy'?12.5:10.2}
 function resolveVehicleContacts(dt){
  if(!car)return;
  const all=[car,...cops,...traffic];
