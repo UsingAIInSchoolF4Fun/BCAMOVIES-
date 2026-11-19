@@ -232,10 +232,14 @@ function buildWorld(){
 }
 function polypath(g,p){g.beginPath();for(let i=0;i<p.length;i++){const q=p[i];if(i===0)g.moveTo(q.x,q.y);else g.lineTo(q.x,q.y)}}
 function polyStroke(g,p,w,color,dash=[],offset=0){g.save();g.lineJoin='round';g.lineCap='round';polypath(g,p);g.lineWidth=w;g.strokeStyle=color;g.setLineDash(dash);g.lineDashOffset=offset;g.stroke();g.restore()}
-function drawTree(g,t){g.save();g.translate(t.x,t.y);g.scale(t.s,t.s);if(t.kind==='garden'){g.fillStyle='#2d6c64';g.beginPath();g.ellipse(0,0,12,9,-.3,0,TAU);g.fill();g.fillStyle='#6ac6a5';g.beginPath();g.arc(1,-2,6,0,TAU);g.fill();}
-else if(t.kind==='palm'){g.strokeStyle='#6b604e';g.lineWidth=3;g.beginPath();g.moveTo(3,4);g.lineTo(0,0);g.stroke();for(let i=0;i<7;i++){const a=i*TAU/7;g.strokeStyle=i%2?'#337b58':'#5ea26f';g.lineWidth=2.7;g.beginPath();g.moveTo(0,0);g.quadraticCurveTo(Math.cos(a+0.1)*4,Math.sin(a+0.1)*4,Math.cos(a)*13,Math.sin(a)*12);g.stroke();}g.fillStyle='#f6c38b';g.beginPath();g.arc(0,0,2.6,0,TAU);g.fill();}
-else{g.fillStyle='#173c34aa';g.beginPath();g.ellipse(3,5,11,10,0,0,TAU);g.fill();g.fillStyle=t.kind==='cypress'?'#236451':'#346f53';g.beginPath();g.arc(0,0,10,0,TAU);g.fill();g.fillStyle=t.kind==='cypress'?'#34866d':'#4d9875';g.beginPath();g.arc(-2,-3,6.5,0,TAU);g.fill();}
-g.restore()}
+function drawTree(g,t){
+ g.save();g.translate(t.x,t.y);g.scale(t.s,t.s);
+ if(t.kind==='rock'){g.fillStyle='#777e79';g.beginPath();g.moveTo(-10,4);g.lineTo(-7,-7);g.lineTo(3,-10);g.lineTo(12,-2);g.lineTo(9,8);g.closePath();g.fill();g.restore();return}
+ if(t.kind==='palm'){for(let i=0;i<7;i++){const a=i*TAU/7;g.strokeStyle=i%2?'#317e58':'#62a776';g.lineWidth=2.8;g.beginPath();g.moveTo(0,0);g.lineTo(Math.cos(a)*13,Math.sin(a)*12);g.stroke();}}
+ else if(t.kind==='pine'||t.kind==='fir'){for(let layer=0;layer<3;layer++){let w=13-layer*2.8;g.fillStyle=['#244f41','#346c56','#4d9372'][layer];g.beginPath();g.moveTo(0,-w*.9);g.lineTo(w*.75,w*.72);g.lineTo(-w*.75,w*.72);g.closePath();g.fill();}}
+ else{g.fillStyle=t.kind==='cypress'?'#246952':'#438b66';g.beginPath();g.arc(0,0,10,0,TAU);g.fill();g.fillStyle='#6eaa80';g.beginPath();g.arc(-2,-3,6,0,TAU);g.fill();}
+ g.restore();
+}
 function rectRound(g,x,y,w,h,r){if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h)}
 function drawBuilding(g,b){
  g.save();g.translate(b.x,b.y);g.rotate(b.rot);
@@ -639,6 +643,7 @@ class Mesh3{
  tri(a,b,c,color,em=0){let u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]],n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],m=Math.hypot(...n)||1,co=color3(color);n=n.map(q=>q/m);this.v(a,n,co,em);this.v(b,n,co,em);this.v(c,n,co,em)}
  quad(a,b,c,d,color,em=0){this.tri(a,b,c,color,em);this.tri(a,c,d,color,em)}
  box(x,y,z,w,h,d,color,angle=0,em=0){if(w<=0||h<=0||d<=0)return;let ca=Math.cos(angle),sa=Math.sin(angle),pts=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]].map(v=>[x+(v[0]*w*ca+v[2]*d*sa)/2,y+v[1]*h/2,z+(-v[0]*w*sa+v[2]*d*ca)/2]);for(let a of [[0,1,2,3],[5,4,7,6],[1,5,6,2],[4,0,3,7],[3,2,6,7],[4,5,1,0]])this.quad(pts[a[0]],pts[a[1]],pts[a[2]],pts[a[3]],color,em)}
+ cone(x,y,z,r,h,n,color,em=0){for(let i=0;i<n;i++){let a=TAU*i/n,b=TAU*(i+1)/n;this.tri([x+r*Math.cos(a),y-h/2,z+r*Math.sin(a)],[x+r*Math.cos(b),y-h/2,z+r*Math.sin(b)],[x,y+h/2,z],color,em)}}
  cylinder(x,y,z,r,h,n,color,em=0){for(let i=0;i<n;i++){let a=TAU*i/n,b=TAU*(i+1)/n,p=[x+r*Math.cos(a),y-h/2,z+r*Math.sin(a)],q=[x+r*Math.cos(b),y-h/2,z+r*Math.sin(b)],p2=[p[0],y+h/2,p[2]],q2=[q[0],y+h/2,q[2]];this.quad(p,q,q2,p2,color,em);this.tri([x,y+h/2,z],p2,q2,color,em)}}
 }
 function upload3(mesh){let gl=webgl,buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(mesh.d),gl.STATIC_DRAW);return {buffer,count:mesh.d.length/10}}
@@ -733,21 +738,26 @@ function build3DCity(){
    }
   }
  }
- // Low-poly planted trees: visually different species and collision-free landscaping.
+ // Coniferous forests and alpine boulders use low-cost geometry.
  for(const t of trees){
-   let m=tileAt(t.x,t.y),base=terrainHeight(t.x,t.y);
-   if(t.kind==='garden'){
-     m.cylinder(t.x,base+.3,t.y,7,.55,8,'#3b906e');
-     m.cylinder(t.x,base+1,t.y,3,1.8,8,'#7fc893');continue;
-   }
-   let h=(t.kind==='palm'?12:9)*t.s;
-   m.cylinder(t.x,base+h*.42,t.y,.85*t.s,h*.84,5,'#86694e');
-   if(t.kind==='palm'){
-     for(let j=0;j<6;j++){let a=j*TAU/6;m.box(t.x+Math.cos(a)*3.7*t.s,base+h+.25,t.y+Math.sin(a)*3.7*t.s,7*t.s,.36,1.1*t.s,'#418565',-a)}
-   }else{
-     m.cylinder(t.x,base+h+.5,t.y,3.9*t.s,6*t.s,6,t.kind==='cypress'?'#2b7663':'#408f73');
-     m.cylinder(t.x,base+h+3*t.s,t.y,3*t.s,4*t.s,6,'#65a882');
-   }
+  const m=tileAt(t.x,t.y),base=terrainHeight(t.x,t.y),k=t.kind,scale=t.s;
+  if(k==='rock'){
+   const rough=hash(t.x*3+t.y*7),w=(5+rough*7)*scale;
+   m.box(t.x,base+w*.23,t.y,w,w*.48,w*.77,rough>.45?'#929c92':'#7e8985',rough*.7);
+   continue;
+  }
+  if(k==='garden'){m.cylinder(t.x,base+.5,t.y,5.5,1,6,'#4d8d6b');continue}
+  const height=(k==='palm'?12:k==='fir'?22:k==='pine'?18:12)*scale;
+  m.cylinder(t.x,base+height*.42,t.y,.65*scale,height*.84,5,'#665648');
+  if(k==='palm'){
+   for(let j=0;j<6;j++){let a=j*TAU/6;m.box(t.x+Math.cos(a)*3.9*scale,base+height+.15,t.y+Math.sin(a)*3.9*scale,7.4*scale,.32,1*scale,'#448b64',-a)}
+  }else if(k==='pine'||k==='fir'){
+   const colors=k==='fir'?['#244e43','#306457','#3b7663']:['#315f49','#398066','#4a9873'];
+   for(let layer=0;layer<3;layer++)m.cone(t.x,base+height*(.44+layer*.18),t.y,height*(.28-layer*.055),height*.42,6,colors[layer]);
+  }else{
+   m.cylinder(t.x,base+height*.70,t.y,3.8*scale,6.5*scale,6,k==='cypress'?'#2d7159':'#4d936c');
+   m.cylinder(t.x,base+height*.92,t.y,2.6*scale,4.1*scale,6,'#6aab7b');
+  }
  }
  for(let p of streetProps){let m=tileAt(p.x,p.y),base=terrainHeight(p.x,p.y);if(p.kind==='lamp'){m.box(p.x,base+4.5,p.y,.28,9,.28,'#526373');m.box(p.x+.9,base+9.3,p.y,2,.18,.45,'#dfd5b8',0,.6)}else{m.box(p.x,base+5,p.y,12,9,.9,'#33415b',-p.a);m.box(p.x,base+5.4,p.y+0.6,11,5,.14,'#fcb787',-p.a,.32)}}
  // Decorative crosswalks at key arterial intersections.
@@ -907,8 +917,20 @@ function renderSoftware3D(){
    }
   }
  }
- function tree(t){let h=t.kind==='palm'?11:14;let foot=proj(t.x,terrainHeight(t.x,t.y),t.y),top=proj(t.x,terrainHeight(t.x,t.y)+h*t.s,t.y);if(!foot||!top)return;let sz=Math.min(48,foot[3]*t.s*5);g.lineWidth=Math.max(1,sz*.11);g.strokeStyle='#76533e';g.beginPath();g.moveTo(foot[0],foot[1]);g.lineTo(top[0],top[1]);g.stroke();g.fillStyle=t.kind==='palm'?'#3a9273':'#397f5e';if(t.kind==='palm'){for(let i=0;i<6;i++){let a=i*TAU/6;g.beginPath();g.ellipse(top[0]+Math.cos(a)*sz*.3,top[1]+Math.sin(a)*sz*.13,sz*.43,sz*.14,a*.3,0,TAU);g.fill()}}else{g.beginPath();g.ellipse(top[0],top[1],sz*.66,sz*.78,0,0,TAU);g.fill()}}
- function vehicle(v,type){
+ function tree(t){
+ const base=terrainHeight(t.x,t.y),h=(t.kind==='fir'?22:t.kind==='pine'?18:t.kind==='palm'?11:13)*t.s;
+ const foot=proj(t.x,base,t.y),top=proj(t.x,base+h,t.y);if(!foot||!top)return;
+ const sz=Math.min(46,foot[3]*t.s*4.7);
+ if(t.kind==='rock'){g.fillStyle='#8a928c';g.beginPath();g.ellipse(foot[0],foot[1],sz*.9,sz*.56,-.24,0,TAU);g.fill();return;}
+ g.lineWidth=Math.max(1,sz*.10);g.strokeStyle='#72573e';g.beginPath();g.moveTo(foot[0],foot[1]);g.lineTo(top[0],top[1]);g.stroke();
+ if(t.kind==='pine'||t.kind==='fir'){
+  for(let layer=0;layer<3;layer++){let y=top[1]+(foot[1]-top[1])*(layer*.23),wide=sz*(.6+layer*.23);
+    g.fillStyle=['#477d66','#356b59','#265747'][layer];g.beginPath();g.moveTo(top[0],y-sz*.35);g.lineTo(top[0]+wide,y+sz*.75);g.lineTo(top[0]-wide,y+sz*.75);g.closePath();g.fill();
+  }
+ }else if(t.kind==='palm'){g.fillStyle='#488969';for(let i=0;i<6;i++){let a=i*TAU/6;g.beginPath();g.ellipse(top[0]+Math.cos(a)*sz*.35,top[1]+Math.sin(a)*sz*.12,sz*.39,sz*.14,a*.3,0,TAU);g.fill();}}
+ else{g.fillStyle='#438a62';g.beginPath();g.ellipse(top[0],top[1],sz*.7,sz*.83,0,0,TAU);g.fill();}
+}
+function vehicle(v,type){
   const style=type==='player'?v.template.style:type==='cop'?(v.type==='heavy'?'armored':'sedan'):(v.shape||'sedan');
   const x=v.x,z=v.y,a=v.a,co=Math.cos(a),si=Math.sin(a),ground=terrainHeight(x,z);
   const width=type==='player'?v.template.width:style==='armored'?12:style==='hatch'?8.3:9.5;
