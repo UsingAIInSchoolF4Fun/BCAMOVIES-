@@ -65,6 +65,9 @@ body:not(.compact-ui) #challengeStatus{display:block}
  <label class="settings-line"><input type="checkbox" id="settingTips"> Show controls and notices</label>
  <label class="settings-line"><input type="checkbox" id="settingParkour"> Show parkour tracker</label>
  <label class="settings-line"><input type="checkbox" id="settingAuraFX" checked> Detailed aura effects and poses</label>
+ <h3>GAMES & CHALLENGES</h3>
+ <p>Find the towering glowing gateways marked ✦ (rune challenges) and P (sky parkour) on the world map.</p>
+ <button id="settingsGamesMap" class="ghost" style="width:100%;padding:8px 10px">SHOW ALL GAMES ON THE MAP</button>
  <h3>BIOME EXPEDITIONS</h3>
  <p>Find a glowing shrine in every region. Press <b>F</b> to start. Jump into four numbered runes in 75 seconds and return to press F. The shrine awards a rare regional aura and one ×5 luck roll. Each shrine has a 20-minute cooldown.</p>
  <div id="trialWinsSummary" style="font-size:11px;color:#b6dff8"></div>
@@ -310,6 +313,10 @@ $("settingsButton").onclick=()=>{
     }
 };
 $("closeSettings").onclick=()=>$("settingsPanel").classList.remove("open");
+$("settingsGamesMap").onclick=()=>{
+ $("settingsPanel").classList.remove("open");
+ if(mapPanel.style.display==="none")toggleWorldMap();
+};
 $("settingsMapButton").onclick=()=>{
     $("settingsPanel").classList.remove("open");
     $("mapButton").click();
@@ -797,8 +804,11 @@ const landmarkPads = [
  [-285,240,35],[-300,-100,27],[-325,-280,35],
  [270,90,34],[-340,55,31],[210,-275,32],
  [100,-105,17],[-115,110,15],[255,180,16],[-245,-230,17],
- // Six reward shrines are guaranteed to stand on authored level ground.
- [-274,98,13],[127,202,13],[199,108,13],[246,-170,13],[-122,-225,13],[258,237,13]
+ // Distinct challenge arenas and their large gateways: leveled platforms,
+ // 28-unit flat footprint and smooth 28-unit terrain shoulder.
+ [-36,113,24],[-274,98,24],[127,202,24],[199,108,24],
+ [246,-170,24],[-122,-225,24],[258,237,24],
+ [75,65,26],[-235,50,31],[230,-35,30],[45,-240,27],[20,250,29]
 ];
 
 function rawHeight(x,z){
@@ -3501,6 +3511,15 @@ function drawWorldMap(){
  }
  c.fillStyle="#dbc2fa";c.font="10px Arial";c.textAlign="right";
  c.fillText("✦ = BIOME TRIAL",337,29);
+ for(const site of parkourLandmarks){
+   const sx=px(site.x),sz=py(site.z);
+   c.fillStyle="#15122d";c.fillRect(sx-4,sz-4,8,8);
+   c.strokeStyle="#ffe59f";c.strokeRect(sx-4,sz-4,8,8);
+   c.fillStyle="#ffe59f";c.font="bold 9px Arial";
+   c.textAlign="center";c.fillText("P",sx,sz-6);
+ }
+ c.textAlign="left";c.fillStyle="#ffe4aa";c.font="9px Arial";
+ c.fillText("P = Parkour",29,29);
  const x=px(player.position.x),z=py(player.position.z);
  c.beginPath();c.arc(x,z,7,0,Math.PI*2);c.fillStyle="#1c1332";c.fill();
  c.beginPath();c.arc(x,z,4.4,0,Math.PI*2);c.fillStyle="#ffffff";c.fill();
@@ -4504,6 +4523,109 @@ function buildBiomeTrials(){
 }
 buildBiomeTrials();
 
+// V14.5 - Signature landmarks around EVERY mini-game and shrine.
+// 7 rune arenas + 5 sky-parkour arenas, all founded on engineered flat pads.
+const gameLandmarks=[];
+function landmarkSign(text,color){
+ const canvas=document.createElement("canvas");canvas.width=768;canvas.height=192;
+ const g=canvas.getContext("2d"),c="#"+new T.Color(color).getHexString();
+ g.clearRect(0,0,768,192);
+ const grad=g.createLinearGradient(0,0,0,192);
+ grad.addColorStop(0,"#292343");grad.addColorStop(1,"#111125");
+ g.fillStyle=grad;g.beginPath();g.roundRect(10,10,748,170,36);g.fill();
+ g.strokeStyle=c;g.lineWidth=7;g.shadowColor=c;g.shadowBlur=24;g.stroke();
+ g.shadowBlur=0;g.fillStyle="#faf4ff";g.textAlign="center";
+ let size=56;if(text.length>20)size=43;else if(text.length>13)size=50;
+ g.font="900 "+size+"px Arial";g.fillText(text,384,104,715);
+ g.font="bold 26px Arial";g.fillStyle=c;g.fillText("✦ INFINITY CHALLENGE ✦",384,151,730);
+ const tex=new T.CanvasTexture(canvas);tex.encoding=T.sRGBEncoding;return tex;
+}
+function landmarkFoundation(x,z,radius){
+ // The terrain shader already flattens this entire footprint; a discrete
+ // plinth covers any remaining interpolation or small underlying rock gaps.
+ const heights=[ground(x,z)];
+ for(let i=0;i<16;i++){
+  const angle=i*Math.PI/8;
+  heights.push(ground(x+Math.cos(angle)*radius,z+Math.sin(angle)*radius));
+ }
+ const top=Math.max(...heights)+.2,bottom=Math.min(...heights)-1.4;
+ return {top,bottom};
+}
+function buildGameLandmark(x,z,name,color,mode){
+ const facade=mode==="sky"?"SKY PARKOUR":name.toUpperCase()+" RUNES";
+ const shapeMat=new T.MeshStandardMaterial({
+  color:mode==="sky"?0x55526e:0x5f587c,
+  roughness:.8,metalness:.08,map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.12
+ });
+ const metal=new T.MeshStandardMaterial({color:0xc1a176,metalness:.63,roughness:.32});
+ const magic=new T.MeshStandardMaterial({
+  color,emissive:color,emissiveIntensity:1.1,roughness:.27,metalness:.15
+ });
+ const root=new T.Group();
+ const levels=landmarkFoundation(x,z,19);
+ root.position.set(x,levels.top,z);scene.add(root);
+ const foundationHeight=Math.max(.75,levels.top-levels.bottom);
+ cyl(18,19,foundationHeight,shapeMat,scene,x,levels.top-foundationHeight*.5,z,28).castShadow=false;
+ cyl(17.1,17.7,.24,shapeMat,root,0,.07,0,28).castShadow=false;
+ const floorInlay=torus(15.3,.12,magic,root,0,.22,0);floorInlay.castShadow=false;
+ // Four towering buttressed pillars frame the arena without obstructing the
+ // trial's central button or the jumping platforms.
+ for(const side of [-1,1]){
+  for(const depth of [-1,1]){
+   const xx=side*13.4,zz=depth*11.3;
+   const base=ground(x+xx,z+zz)-levels.top;
+   cyl(1.35,1.78,18.5,shapeMat,root,xx,base+9.25,zz,10).castShadow=false;
+   cyl(1.7,1.8,.8,metal,root,xx,base+17.2,zz,10).castShadow=false;
+   const gem=mesh(new T.OctahedronGeometry(1.16,0),magic,root,xx,base+19.15,zz);
+   gem.scale.y=1.6;gem.castShadow=false;
+   registerCollider(x+xx,z+zz,1.45,18.8);
+  }
+ }
+ // Ringed upper gateway on the rear approach: a huge silhouette from far away.
+ const arch=mesh(new T.TorusGeometry(9.5,.66,10,48,Math.PI),metal,root,0,12.25,-11.1);
+ arch.rotation.z=0;arch.castShadow=false;
+ const lightArch=mesh(new T.TorusGeometry(9.1,.17,7,52,Math.PI),magic,root,0,12.25,-11.08);
+ lightArch.castShadow=false;
+ const crest=new T.Group();root.add(crest);
+ crest.position.set(0,14.15,-11.1);
+ const orb=mesh(new T.OctahedronGeometry(2.1,0),magic,crest);
+ orb.scale.y=1.35;orb.castShadow=false;
+ const orbit=torus(3.1,.18,metal,crest,0,0,0);
+ orbit.castShadow=false;
+ const banner=landmarkSign(facade,color);
+ const sign=new T.Sprite(new T.SpriteMaterial({
+  map:banner,transparent:true,depthTest:true,depthWrite:false
+ }));
+ sign.position.set(0,22.7,-11.1);sign.scale.set(20,5.1,1);root.add(sign);
+ // Large luminous arrows and torches make the entrance discoverable.
+ for(const side of [-1,1]){
+  const xx=side*8.3;
+  cyl(.55,.72,3.5,shapeMat,root,xx,1.9,19.5,9).castShadow=false;
+  const torch=sphere(.63,magic,root,xx,4.06,19.5);torch.castShadow=false;
+ }
+ gameLandmarks.push({name,x,z,mode,root,crest,orb,orbit,magic,phase:x*.013+z*.027});
+}
+for(const trial of BIOME_REWARDS){
+ buildGameLandmark(trial.x,trial.z,trial.name,trial.color,"runes");
+}
+const parkourLandmarks=[
+ {name:"Crystal Spires",x:75,z:65,color:0xb78cff},
+ {name:"Frozen Citadel",x:-235,z:50,color:0xb8efff},
+ {name:"Ember Fortress",x:230,z:-35,color:0xff9675},
+ {name:"Astral Sanctuary",x:45,z:-240,color:0xc9aaff},
+ {name:"Forest Temple",x:20,z:250,color:0x8fe5ac}
+];
+for(const trial of parkourLandmarks)buildGameLandmark(trial.x,trial.z,trial.name,trial.color,"sky");
+function animateGameLandmarks(t){
+ for(const g of gameLandmarks){
+  g.crest.rotation.y=t*.38+g.phase;
+  g.orbit.rotation.x=Math.sin(t*.52+g.phase)*.27;
+  g.orb.position.y=Math.sin(t*1.35+g.phase)*.29;
+  g.magic.emissiveIntensity=.78+Math.sin(t*1.75+g.phase)*.24;
+ }
+}
+
+
 function trialNotification(message){
  trialWinPanel.textContent=message;
  trialWinPanel.style.display="block";
@@ -4729,6 +4851,7 @@ function animate() {
     animateScenicFlocks(t);
     animateCliffBeacons(t);
     updateBiomeTrials(t);
+    animateGameLandmarks(t);
     riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
     for(const m of biomeAtmosphere)setWorldUniformTime(m,t,'biome particle effects');
