@@ -1445,8 +1445,43 @@ function buildSpawnHub(){
 const spawnHub=buildSpawnHub();
 
 // V13 biome highways: one connected, grounded path network.
-const roadPaint=surfaceTexture("#a28b78","stone",87);
-roadPaint.repeat.set(1,1);
+// Hand-drawn staggered cobblestones with real mortar joints, rough wear
+// and soft top-edge highlights. Tinted per biome by the existing materials.
+function pavedRoadTexture(){
+ const canvas=document.createElement("canvas");canvas.width=canvas.height=512;
+ const g=canvas.getContext("2d");g.fillStyle="#716e6e";g.fillRect(0,0,512,512);
+ let seed=712;const rnd=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};
+ const cols=5,rows=10,w=512/cols,h=512/rows;
+ for(let row=0;row<rows;row++){
+  const offset=(row%2)*w*.5;
+  for(let col=-1;col<cols+1;col++){
+   const x=col*w+offset,y=row*h;
+   const tint=Math.floor(165+rnd()*65);
+   g.fillStyle="rgb("+tint+","+Math.floor(tint*.985)+","+Math.floor(tint*.98)+")";
+   g.fillRect(x+3,y+3,w-6,h-5);
+   g.fillStyle="rgba(255,255,255,.20)";
+   g.fillRect(x+5,y+5,w-10,2.2);
+   g.fillStyle="rgba(38,29,37,.17)";
+   g.fillRect(x+5,y+h-7,w-10,2.3);
+   g.strokeStyle="rgba(71,60,69,.18)";g.lineWidth=1;
+   if(rnd()>.44){
+    g.beginPath();g.moveTo(x+5+rnd()*50,y+10);
+    g.lineTo(x+15+rnd()*55,y+18+rnd()*12);
+    g.lineTo(x+20+rnd()*60,y+31+rnd()*11);g.stroke();
+   }
+  }
+ }
+ for(let i=0;i<1600;i++){
+  const x=rnd()*512,y=rnd()*512;
+  g.fillStyle=rnd()>.5?"rgba(255,255,255,.11)":"rgba(30,29,35,.12)";
+  g.fillRect(x,y,1+rnd()*3,1+rnd()*2);
+ }
+ const texture=new T.CanvasTexture(canvas);texture.encoding=T.sRGBEncoding;
+ texture.wrapS=texture.wrapT=T.RepeatWrapping;
+ texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+ return texture;
+}
+const roadPaint=pavedRoadTexture();
 const roadMats={
  forest:new T.MeshStandardMaterial({color:0xd1bd9c,map:roadPaint,roughness:1,polygonOffset:true,polygonOffsetFactor:-1}),
  frost:new T.MeshStandardMaterial({color:0xd2d9e6,map:roadPaint,roughness:1,polygonOffset:true,polygonOffsetFactor:-1}),
