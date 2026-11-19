@@ -3674,6 +3674,7 @@ cape.rotation.x = -.14;
 const aura = new T.Group();
 player.add(aura);
 const auraParts = [];
+const auraDynamicTextures=[];
 // Compact camera-facing equipped aura tag above the character.
 const auraTagCanvas=document.createElement("canvas");auraTagCanvas.width=512;auraTagCanvas.height=128;
 const auraTagCtx=auraTagCanvas.getContext("2d");
@@ -3752,7 +3753,7 @@ function easeAura(current,target,dt,speed=5){
 }
 function updateAuraPose(t,dt,moving,onGround,gliding,stride){
  const p=equippedAuraProfile,active=!!state.owned[state.equipped];
- const float=active&&p.hover&&!gliding;
+ const float=active&&p.hover&&hudPrefs.auraFX&&!gliding;
  const settled=onGround&&!moving;
  const hoverY=float?(settled?.58+.19*Math.sin(t*1.7):.17+.06*Math.sin(t*2.4)):0;
  const bounce=moving&&onGround?Math.abs(Math.sin(t*11))*.065:0;
@@ -3769,7 +3770,7 @@ function updateAuraPose(t,dt,moving,onGround,gliding,stride){
   auraGroundRing2.rotation.z=-t*.35;
   auraGroundMat.opacity=.40+.15*Math.sin(t*2.2);
  }
- const displayPose=gliding?"flight":active?p.pose:"ready";
+ const displayPose=gliding?"flight":active&&hudPrefs.auraFX?p.pose:"ready";
  // Pose coordinates are targets rather than instant snaps. The shoulder
  // groups pivot properly, and feet remain grounded in the physics engine.
  const ax=[stride,-stride],az=[0,0],lx=[-stride,stride],lz=[0,0];
@@ -3819,9 +3820,11 @@ renderAura = () => {
             }
         })
     }
-    auraParts.length = 0;
+    auraParts.length=0;
+    for(const texture of auraDynamicTextures)texture.dispose();
+    auraDynamicTextures.length=0;
     const data = A[auraLookup.get(state.equipped) ?? 0],
-        level = Math.min(11, data.length > 3 ? data[5] + 2 : A.indexOf(data)),
+        level = Math.min(11,data.length>3?data[5]+2:A.indexOf(data)),
         name = data[0];
     activeColor=auraColor(data);
     equippedAuraProfile=auraVisualProfile(data);
@@ -3835,17 +3838,17 @@ renderAura = () => {
     const secondaryColor=new T.Color(activeColor).offsetHSL(-.085,.07,.12).getHex();
     // Use visibly colored solid geometry instead of additive-only light effects.
     // The objects retain their hue in daylight and against bright terrain.
-    const additive = (color, opacity = .8) => new T.MeshStandardMaterial({
-        color,
-        emissive: color,
-        emissiveIntensity: .35 + level * .025,
-        roughness: .32,
-        metalness: .08,
-        transparent: true,
-        opacity: Math.max(.86, opacity),
-        depthWrite: true,
-        side: T.DoubleSide
+    const additive=(color,opacity=.88)=>new T.MeshStandardMaterial({
+        color,emissive:color,emissiveIntensity:.34+level*.034,
+        roughness:.23,metalness:.2,
+        transparent:opacity<.99,opacity:Math.max(.57,opacity),
+        depthWrite:opacity>=.99,side:T.DoubleSide
     });
+    const auraSparkColors=[activeColor,accentColor,secondaryColor,0xffffff];
+    const sharedSparkMaterials=auraSparkColors.map((c,i)=>additive(c,i===3?.82:.92));
+    const sparkOrb=new T.SphereGeometry(.075+level*.004,7,6);
+    const sparkShard=new T.OctahedronGeometry(.12+level*.008,0);
+    const sparkLeaf=new T.ConeGeometry(.095,.3,5);
 
     function part(o, kind, i = 0) {
         o.userData.fx = kind;
@@ -3854,13 +3857,17 @@ renderAura = () => {
         return o
     }
 
-    function orbitParticles(count, shape = "orb", spread = 1) {
-        for (let i = 0; i < count; i++) {
-            let o = mesh(shape === "shard" ? new T.OctahedronGeometry(.06 + level * .008, 0) : shape === "leaf" ? new T.ConeGeometry(.08, .27, 4) : new T.SphereGeometry(.045 + level * .004, 6, 5), additive(activeColor, .55 + rand(i, 31) * .4), aura);
-            if(i%3===0)o.material.color.setHex(accentColor);
-            if(i%5===0)o.material.color.setHex(secondaryColor);
-            part(o, shape === "leaf" ? "leaf" : "particle", i);
-            o.userData.spread = spread
+    function orbitParticles(count,shape="orb",spread=1){
+        // Shared geometry and four intentionally related colors instead of
+        // hundreds of one-off materials, ideal for Chromebook rendering.
+        const geometry=shape==="shard"?sparkShard:shape==="leaf"?sparkLeaf:sparkOrb;
+        const particles=Math.min(count,hudPrefs.auraFX?64:16);
+        for(let i=0;i<particles;i++){
+            const palette=i%11===0?3:i%3===0?1:i%5===0?2:0;
+            const o=mesh(geometry,sharedSparkMaterials[palette],aura);
+            part(o,shape==="leaf"?"leaf":"particle",i);
+            o.userData.spread=spread;
+            o.userData.phase=((i*47)%101)/101*Math.PI*2;
         }
     }
 
@@ -4037,6 +4044,169 @@ renderAura = () => {
         part(g, "emblem", word);
         return g
     }
+
+    function addSignature(){
+      if(!hudPrefs.auraFX||!state.owned[state.equipped])return;
+      const profile=equippedAuraProfile,rank=profile.rank,theme=profile.theme;
+      const lower=name.toLowerCase();
+      // This is the aura's unmistakable 3D silhouette, rather than another
+      // orbit of identical particles. Color families match their theme.
+      const family=/frost|glacial|winter|arctic|snow/.test(lower)||theme===6?"frost":
+        /flame|phoenix|ember|inferno|crimson|solar/.test(lower)||theme===0||theme===4?"fire":
+        /forest|verdant|emerald|bloom|grove|nature/.test(lower)||theme===3||theme===11?"forest":
+        /crystal|amethyst|prism|gem/.test(lower)||theme===5||theme===9?"crystal":
+        /lunar|void|abyss|obsidian|specter|eternity/.test(lower)||theme===1||theme===8||theme===13?"void":
+        /ocean|tide|breeze|wave/.test(lower)||theme===2?"ocean":
+        /golden|solar|sunstone|celestial|radiant|halo|crown/.test(lower)||theme===7||theme===14?"sun":
+        /thunder|storm|tempest/.test(lower)||theme===10?"storm":
+        /rose|petal/.test(lower)||theme===12?"rose":
+        /cosmic|astral|infinity|ascension|star/.test(lower)||theme===15?"astral":"astral";
+      const sig=new T.Group();aura.add(sig);
+      part(sig,"signature",rank);
+      const glass=new T.MeshPhysicalMaterial({
+        color:activeColor,emissive:activeColor,emissiveIntensity:.33,
+        metalness:.27,roughness:.12,transmission:0,clearcoat:.85,clearcoatRoughness:.11,
+        transparent:true,opacity:.9,side:T.DoubleSide,depthWrite:false
+      });
+      const shine=new T.MeshStandardMaterial({
+        color:accentColor,emissive:accentColor,emissiveIntensity:.7,
+        roughness:.2,metalness:.2,side:T.DoubleSide
+      });
+      const glow=new T.MeshBasicMaterial({
+        color:secondaryColor,transparent:true,opacity:.49,side:T.DoubleSide,depthWrite:false,
+        blending:T.AdditiveBlending
+      });
+      const ivory=new T.MeshStandardMaterial({
+        color:0xfff9e9,emissive:activeColor,emissiveIntensity:.55,
+        metalness:.16,roughness:.25
+      });
+      function shape(geom,mat,x,y,z,fx=null){
+        const object=mesh(geom,mat,sig,x,y,z);
+        object.castShadow=false;
+        if(fx){part(object,fx,auraParts.length);object.userData.homeY=y;}
+        return object;
+      }
+      const n=Math.min(10,5+Math.floor(rank/2));
+      if(family==="frost"||family==="crystal"){
+        // Real faceted vertical spires and balanced overhead snowflake/crystal.
+        for(const side of [-1,1])for(let i=0;i<4;i++){
+          const h=1.5+i*.34+rank*.11;
+          const shard=shape(new T.OctahedronGeometry(.38+i*.09,0),i%2?shine:glass,
+            side*(1.12+i*.32),1.35+i*.46,.58+(i%2)*.21,"facet");
+          shard.scale.set(.76,h,.58);shard.rotation.z=side*(.23+i*.1);
+        }
+        const crown=shape(new T.IcosahedronGeometry(.62+Math.min(rank,7)*.035,1),ivory,0,4.85,.23,"sigil");
+        crown.scale.y=1.25;
+        if(family==="frost")for(let i=0;i<6;i++){
+          const a=i*Math.PI/3;
+          const arm=shape(new T.ConeGeometry(.12,.95,5),glass,
+            Math.cos(a)*.86,4.84+Math.sin(a)*.86,.16,"facet");
+          arm.rotation.z=a-Math.PI/2;
+        }
+      }else if(family==="fire"||family==="storm"){
+        // Rising flame/energy fans, never pasted onto the character's face.
+        for(const side of [-1,1])for(let i=0;i<7;i++){
+          const h=1.25+(i%4)*.39+rank*.065;
+          const shard=shape(new T.ConeGeometry(.18+i*.009,h,6),i%3===0?ivory:i%2?shine:glass,
+            side*(.88+i*.28),1.8+i*.16,.56+(i%3)*.13,"flare");
+          shard.rotation.z=side*(.48+i*.075);
+          shard.userData.phase=i+side*1.2;shard.userData.baseScaleY=1;
+        }
+        if(family==="storm"){
+          for(let i=0;i<4;i++){
+            const a=i*1.55;
+            const bolt=shape(new T.TorusGeometry(1.0+i*.12,.046,5,24,Math.PI*1.5),
+              i%2?ivory:shine,0,2.2+i*.5,0,"flash");
+            bolt.rotation.set(a,.4*a,.3*a);
+          }
+        }
+      }else if(family==="forest"||family==="rose"){
+        for(const side of [-1,1])for(let i=0;i<6;i++){
+          const leaf=shape(new T.SphereGeometry(.39,9,7),i%3===0?ivory:i%2?shine:glass,
+            side*(1.25+i*.17),1.2+i*.45,.42,"petal");
+          leaf.scale.set(.35,.9,.15);
+          leaf.rotation.z=side*(.65+i*.09);
+        }
+        for(let i=0;i<4;i++){
+          const a=i*Math.PI/2;
+          const vine=shape(new T.TorusGeometry(1.18+i*.16,.052,6,30,Math.PI*1.12),glow,
+            0,.9+i*.85,0,"sigil");
+          vine.rotation.set(.2+a*.35,a,Math.cos(a)*.3);
+        }
+      }else if(family==="ocean"){
+        for(let i=0;i<5;i++){
+          const wave=shape(new T.TorusGeometry(1.2+i*.18,.085,9,40,Math.PI*1.66),
+            i%2?glass:shine,0,1.0+i*.64,0,"wave");
+          wave.rotation.set(Math.PI/2-.17,i*.55,i*.43);
+        }
+        for(let i=0;i<6;i++){
+          const a=i*Math.PI/3;
+          shape(new T.IcosahedronGeometry(.17+i%3*.055,1),ivory,
+            Math.cos(a)*1.7,.95+i*.47,Math.sin(a)*1.7,"facet");
+        }
+      }else if(family==="void"||family==="astral"){
+        for(let i=0;i<4;i++){
+          const hoop=shape(new T.TorusGeometry(1.32+i*.23,.065,9,52),
+            i%2?glow:shine,0,2.5+i*.27,.35,"sigil");
+          hoop.rotation.set(i*.57,Math.PI/2-i*.19,i*.32);
+        }
+        if(family==="void"){
+          const core=shape(new T.IcosahedronGeometry(.64,1),
+            new T.MeshStandardMaterial({color:0x15132f,metalness:.35,roughness:.19,
+              emissive:activeColor,emissiveIntensity:.34}),0,4.5,.1,"sigil");
+          core.scale.y=1.24;
+          shape(new T.TorusGeometry(.87,.09,8,35),ivory,0,4.55,.1,"sigil");
+        }else{
+          for(let i=0;i<8;i++){
+            const a=i*Math.PI/4;
+            const star=shape(new T.OctahedronGeometry(.13+(i%3)*.07,0),
+              i%3===0?ivory:glass,Math.cos(a)*1.75,3.15+Math.sin(a)*1.1,
+              .75,"facet");
+            star.scale.y=1.6;
+          }
+        }
+      }else if(family==="sun"){
+        const disc=shape(new T.CylinderGeometry(.85,.85,.13,16),shine,0,4.55,.4,"sigil");
+        disc.rotation.x=Math.PI/2;
+        for(let i=0;i<12;i++){
+          const a=i*Math.PI/6;
+          const ray=shape(new T.ConeGeometry(.12,.73+(i%2)*.18,5),i%3?glass:ivory,
+            Math.cos(a)*1.22,4.55+Math.sin(a)*1.22,.4,"facet");
+          ray.rotation.z=a-Math.PI/2;
+        }
+        shape(new T.IcosahedronGeometry(.43,1),ivory,0,4.55,.20,"sigil");
+      }
+      // A low-profile rune disc adds crisp linework and layered texture, not
+      // a bright solid blob that covers the character's silhouette.
+      if(profile.rarity>=1000){
+        const canvas=document.createElement("canvas");canvas.width=canvas.height=256;
+        const ctx=canvas.getContext("2d");
+        const c1="#"+activeColor.toString(16).padStart(6,"0");
+        const c2="#"+accentColor.toString(16).padStart(6,"0");
+        ctx.translate(128,128);
+        ctx.strokeStyle=c1;ctx.lineWidth=5;ctx.shadowColor=c1;ctx.shadowBlur=16;
+        ctx.beginPath();ctx.arc(0,0,105,0,Math.PI*2);ctx.stroke();
+        ctx.shadowBlur=0;ctx.strokeStyle=c2;ctx.lineWidth=2;
+        for(let i=0;i<16;i++){
+          const a=i*Math.PI/8;
+          ctx.beginPath();ctx.moveTo(Math.cos(a)*91,Math.sin(a)*91);
+          ctx.lineTo(Math.cos(a)*105,Math.sin(a)*105);ctx.stroke();
+        }
+        ctx.beginPath();ctx.arc(0,0,73,0,Math.PI*2);ctx.stroke();
+        for(let i=0;i<6;i++){
+          const a=i*Math.PI/3;
+          ctx.beginPath();ctx.moveTo(Math.cos(a)*60,Math.sin(a)*60);
+          ctx.lineTo(Math.cos(a+2.1)*60,Math.sin(a+2.1)*60);ctx.stroke();
+        }
+        const tex=new T.CanvasTexture(canvas);tex.encoding=T.sRGBEncoding;
+        auraDynamicTextures.push(tex);
+        const m=new T.MeshBasicMaterial({map:tex,transparent:true,
+          opacity:.66,depthWrite:false,side:T.DoubleSide});
+        const runes=shape(new T.PlaneGeometry(3.1,3.1),m,0,3.05,.93,"rune");
+        runes.rotation.y=.2;
+      }
+    }
+
     switch (name) {
         case "Dust":
             orbitParticles(24, "orb", .85);
@@ -4172,6 +4342,7 @@ renderAura = () => {
             break
         }
     }
+    addSignature();
 };
 renderAura();
 
@@ -4731,9 +4902,34 @@ function animate() {
         } else if (kind === "lightning") {
             o.rotation.y += dt * 1.4;
             o.material.opacity = .4 + Math.abs(Math.sin(t * 9 + i)) * .6
+        } else if(kind==="signature"){
+            o.rotation.y=Math.sin(t*.42)*.19;
+            o.position.y=Math.sin(t*1.2)*.085;
+        } else if(kind==="facet"){
+            const base=o.userData.homeY||o.position.y;
+            o.rotation.y+=dt*.32;
+            o.position.y=base+Math.sin(t*1.5+i*.68)*.12;
+        } else if(kind==="petal"){
+            const base=o.userData.homeY||o.position.y;
+            o.rotation.y=Math.sin(t*1.3+i)*.38;
+            o.position.y=base+Math.sin(t*.9+i)*.17;
+        } else if(kind==="flare"){
+            o.scale.y=.88+Math.sin(t*4.7+i*1.3)*.18;
+        } else if(kind==="wave"){
+            o.rotation.y+=dt*.52;
+            o.scale.setScalar(1+Math.sin(t*1.5+i)*.04);
+        } else if(kind==="sigil"){
+            o.rotation.y+=dt*.27;
+            o.position.y=o.userData.homeY+Math.sin(t*1.2+i*.55)*.07;
+        } else if(kind==="flash"){
+            o.rotation.z+=dt*.65;
+            o.material.emissiveIntensity=.3+Math.abs(Math.sin(t*8+i))*1.2;
+        } else if(kind==="rune"){
+            o.rotation.y=.15+Math.sin(t*.5)*.26;
+            o.material.opacity=.56+.13*Math.sin(t*1.2);
         } else if (kind === "emblem") {
             o.rotation.y = Math.sin(t * .5 + i) * .24;
-            o.position.y = Math.sin(t * 1.6 + i) * .12
+            o.position.y = Math.sin(t * 1.6 + i) * .12;
         }
     });
     // Keep decorative aura geometry outside the avatar's central body.
