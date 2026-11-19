@@ -10,35 +10,50 @@ permissions:
 jobs:
   browser-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 7
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Check game startup in headless Chrome
+      - name: Install browser test driver
+        run: npm install --no-save --no-audit --no-fund --silent playwright
+      - name: Test world loading in real Chrome and collect exact errors
         shell: bash
         run: |
           set -euo pipefail
-          command -v google-chrome || command -v chromium || true
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/infinity-server.log 2>&1 &
           sleep 2
-          BROWSER="$(command -v google-chrome || command -v chromium || true)"
-          if [ -z "$BROWSER" ]; then
-            echo "No Chrome available"; exit 1
-          fi
-          for page in index.html v14-experimental.html; do
-            echo "--- TEST: $page ---"
-            "$BROWSER" --headless=new --no-sandbox --disable-dev-shm-usage --enable-webgl --enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader --disable-software-rasterizer=false --virtual-time-budget=15000 --dump-dom "http://127.0.0.1:8765/infinity-rng/$page" > "/tmp/${page}.dom" 2>"/tmp/${page}.log" || true
-            python3 - "$page" <<'PY'
-          import pathlib,sys,re,html
-          name=sys.argv[1]
-          dom=pathlib.Path('/tmp/'+name+'.dom').read_text(errors='replace')
-          log=pathlib.Path('/tmp/'+name+'.log').read_text(errors='replace')
-          loading=re.search(r'<div[^>]*id="loading"[^>]*>(.*?)</div>',dom,re.S|re.I)
-          snippet=html.unescape(re.sub('<[^>]+>',' ',loading.group(0)))[:500] if loading else 'MISSING LOADING NODE'
-          cls=re.search(r'class="([^"]*)"',loading.group(0)).group(1) if loading and 'class="' in loading.group(0) else 'unknown'
-          print('DOM_SIZE',len(dom),'LOADING_CLASS',cls,'LOADING_TEXT',snippet)
-          print('CANVAS_COUNT',dom.count('<canvas'))
-          print('CHROME_ERROR_LOG_TAIL',log[-2500:])
-          if not dom: print('NO DOM')
-          PY
-          done
-          echo "Browser inspection completed."
+          cat > /tmp/infinity-smoke.cjs <<'JS'
+          const {chromium}=require(process.cwd()+'/node_modules/playwright');
+          (async()=>{
+            const browser=await chromium.launch({
+              executablePath:'/usr/bin/google-chrome',
+              headless:true,
+              args:['--no-sandbox','--disable-dev-shm-usage','--enable-webgl','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']
+            });
+            let failed=false;
+            for(const pageName of ['index.html','v14-experimental.html']){
+              const page=await browser.newPage({viewport:{width:1250,height:850}});
+              const errors=[],logs=[];
+              page.on('pageerror',e=>errors.push('PAGEERROR: '+String(e.stack||e)));
+              page.on('console',m=>{
+                if(m.type()==='error'||m.type()==='warning') logs.push(m.type().toUpperCase()+': '+m.text());
+              });
+              page.on('requestfailed',r=>logs.push('REQUEST FAILED '+r.url()+': '+(r.failure()?.errorText||'?')));
+              try{
+                await page.goto('http://127.0.0.1:8765/infinity-rng/'+pageName,{waitUntil:'domcontentloaded',timeout:45000});
+                await page.waitForTimeout(7000);
+                const status=await page.evaluate(()=>{
+                  const l=document.getElementById('loading');
+                  return {loadingClass:l?.className,loadingText:l?.innerText?.slice(0,700),canvasCount:document.querySelectorAll('canvas').length,threeLoaded:!!window.THREE,version:document.querySelector('.version')?.innerText};
+                });
+                console.log('CHECK '+pageName+' '+JSON.stringify(status));
+                if(!status.loadingClass?.includes('hidden')||status.canvasCount<2){failed=true;console.log('FAIL '+pageName+' loading is not complete');}
+              }catch(e){failed=true;console.log('NAV ERROR '+pageName+': '+(e.stack||e));}
+              for(const e of errors.slice(0,15))console.log(e);
+              for(const e of logs.slice(0,25))console.log(e.slice(0,1500));
+              await page.close();
+            }
+            await browser.close();
+            if(failed)process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
+          node /tmp/infinity-smoke.cjs
