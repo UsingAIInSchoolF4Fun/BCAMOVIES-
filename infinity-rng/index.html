@@ -327,8 +327,8 @@ function randomAura() {
 }
 let revealTimer = 0;
 
-function reveal(a) {
-    const rare = displayOdds(a) > 2500;
+function reveal(a, rolledOdds=displayOdds(a)) {
+    const rare = rolledOdds > 2500;
     const color = hex(auraColor(a)),
         overlay = $("reveal");
     overlay.style.setProperty("--burst", color);
@@ -336,20 +336,20 @@ function reveal(a) {
     overlay.classList.add("show");
     if (rare) {
         overlay.classList.add("tease");
-        $("revealName").textContent = displayOdds(a) >= 5000 ? "✦ IMPOSSIBLE ENERGY ✦" : "✦ RARE ENERGY DETECTED ✦";
+        $("revealName").textContent = rolledOdds >= 5000 ? "✦ IMPOSSIBLE ENERGY ✦" : "✦ RARE ENERGY DETECTED ✦";
         $("revealOdds").textContent = "SOMETHING INCREDIBLE IS COMING…";
         overlay.querySelector(".revealhint").textContent = "THE UNIVERSE IS REVEALING YOUR FIND";
-        revealTimer = setTimeout(() => finishReveal(a), 1500)
-    } else finishReveal(a)
+        revealTimer = setTimeout(() => finishReveal(a,rolledOdds), 1500)
+    } else finishReveal(a,rolledOdds)
 }
 
-function finishReveal(a) {
+function finishReveal(a,rolledOdds=displayOdds(a)) {
     const overlay = $("reveal");
     overlay.classList.remove("tease");
     $("revealName").textContent = a[0].toUpperCase();
-    $("revealOdds").textContent = "1 IN " + displayOdds(a).toLocaleString();
+    $("revealOdds").textContent = "1 IN " + rolledOdds.toLocaleString();
     overlay.querySelector(".revealhint").textContent = "AURA OBTAINED";
-    revealTimer = setTimeout(() => overlay.classList.remove("show"), displayOdds(a) > 2500 ? 3100 : 1700)
+    revealTimer = setTimeout(() => overlay.classList.remove("show"), rolledOdds > 2500 ? 3100 : 1700)
 }
 
 function roll() {
@@ -388,10 +388,10 @@ function roll() {
         updateHUD();
         inventory();
         renderAura();
-        if (displayOdds(win) > 2500) reveal(win);
+        if (wonOdds > 2500) reveal(win,wonOdds);
         busy = false;
         $("rollButton").disabled = false;
-        if (auto) setTimeout(roll, displayOdds(win) > 2500 ? 4900 : 800)
+        if (auto) setTimeout(roll, wonOdds > 2500 ? 4900 : 800)
     }
     requestAnimationFrame(tick)
 }
