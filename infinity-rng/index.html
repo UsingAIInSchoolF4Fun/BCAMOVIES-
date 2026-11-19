@@ -1,7 +1,7 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V13.3</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V14.1</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V13.3</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button><button id="mapButton" title="Toggle the redesigned world map (M)">MAP (M)</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · R — Turn mode · Click world — Lock mouse · Esc — Free cursor · Mouse wheel — Zoom · Space — Jump</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script><script>
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V14.1</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button><button id="mapButton" title="Toggle the redesigned world map (M)">MAP (M)</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script><script>
 "use strict";
 const A = [
     ["Dust", 2, 0xabb0c4],
@@ -232,7 +232,16 @@ if (!window.THREE) {
     $("loading").textContent = "3D engine could not load. Check your connection and refresh.";
     throw Error("Three.js unavailable")
 }
-window.addEventListener("error",e=>{let l=document.getElementById("loading");if(l){l.textContent="Loading error: "+e.message+" — refresh";l.classList.remove("hidden")}});
+window.addEventListener("error",e=>{
+ const l=document.getElementById("loading");
+ if(l){const message=e.message||"Unknown error";l.innerHTML="<strong>V14.1 BROWSER ERROR</strong><div style='font-size:12px;white-space:pre-wrap;text-align:left;max-width:80vw;max-height:50vh;overflow:auto;margin:8px 0'>"+
+ [message, "at "+(e.filename||"inline script")+":"+(e.lineno||"?")+":"+(e.colno||"?"), e.error&&e.error.stack?e.error.stack:""].join("\n").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))+
+ "</div><a style='color:#bcfaff' href='./'>Play stable version</a>";l.classList.remove("hidden");}
+});
+window.addEventListener("unhandledrejection",e=>{
+ const l=document.getElementById("loading");
+ if(l){l.textContent="V14 async error: "+String(e.reason);l.classList.remove("hidden");}
+});
 const T = THREE,
     scene = new T.Scene();
 scene.background = new T.Color(0x3a4f68);
@@ -551,7 +560,7 @@ function rand(x, z) {
 } // Gentle walkable terrain with locally level building pads and natural dirt trails.
 // Protected landmark footprints and intentionally planned development districts.
 const reservedSites=[
- {x:0,z:0,r:47},
+ {x:0,z:0,r:120},
  {x:100,z:-105,r:29},{x:-115,z:110,r:25},{x:255,z:180,r:25},
  {x:-245,z:-230,r:26},{x:105,z:230,r:80},
  {x:-260,z:-60,r:25},{x:260,z:30,r:27},{x:30,z:-270,r:25},{x:40,z:280,r:25},
@@ -574,11 +583,11 @@ const landmarkPads = [
     [260, 30, 12],
     [30, -270, 12],
     [40, 280, 12],
-    [0, 0, 47],
+    [0, 0, 99],
     [318,-295,90],
     [-285,240,35],[-300,-100,28],[-325,-280,35],
     [270,90,34],[-340,55,33],[210,-275,32],
-    [-55,-45,22],[-350,10,22],[340,-105,22],[-55,-350,22],[310,345,22]
+    [-137,-81,24],[-350,10,22],[340,-105,22],[-55,-350,22],[310,345,22]
 ];
 
 function rawHeight(x,z){
@@ -614,9 +623,9 @@ function rawHeight(x,z){
  y+=dome(0,0,62,62,13);
  // Ravines and water corridors: wide, curving, readable from a distance.
  const river=Math.abs(z-(65+24*Math.sin(x*.014)+12*Math.sin(x*.035)));
- if(x>-310&&x<345&&river<20){
-  const f=1-river/20;
-  y-=13*f*f;
+ if(x>-310&&x<345&&river<28){
+  const f=1-river/28;
+  y-=9*f*f;
  }
  return y;
 }
@@ -625,15 +634,15 @@ function height(x, z) {
     let y = rawHeight(x, z);
     for (const [cx, cz, r] of landmarkPads) {
         let d = Math.hypot(x - cx, z - cz);
-        if (d < r + 10) {
-            let blend = Math.max(0, Math.min(1, (r + 10 - d) / 10));
+        if (d < r + 26) {
+            let blend = Math.max(0, Math.min(1, (r + 26 - d) / 26));
             blend = blend * blend * (3 - 2 * blend);
             y = y * (1 - blend) + rawHeight(cx, cz) * blend
         }
     }
     return y
 }
-const authoredRoutes=[{"name":"Forest Trail","theme":"forest","width":9,"points":[[0,46],[4,89],[24,132],[61,189],[105,230]]},{"name":"Forest Temple","theme":"forest","width":7,"points":[[12,51],[26,105],[22,159],[20,213],[20,250]]},{"name":"Frost Citadel","theme":"frost","width":8,"points":[[-43,12],[-87,27],[-146,39],[-196,49],[-235,50]]},{"name":"Frost Tower","theme":"frost","width":7,"points":[[-233,54],[-286,45],[-317,23],[-350,10]]},{"name":"Snow Road","theme":"frost","width":8,"points":[[-44,-9],[-111,-21],[-181,-42],[-248,-64]]},{"name":"Ruins Road","theme":"desert","width":7,"points":[[-185,-44],[-227,-60],[-260,-60],[-285,-102]]},{"name":"Astral Road","theme":"astral","width":8,"points":[[-33,-37],[-92,-95],[-155,-153],[-209,-205],[-245,-230]]},{"name":"Astral Tower","theme":"astral","width":7,"points":[[-15,-44],[-14,-99],[3,-161],[37,-225],[30,-270],[-14,-320],[-55,-350]]},{"name":"Crystal Road","theme":"crystal","width":9,"points":[[44,5],[93,17],[150,28],[201,36],[260,30]]},{"name":"Crystal Gardens","theme":"crystal","width":7,"points":[[153,29],[202,81],[255,103],[285,120]]},{"name":"Desert Road","theme":"desert","width":9,"points":[[37,34],[77,78],[119,119],[166,160],[207,216],[255,280]]},{"name":"Ember Citadel","theme":"ember","width":7,"points":[[40,-25],[105,-32],[176,-32],[230,-35]]},{"name":"Volcano Road","theme":"ember","width":9,"points":[[30,-39],[98,-105],[157,-145],[216,-183],[285,-211],[318,-210]]},{"name":"Forest Watchtower","theme":"forest","width":7,"points":[[120,229],[179,269],[235,309],[310,345]]}];
+const authoredRoutes=[{"name":"Forest Trail","theme":"forest","width":9,"points":[[0,78],[4,99],[24,132],[61,189],[105,230]]},{"name":"Forest Temple","theme":"forest","width":7,"points":[[18,79],[26,105],[22,159],[20,213],[20,250]]},{"name":"Frost Citadel","theme":"frost","width":8,"points":[[-77,17],[-87,27],[-146,39],[-196,49],[-235,50]]},{"name":"Frost Tower","theme":"frost","width":7,"points":[[-233,54],[-286,45],[-317,23],[-350,10]]},{"name":"Snow Road","theme":"frost","width":8,"points":[[-72,-32],[-111,-21],[-181,-42],[-248,-64]]},{"name":"Ruins Road","theme":"desert","width":7,"points":[[-185,-44],[-227,-60],[-260,-60],[-285,-102]]},{"name":"Astral Road","theme":"astral","width":8,"points":[[-62,-68],[-92,-95],[-155,-153],[-209,-205],[-245,-230]]},{"name":"Astral Tower","theme":"astral","width":7,"points":[[-15,-44],[-14,-99],[3,-161],[37,-225],[30,-270],[-14,-320],[-55,-350]]},{"name":"Crystal Road","theme":"crystal","width":9,"points":[[79,8],[93,17],[150,28],[201,36],[260,30]]},{"name":"Crystal Gardens","theme":"crystal","width":7,"points":[[153,29],[202,81],[255,103],[285,120]]},{"name":"Desert Road","theme":"desert","width":9,"points":[[58,58],[77,78],[119,119],[166,160],[207,216],[255,280]]},{"name":"Ember Citadel","theme":"ember","width":7,"points":[[78,-44],[105,-32],[176,-32],[230,-35]]},{"name":"Volcano Road","theme":"ember","width":9,"points":[[49,-69],[98,-105],[157,-145],[216,-183],[285,-211],[318,-210]]},{"name":"Forest Watchtower","theme":"forest","width":7,"points":[[120,229],[179,269],[235,309],[310,345]]}];
 // Extra waypoints complete the route network; endpoints share existing paths
 // so players can travel to the real landmark entrances and side destinations.
 authoredRoutes.push(
@@ -643,11 +652,12 @@ authoredRoutes.push(
  {name:"Temple Approach",theme:"forest",width:6.5,points:[[22,159],[34,202],[20,250]]},
  {name:"Western Ruins",theme:"desert",width:7,points:[[-260,-60],[-283,-83],[-300,-100]]},
  {name:"Astral Sanctuary",theme:"astral",width:7,points:[[-209,-205],[-245,-230],[-289,-258],[-325,-280]]},
- {name:"Ember Junction",theme:"ember",width:7,points:[[40,-25],[30,-39]]},
+ {name:"Ember Junction",theme:"ember",width:7,points:[[78,-44],[63,-62],[49,-69]]},
  {name:"Crystal Terrace",theme:"crystal",width:7,points:[[255,103],[285,120],[308,151],[320,178]]},
  {name:"Sunstone Market",theme:"desert",width:7,points:[[255,280],[282,275],[303,265]]},
  {name:"Oasis Crossing",theme:"desert",width:7,points:[[255,280],[306,298],[357,304]]},
- {name:"Village Square",theme:"forest",width:7,points:[[105,230],[105,254],[124,276]]}
+ {name:"Village Square",theme:"forest",width:7,points:[[105,230],[105,254],[124,276]]},
+ {name:"Flight Training",theme:"astral",width:7.5,points:[[-72,-45],[-106,-64],[-137,-81]]}
 );
 const pathSegments=[];
 for(const route of authoredRoutes){for(let i=1;i<route.points.length;i++)pathSegments.push([...route.points[i-1],...route.points[i]]);}
@@ -662,7 +672,7 @@ function pathDistance(x, z) {
     return best
 }
 const SIZE = 880,
-    GRID = 128,
+    GRID = 160,
     verts = [],
     uv = [],
     idx = [];
@@ -678,6 +688,52 @@ for (let z = 0; z < GRID; z++)
         let i = z * (GRID + 1) + x;
         idx.push(i, i + GRID + 1, i + 1, i + 1, i + GRID + 1, i + GRID + 2)
     }
+// V14 terrain finish: collision and rendered surface use exactly these heights.
+(function softenTerrain(){
+ const n=GRID+1;
+ for(let pass=0;pass<2;pass++){
+  const h=verts.slice();
+  for(let z=1;z<GRID;z++)for(let x=1;x<GRID;x++){
+   const get=(dx,dz)=>h[((z+dz)*n+x+dx)*3+1];
+   const center=get(0,0)*4;
+   const cardinal=2*(get(-1,0)+get(1,0)+get(0,-1)+get(0,1));
+   const diagonal=get(-1,-1)+get(-1,1)+get(1,-1)+get(1,1);
+   verts[(z*n+x)*3+1]=(center+cardinal+diagonal)/16;
+  }
+ }
+ const maxRise=SIZE/GRID*.93;
+ for(let pass=0;pass<3;pass++){
+  const h=verts.slice();
+  for(let z=1;z<GRID;z++)for(let x=1;x<GRID;x++){
+   const k=(z*n+x)*3+1,v=h[k];
+   let sum=0,count=0;
+   for(const [dx,dz] of [[-1,0],[1,0],[0,-1],[0,1]]){
+    const other=h[((z+dz)*n+x+dx)*3+1];
+    if(Math.abs(v-other)>maxRise){sum+=other+Math.sign(v-other)*maxRise;count++;}
+   }
+   if(count)verts[k]=v*.55+(sum/count)*.45;
+  }
+ }
+ // Final edge relaxation removes isolated one-cell ledges, including the
+ // map-edge cliffs. Every adjustment changes both endpoints of an edge,
+ // keeping mountains broad rather than creating artificial plateaus.
+ for(let pass=0;pass<10;pass++){
+  for(let z=0;z<=GRID;z++)for(let x=0;x<GRID;x++){
+   const i=(z*n+x)*3+1,j=i+3,d=verts[i]-verts[j];
+   if(Math.abs(d)>maxRise){
+    const change=(Math.abs(d)-maxRise)*Math.sign(d)*.5;
+    verts[i]-=change;verts[j]+=change;
+   }
+  }
+  for(let z=0;z<GRID;z++)for(let x=0;x<=GRID;x++){
+   const i=(z*n+x)*3+1,j=i+n*3,d=verts[i]-verts[j];
+   if(Math.abs(d)>maxRise){
+    const change=(Math.abs(d)-maxRise)*Math.sign(d)*.5;
+    verts[i]-=change;verts[j]+=change;
+   }
+  }
+ }
+})();
 let geo = new T.BufferGeometry();
 geo.setAttribute("position", new T.Float32BufferAttribute(verts, 3));
 geo.setAttribute("uv", new T.Float32BufferAttribute(uv, 2));
@@ -727,6 +783,80 @@ function ground(x,z) {
     const h11=verts[((iz+1)*stride+ix+1)*3+1];
     return u+v<=1?h00+(h10-h00)*u+(h01-h00)*v:h11+(h01-h11)*(1-u)+(h10-h11)*(1-v);
 }
+
+// V14 CINEMATIC PERIMETER - mountains hide the rectangular terrain edge.
+// Three uninterrupted sculpted rock belts surround all four sides; the
+// nearest belt starts outside the playable map so players cannot climb out.
+const mountainMistMaterials=[];
+function buildMountainHorizon(){
+ const count=98,rows=5;
+ const palettes=[
+  [0x51506f,0x8a82b8,0xc6badc], // northern astral crags
+  [0x635069,0x92728f,0xd0a3a1], // eastern volcanic ridges
+  [0x365a5a,0x669482,0xb3c8ae], // southern forest foothills
+  [0x526b89,0x87b4c8,0xe1f3f8]  // western snowy peaks
+ ];
+ const locate=(side,d,s)=>side===0?[s,-d]:side===1?[d,s]:side===2?[s,d]:[-d,s];
+ for(let side=0;side<4;side++)for(let layer=2;layer>=0;layer--){
+  const positions=[],colors=[],indices=[],uvs=[];
+  const start=437+layer*82,depth=95,levels=[0,.55,1,.82,.06];
+  const low=new T.Color(palettes[side][0]),mid=new T.Color(palettes[side][1]),high=new T.Color(palettes[side][2]);
+  for(let i=0;i<=count;i++){
+   const along=-565+i*1130/count;
+   const wave=.74+.17*Math.sin(along*.017+side*1.7+layer*.9)
+       +.11*Math.sin(along*.041+layer*1.9+side*.8)
+       +.08*Math.sin(along*.09+side*2.1+layer*4);
+   const height=(layer===0?64:layer===1?105:151)*Math.max(.47,wave);
+   const groundBase=ground(...locate(side,436,Math.max(-439,Math.min(439,along))));
+   for(let j=0;j<=rows;j++){
+    const t=j/rows,at=start+t*depth;
+    const [px,pz]=locate(side,at,along+Math.sin(t*5+i*.08+side)*2.3);
+    const bump=levels[j===rows?4:j];
+    const y=groundBase-20+height*bump;
+    positions.push(px,y,pz);uvs.push(i/count*8,t*4);
+    const c=low.clone().lerp(mid,Math.min(1,t*.9)).lerp(high,bump*(.33+.18*layer));
+    const shade=.82+.1*Math.sin(i*.38+side*.8)+.065*Math.cos(i*.84+j);
+    c.multiplyScalar(shade);
+    colors.push(c.r,c.g,c.b);
+    if(i<count&&j<rows){
+     const a=i*(rows+1)+j;
+     indices.push(a,a+1,a+rows+1,a+1,a+rows+2,a+rows+1);
+    }
+   }
+  }
+  const geometry=new T.BufferGeometry();
+  geometry.setAttribute("position",new T.Float32BufferAttribute(positions,3));
+  geometry.setAttribute("color",new T.Float32BufferAttribute(colors,3));
+  geometry.setAttribute("uv",new T.Float32BufferAttribute(uvs,2));
+  geometry.setIndex(indices);geometry.computeVertexNormals();
+  const material=new T.MeshStandardMaterial({
+   color:0xffffff,vertexColors:true,roughness:1,metalness:0,
+   flatShading:true,side:T.DoubleSide,depthWrite:true
+  });
+  const ridge=new T.Mesh(geometry,material);
+  ridge.castShadow=false;ridge.receiveShadow=false;
+  scene.add(ridge);
+ }
+ // Flowing mist across mountain slopes (animated on the GPU, not moved walls).
+ const mistMaterial=new T.ShaderMaterial({
+  uniforms:{uTime:{value:0},uTint:{value:new T.Color(0xd4c7ed)}},
+  transparent:true,depthWrite:false,side:T.DoubleSide,fog:false,
+  vertexShader:"varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
+  fragmentShader:"uniform float uTime;uniform vec3 uTint;varying vec2 vUv;void main(){float x=vUv.x*11.0-uTime*.027;float noise=sin(x*2.3+sin(vUv.y*7.0))*sin(x*.9-vUv.y*4.0);float edge=smoothstep(0.0,.11,vUv.y)*(1.0-smoothstep(.84,1.0,vUv.y));float fade=smoothstep(0.0,.06,vUv.x)*(1.0-smoothstep(.94,1.0,vUv.x));float alpha=(.065+.055*noise)*edge*fade;gl_FragColor=vec4(uTint,max(0.0,alpha));}"
+ });
+ for(let side=0;side<4;side++)for(let layer=0;layer<2;layer++){
+  const g=new T.PlaneGeometry(1110,49,40,2);
+  const p=new T.Mesh(g,mistMaterial);
+  const d=452+layer*79;
+  const [x,z]=locate(side,d,0);
+  p.position.set(x,52+layer*32,z);
+  if(side===1||side===3)p.rotation.y=Math.PI/2;
+  p.castShadow=false;p.receiveShadow=false;p.frustumCulled=false;
+  scene.add(p);
+ }
+ mountainMistMaterials.push(mistMaterial);
+}
+buildMountainHorizon();
 
 const worldColliders=[];
 function registerCollider(x,z,r,height=Math.max(1.2,r*.85)){worldColliders.push({x,z,r,height})}
@@ -1058,20 +1188,24 @@ function district(x,z,kind){
   // Two orderly glacier towers and a colonnaded frost gate.
   for(const side of [-1,1]){
    const dx=side*21,dy=localY(dx,-9);
+   registerCollider(x+dx,z-9,4.3,19);
    cyl(3.4,4.2,12,slate,g,dx,dy+6,-9,10);
    cyl(3.8,3.8,1.1,snow,g,dx,dy+12.4,-9,10);
    const cap=mesh(new T.ConeGeometry(4.2,6,8),snow,g,dx,dy+15.7,-9);
    for(let j=0;j<3;j++){
     const zz=-25+j*11,yy=localY(side*23,zz);
+    registerCollider(x+side*23,z+zz,1.9+j*.35,11);
     spire(g,side*23,yy,zz,2.0+j*.3,6+j*2,scenicCyan);
    }
   }
   const archGroup=scenicAt(x,z-19);arch(archGroup,0,0,12,12,snow);
+  for(const side of [-1,1])registerCollider(x+side*6,z-19,1.45,13);
   for(let side of [-1,1])lantern(g,side*7,-13,localY(side*7,-13));
  }else if(kind==="crystal"){
   // Paired crystal gardens frame an uncluttered main avenue.
   for(const side of [-1,1])for(let row=0;row<4;row++){
    const dx=side*(18+row*7),dz=-18+row*11,yy=localY(dx,dz);
+   registerCollider(x+dx,z+dz,3.6,11);
    const bed=cyl(4.5,5,.55,slate,g,dx,yy+.2,dz,9);
    const sizes=[6,9,5,7];
    spire(g,dx,yy,dz,2.2,sizes[row],row%2?scenicPink:scenicViolet);
@@ -1079,16 +1213,20 @@ function district(x,z,kind){
    spire(g,dx+side*2.1,yy,dz-2.2,.9,sizes[row]*.44,scenicViolet);
   }
   const entrance=scenicAt(x,z-24);arch(entrance,0,0,13,14,slate);
+  for(const side of [-1,1])registerCollider(x+side*6.5,z-24,1.3,14);
  }else if(kind==="ember"){
   // Solid fort entrance and two clearly recognizable lava kilns.
   const entrance=scenicAt(x,z-20);arch(entrance,0,0,14,15,slate);
+  for(const side of [-1,1])registerCollider(x+side*7,z-20,1.4,15);
   for(const side of [-1,1]){
    const dx=side*23,dy=localY(dx,4);
+   registerCollider(x+dx,z+4,5.2,15);
    cyl(5,5.6,9,slate,g,dx,dy+4.5,4,10);
    cyl(5.1,5.1,.3,bronze,g,dx,dy+9.1,4,10);
    const fire=mesh(new T.ConeGeometry(3.7,6,7),hot,g,dx,dy+12,4);
    for(let i=0;i<4;i++){
     const dz=-16+i*11,yy=localY(side*16,dz);
+    registerCollider(x+side*16,z+dz,.76,3.2);
     cyl(.55,.72,2.6,slate,g,side*16,yy+1.3,dz,8);
     sphere(.5,hot,g,side*16,yy+2.8,dz);
    }
@@ -1096,23 +1234,28 @@ function district(x,z,kind){
  }else if(kind==="ruins"){
   // Symmetrical desert sanctuary, not a spray of random spires.
   const gate=scenicAt(x,z-20);arch(gate,0,0,10,12,sand);
+  for(const side of [-1,1])registerCollider(x+side*5,z-20,1.4,12);
   for(const side of [-1,1])for(let row=0;row<4;row++){
    const dx=side*16,dz=-20+row*13,yy=localY(dx,dz);
+   registerCollider(x+dx,z+dz,1.65,9);
    cyl(1.3,1.6,8,sand,g,dx,yy+4,dz,10);
    cyl(1.9,1.9,.7,bronze,g,dx,yy+8.3,dz,10);
   }
   for(const side of [-1,1]){
    const dx=side*25,dz=10,yy=localY(dx,dz);
+   registerCollider(x+dx,z+dz,3,4);
    box(3,2,15,sand,g,dx,yy+1,dz);
    spire(g,dx,yy+2,dz,1.7,3,bronze);
   }
  }else if(kind==="forest"){
   // Forest meeting garden, framed by timber pergolas and flower beds.
   const entrance=scenicAt(x,z-24);arch(entrance,0,0,12,11,scenicMoss);
+  for(const side of [-1,1])registerCollider(x+side*6,z-24,1.45,12);
   for(const side of [-1,1]){
    const dx=side*17;
    for(const dz of [-13,0,13]){
     const yy=localY(dx,dz);
+    registerCollider(x+dx,z+dz,.68,6);
     cyl(.45,.6,5,mats.wood,g,dx,yy+2.5,dz,8);
     sphere(1.35,scenicMoss,g,dx,yy+5.5,dz);
     lantern(g,dx+side*3,dz,localY(dx+side*3,dz));
@@ -1129,8 +1272,8 @@ function district(x,z,kind){
 // stairs, lanterns, monumental crystal fountain, arches, banners, waterfalls.
 // All geometry uses shared, stylized materials rather than scattered props.
 function buildSpawnHub(){
- const base=ground(0,0),top=base+2.4;
- const root=new T.Group();root.position.y=base;scene.add(root);
+ const base=ground(0,0),hubScale=1.56,hubY=1.18,top=base+2.52*hubY;
+ const root=new T.Group();root.position.y=base;root.scale.set(hubScale,hubY,hubScale);scene.add(root);
  function material(color,roughness=0.82,emissive=0x000000,emissiveIntensity=0){
   return new T.MeshStandardMaterial({color,roughness,metalness:.08,emissive,emissiveIntensity});
  }
@@ -1177,12 +1320,12 @@ function buildSpawnHub(){
  const glow=material(0xc49bff,.16,0x8a3eff,1.5),cyan=material(0x75dfff,.22,0x1e96e9,1.1);
  const goldLight=material(0xffce79,.24,0xffae4f,1.65),leaves=material(0x437951),bloom=material(0xf3a1d5);
  const darkWater=material(0x174a79,.26,0x075e97,.4);
- const animations={crystal:null,halo:[],banners:[],waterfalls:[],lights:[],motes:[]};
+ const animations={crystal:null,halo:[],banners:[],waterfalls:[],lights:[],motes:[],spray:null,foam:null};
  // One raised, walkable 31-unit plaza with stone rims and a subtly textured surface.
- cyl(32.5,32.5,2.36,edge,root,0,1.18,0,64);
- cyl(31.7,31.7,.23,stone,root,0,2.35,0,64);
- cyl(31.35,31.35,.1,paving,root,0,2.46,0,64);
- for(const [radius,thickness,mat] of [[30.8,.27,trim],[28.4,.13,violet],[18.5,.15,trim],[12.6,.2,violet]]){
+ cyl(38.5,38.5,2.36,edge,root,0,1.18,0,72);
+ cyl(37.8,37.8,.23,stone,root,0,2.35,0,72);
+ cyl(37.45,37.45,.1,paving,root,0,2.46,0,72);
+ for(const [radius,thickness,mat] of [[36.6,.28,trim],[33.6,.14,violet],[25.9,.15,trim],[19.9,.2,violet]]){
   const tor=torus(radius,thickness,mat,root,0,2.54,0);tor.rotation.x=Math.PI/2;
  }
  // Broad approach and six level staircase treads; walk height is matched below.
@@ -1210,7 +1353,7 @@ function buildSpawnHub(){
  }
  for(const x of [-12,12])for(const z of [39.5,28,15])hubLantern(x,z,z>31?.2:2.52,2.2);
  for(const a of [-Math.PI*.72,-Math.PI*.28,Math.PI*.72,Math.PI*.28]){
-  hubLantern(Math.cos(a)*27.2,Math.sin(a)*27.2,2.52,2.5);
+  hubLantern(Math.cos(a)*34.5,Math.sin(a)*34.5,2.52,2.5);
  }
  // Central fountain: stacked dressed-stone basin, turquoise water and moving magic.
  cyl(11.6,11.85,.8,edge,root,0,2.85,-4,56);
@@ -1222,7 +1365,7 @@ function buildSpawnHub(){
  cyl(7.5,8.1,1.45,edge,root,0,4.2,-4,12);
  cyl(7.1,7.6,.32,stone,root,0,4.99,-4,12);
  cyl(6.7,6.9,.25,trim,root,0,5.25,-4,12);
- const crystalRig=new T.Group();crystalRig.position.set(0,5.6,-4);root.add(crystalRig);
+ const crystalRig=new T.Group();crystalRig.position.set(0,5.6,-4);crystalRig.scale.y=1.23;root.add(crystalRig);
  const crystalMat=new T.MeshStandardMaterial({color:0xb477fa,emissive:0x7231ff,emissiveIntensity:1.1,roughness:.16,metalness:.19,flatShading:true,transparent:true,opacity:.96,side:T.DoubleSide});
  const innerMat=new T.MeshStandardMaterial({color:0xffabed,emissive:0xbc53ff,emissiveIntensity:1.55,metalness:.12,roughness:.2,flatShading:true});
  let mainGem=mesh(new T.OctahedronGeometry(4.4,0),crystalMat,crystalRig,0,9,0);mainGem.scale.set(.95,2.15,.83);
@@ -1258,6 +1401,28 @@ function buildSpawnHub(){
  waterfallRing.castShadow=false;waterfallRing.receiveShadow=false;
  const foamRing=torus(8.42,.12,cyan,root,0,3.54,-4);
  foamRing.castShadow=false;
+ animations.foam=foamRing;
+ // Subtle fountain spray: one animated GPU mesh, no stacked waterfall slices.
+ const droplets=144,locations=[],phases=[];
+ for(let i=0;i<droplets;i++){
+  const angle=i*2.399963,rad=3.2+Math.sqrt((i%37)/36)*4.8;
+  locations.push(Math.cos(angle)*rad,3.55+((i*7)%19)/19*4.7,
+                 Math.sin(angle)*rad-4);
+  phases.push(((i*31)%101)/101);
+ }
+ const dropletGeo=new T.BufferGeometry();
+ dropletGeo.setAttribute("position",new T.Float32BufferAttribute(locations,3));
+ dropletGeo.setAttribute("aPhase",new T.Float32BufferAttribute(phases,1));
+ const dropletMat=new T.ShaderMaterial({
+  uniforms:{uTime:{value:0}},
+  transparent:true,depthWrite:false,blending:T.AdditiveBlending,
+  vertexShader:"uniform float uTime;attribute float aPhase;varying float vAlpha;void main(){vec3 p=position;float move=mod(uTime*.42+aPhase,1.0);p.y+=move*3.6;p.x+=sin(uTime*.9+aPhase*24.0)*.35;p.z+=cos(uTime*.75+aPhase*17.0)*.35;vec4 mv=modelViewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*mv;gl_PointSize=clamp(110.0/max(1.0,-mv.z),1.4,5.2);vAlpha=(1.0-smoothstep(.58,1.0,move))*.65;}",
+  fragmentShader:"varying float vAlpha;void main(){float d=length(gl_PointCoord-.5);float a=(1.0-smoothstep(.06,.5,d))*vAlpha;gl_FragColor=vec4(.56,.94,1.0,a);}"
+ });
+ const spray=new T.Points(dropletGeo,dropletMat);
+ spray.frustumCulled=false;spray.castShadow=false;root.add(spray);
+ animations.spray=dropletMat;
+
  animations.waterfalls.push(fallingTex,curtainTex);
  // Symmetrical stone archways behind the crystal with ivy and gold trim.
  function hubArch(cx,z,width=7.4){
@@ -1298,7 +1463,7 @@ function buildSpawnHub(){
  // porch counters, warm lit windows, readable neon signs.
  function shopBuilding(x,label){
   const g=new T.Group();g.position.set(x,.35,-6);root.add(g);
-  const baseY=ground(x,-6)-base+.05;g.position.y=baseY;
+  const baseY=(ground(x*hubScale,-6*hubScale)-base)/hubY+.05;g.position.y=baseY;
   box(23,1.1,17,edge,g,0,.55,0);
   box(21.5,8.1,15.5,plaster,g,0,5.4,0);
   for(const sx of [-1,1]){
@@ -1355,17 +1520,17 @@ function buildSpawnHub(){
    }
   }
  }
- shopBuilding(-43,"SHOP");shopBuilding(43,"UPGRADES");
+ shopBuilding(-55,"SHOP");shopBuilding(55,"UPGRADES");
  // Keep the character out of the fountain and building walls.
- registerCollider(0,-4,8.1,18);
- registerCollider(-43,-6,10.3,15);
- registerCollider(43,-6,10.3,15);
+ registerCollider(0,-4*hubScale,8.1*hubScale,24);
+ registerCollider(-55*hubScale,-6*hubScale,13.5*hubScale,22);
+ registerCollider(55*hubScale,-6*hubScale,13.5*hubScale,22);
 
  // Rear waterfalls are single, terrain-anchored water sheets over stone cliffs.
  // Subdivided sheets add texture without isolated, flickering panels.
  for(const side of [-1,1]){
-  const cx=side*45,cz=-39;
-  const area=new T.Group();area.position.set(cx,ground(cx,cz)-base,cz);root.add(area);
+  const cx=side*61,cz=-39;
+  const area=new T.Group();area.position.set(cx,(ground(cx*hubScale,cz*hubScale)-base)/hubY,cz);root.add(area);
   box(17,10,6,edge,area,0,4,-2.5);
   for(let i=0;i<5;i++){
    box(3.1,7+(i%3)*1.5,6.1,stone,area,(i-2)*3.1,4.1,-2.6);
@@ -1386,7 +1551,7 @@ function buildSpawnHub(){
  }
  // A small number of deliberately placed ornamental trees frame the plaza.
  function ornamentalTree(x,z,pink){
-  const g=new T.Group();g.position.set(x,ground(x,z)-base,z);root.add(g);
+  const g=new T.Group();g.position.set(x,(ground(x*hubScale,z*hubScale)-base)/hubY,z);root.add(g);
   const trunk=material(0x76503d,.95),crown=pink?bloom:leaves;
   cyl(.7,1.15,10,trunk,g,0,5,0,8);
   for(let i=0;i<6;i++){
@@ -1397,14 +1562,14 @@ function buildSpawnHub(){
    leavesBall.scale.y=.78;
   }
   sphere(4.2,crown,g,0,14.3,0).scale.y=.76;
-  registerCollider(x,z,1.6,11);
+  registerCollider(x*hubScale,z*hubScale,1.85*hubScale,14);
  }
  ornamentalTree(-70,18,true);ornamentalTree(70,18,true);
  ornamentalTree(-64,-33,false);ornamentalTree(64,-33,false);
  // Low, mirrored flower gardens define the edge without blocking footpaths.
  for(const side of [-1,1])for(const z of [18,29]){
   const x=side*29;
-  const group=new T.Group();group.position.set(x,ground(x,z)-base,z);root.add(group);
+  const group=new T.Group();group.position.set(x,(ground(x*hubScale,z*hubScale)-base)/hubY,z);root.add(group);
   box(7,.6,3.5,stone,group,0,.3,0);
   for(let i=0;i<5;i++){
    const px=(i-2)*1.25;
@@ -1416,8 +1581,8 @@ function buildSpawnHub(){
  // Matching short wooden bridges across the two shallow cyan channels.
  // Plank decks are simple and have their own walking collision heights.
  for(const side of [-1,1]){
-  const cx=side*42,cz=22;
-  const bridgeGroup=new T.Group();bridgeGroup.position.set(cx,ground(cx,cz)-base,cz);root.add(bridgeGroup);
+  const cx=side*48,cz=22;
+  const bridgeGroup=new T.Group();bridgeGroup.position.set(cx,(ground(cx*hubScale,cz*hubScale)-base)/hubY,cz);root.add(bridgeGroup);
   box(15,.14,10,darkWater,bridgeGroup,0,.17,0);
   for(let i=0;i<11;i++){
    const px=(i-5)*1.25;
@@ -1436,6 +1601,46 @@ function buildSpawnHub(){
    hubLantern(cx+px,cz-5.2,bridgeGroup.position.y+.2,2.4);
   }
  }
+ // Grand side galleries turn the hub into a full destination, not a small circle.
+ // Both are walkable, mirrored, and deliberately leave a generous main avenue.
+ for(const side of [-1,1]){
+  const tx=side*45;
+  box(25.5,2.5,30,edge,root,tx,1.25,10);
+  box(25.5,.22,30,paving,root,tx,2.52,10);
+  box(25.8,.2,.42,trim,root,tx,2.64,25);
+  for(const zz of [-1,21]){
+   for(const dx of [-9,9]){
+    const x=tx+dx;
+    cyl(.75,.95,4.3,stone,root,x,4.67,zz,10);
+    cyl(.95,.95,.4,trim,root,x,7,zz,10);
+    sphere(.36,goldLight,root,x,7.54,zz);
+   }
+  }
+  const gx=side*34;
+  // Raised tiered gardens sit outside the main walking corridor.
+  box(9,.65,10,edge,root,gx,2.92,20);
+  box(8,.43,9,leaves,root,gx,3.47,20);
+  for(let i=0;i<10;i++){
+   const ang=i*2.399,rad=2.8+(i%3)*.35;
+   sphere(.43,i%2?bloom:glow,root,gx+Math.cos(ang)*rad,4.1,20+Math.sin(ang)*rad);
+  }
+  for(const z of [0,10,22]){
+   const x=side*54;
+   cyl(.95,1.15,2.9,edge,root,x,4.12,z,10);
+   const vase=mesh(new T.OctahedronGeometry(.73,0),glow,root,x,6.25,z);
+   vase.scale.y=1.5;animations.motes.push({mesh:vase,phase:x*.1+z*.08,x,y:6.25,z});
+  }
+ }
+ // Wider central arrival courtyard extends out toward the long main road.
+ box(34,1.05,24,edge,root,0,.53,49);
+ box(33.7,.15,23.6,paving,root,0,1.14,49);
+ for(const side of [-1,1]){
+  for(const zz of [38,46,56]){
+   const bx=side*16.5;
+   cyl(.75,.87,3.6,stone,root,bx,2.95,zz,9);
+   sphere(.38,goldLight,root,bx,5.1,zz);
+  }
+ }
  // Front compass design: memorable spawn landmark and easy navigation.
  const compass=mesh(new T.RingGeometry(3.7,4.1,8),trim,root,0,2.57,18);
  compass.rotation.x=-Math.PI/2;
@@ -1449,12 +1654,26 @@ function buildSpawnHub(){
   const m=mesh(new T.OctahedronGeometry(.23+(i%3)*.08,0),i%3?glow:cyan,root,Math.cos(a)*r,8+(i%3)*.9,Math.sin(a)*r-4);
   m.castShadow=false;animations.motes.push({mesh:m,phase:i*.91,x:m.position.x,y:m.position.y,z:m.position.z});
  }
+ // Actual colliders for decorative architecture, not just the shops.
+ // Paired arches, columns, garden plinths and waterfall escarpments have
+ // physical footprints matching their scaled display positions.
+ for(const archX of [-20.5,20.5])for(const side of [-1,1])
+  registerCollider((archX+side*7.8)*hubScale,-27*hubScale,1.38*hubScale,14);
+ for(const side of [-1,1]){
+  for(const xx of [-9,9])for(const zz of [-1,21])
+   registerCollider((side*45+xx)*hubScale,zz*hubScale,1.22*hubScale,10);
+  registerCollider(side*34*hubScale,20*hubScale,4.5*hubScale,5);
+  registerCollider(side*61*hubScale,-42*hubScale,8.7*hubScale,12);
+  for(const zz of [0,10,22])
+   registerCollider(side*54*hubScale,zz*hubScale,1.15*hubScale,8.5);
+ }
  // Performance: tiny props do not need to cast dynamically calculated shadows.
  root.traverse(o=>{if(o.isMesh&&o.geometry&&o.geometry.boundingSphere===null)o.geometry.computeBoundingSphere();
    if(o.isMesh&&o.geometry&&o.geometry.boundingSphere&&o.geometry.boundingSphere.radius<1.3)o.castShadow=false;
  });
  return {baseY:base,topY:top,crystal:animations.crystal,halo:animations.halo,banners:animations.banners,
-  waterfalls:animations.waterfalls,lights:animations.lights,motes:animations.motes,magicalLight};
+  waterfalls:animations.waterfalls,lights:animations.lights,motes:animations.motes,
+  spray:animations.spray,foam:animations.foam,magicalLight};
 }
 const spawnHub=buildSpawnHub();
 
@@ -1802,6 +2021,10 @@ function buildWaystation(routeName,u,side=1){
  for(const sideX of [-1,1]){
   for(const depth of [-3.1,3.1]){
    cyl(.37,.54,7.4,timber,g,sideX*4.5,4.1,depth,8);
+   // Match each physical porch column to the rotated waystation.
+   const yawStation=Math.atan2(t.x,t.z);
+   registerCollider(x+Math.cos(yawStation)*sideX*4.5+Math.sin(yawStation)*depth,
+                    z-Math.sin(yawStation)*sideX*4.5+Math.cos(yawStation)*depth,.59,8);
    box(.9,.45,1.15,shine,g,sideX*4.5,7.95,depth);
   }
   const eave=box(1.9,.4,10.2,timber,g,sideX*3,8.05,0);
@@ -1884,6 +2107,8 @@ function animateSpawnHub(t){
  spawnHub.crystal.position.y=5.6+Math.sin(t*1.45)*.18;
  spawnHub.halo.forEach((ring,i)=>{ring.rotation.z+=.0015*(i%2?1:-1);ring.rotation.y+=.0025;});
  spawnHub.waterfalls.forEach(tex=>{tex.offset.y=-(t*.23%1);});
+ setWorldUniformTime(spawnHub.spray,t,'fountain spray');
+ spawnHub.foam.scale.setScalar(1+Math.sin(t*2.8)*.019);
  spawnHub.banners.forEach((banner,i)=>{banner.rotation.y=Math.sin(t*1.3+i*1.4)*.06;banner.rotation.z=Math.sin(t*.9+i)*.015;});
  spawnHub.lights.forEach((light,i)=>{light.scale.setScalar(1+Math.sin(t*5.5+i)*.045);});
  spawnHub.magicalLight.intensity=2.6+Math.sin(t*1.7)*.24;
@@ -1893,15 +2118,27 @@ function animateSpawnHub(t){
  });
 }
 function hubWalkHeight(x,z){
- // The paired bridge decks also carry the character, not just the visuals.
- if(Math.abs(Math.abs(x)-42)<6.7&&Math.abs(z-22)<4.5){
-  return ground(Math.sign(x)*42,22)+1.35;
+ const S=1.56,Y=1.18,base=spawnHub.baseY;
+ const lx=x/S,lz=z/S;
+ const r=Math.hypot(lx,lz);
+ // Full enlarged central plaza and the paired, walkable side galleries.
+ if(r<37.3)return spawnHub.topY+.01;
+ if(Math.abs(Math.abs(lx)-45)<12.55&&lz>-4.6&&lz<25.1)
+  return base+2.63*Y;
+ if(Math.abs(lx)<16.8&&lz>37.1&&lz<60.8)
+  return base+1.29*Y;
+ // The broad six-step entrance, aligned with its physical stone geometry.
+ if(Math.abs(lx)<12.4&&lz>=28.6&&lz<46.1){
+  const step=Math.max(0,Math.min(5,Math.floor((45.5-lz)/2.65)));
+  return base+(.48+step*.4)*Y;
  }
- const d=Math.hypot(x,z);
- if(d<31.1)return spawnHub.topY+.11;
- if(Math.abs(x)<12.5&&z>=29.6&&z<45.5){
-  const step=Math.max(0,Math.min(5,Math.floor((45.5-z)/2.65)));
-  return spawnHub.baseY+.4+step*.4+.08;
+ // Mirrored wooden footbridges at the outside of the galleries.
+ for(const side of [-1,1]){
+  const cx=side*48*S,cz=22*S;
+  if(Math.abs(x-cx)<6.4*S&&Math.abs(z-cz)<4.2*S){
+   const rise=1.35*Y;
+   return ground(cx,cz)+rise;
+  }
  }
  return -Infinity;
 }
@@ -1924,6 +2161,7 @@ function buildSunstoneDesert(){
  function part(x,z){const g=new T.Group();g.position.set(x,ground(x,z),z);scene.add(g);return g}
  // Monumental sandstone trading hall, walled and anchored to the landscape.
  const hall=part(303,265);
+ registerCollider(303,265,15.7,19);
  box(32,1.4,25,shadow,hall,0,.7,0);
  box(28,12.5,21,sand,hall,0,7.65,0);
  for(const side of [-1,1]){
@@ -1957,6 +2195,7 @@ function buildSunstoneDesert(){
  for(let i=0;i<10;i++){
   const a=i*Math.PI/5,x=Math.sin(a)*11,z=Math.cos(a)*11;
   cyl(.7,.9,9,sand,rotunda,x,5.3,z,9);
+  registerCollider(216+x,298+z,.98,11);
   cyl(1.35,1.4,.6,gold,rotunda,x,10.2,z,9);
  }
  cyl(13,13,1,sunlit,rotunda,0,11,0,16);
@@ -2099,7 +2338,7 @@ const glowMats = [0xffc96a, 0x6ad8ff, 0xb78bff, 0x69ffc0, 0xff765d].map(c => new
 
 // Removed global vegetation scatter.
 const trialSites=[{x:75,z:65,name:"Crystal Spires",type:0},{x:-235,z:50,name:"Frozen Citadel",type:1},{x:230,z:-35,name:"Ember Fortress",type:2},{x:45,z:-240,name:"Astral Sanctuary",type:3},{x:20,z:250,name:"Forest Temple",type:4}];
-// V13.3 authored landscape: five distinct scenic compositions, not random scatter.
+// V14.1 authored landscape: five distinct scenic compositions, not random scatter.
 
 // V13 authored biome landscaping. Dense but orderly clusters with generous
 // trails, authored landmarks and no floating props. All uses instanced geometry.
@@ -2711,7 +2950,7 @@ const worldSnow=new T.MeshStandardMaterial({color:0xa5cde3,roughness:.75,flatSha
 const worldLava=new T.MeshStandardMaterial({color:0xff6124,emissive:0xff3408,emissiveIntensity:1.8,roughness:.5});
 // Terrain-integrated rivers and soft scenic hills (no detached chunks).
 const worldBridges=[];
-// V13.3 WATER REPAIR: a continuous river surface with stable depth and
+// V14.1 WATER REPAIR: a continuous river surface with stable depth and
 // subtle UV flow. Previously each bank sampled a different height so the
 // river twisted into broken triangles and intersected the terrain.
 function riverPathZ(x){return 65+24*Math.sin(x*.014)+12*Math.sin(x*.035);}
@@ -2901,7 +3140,7 @@ function animateCliffBeacons(t){
 }
 
 const launchTowers=[
- {x:-55,z:-45,h:65,c:0xffd589,a:.9,name:"Origin"},
+ {x:-137,z:-81,h:65,c:0xffd589,a:.9,name:"Origin"},
  {x:-350,z:10,h:78,c:0x9cecff,a:1.2,name:"Frost"},
  {x:340,z:-105,h:82,c:0xff765a,a:3.6,name:"Ember"},
  {x:-55,z:-350,h:75,c:0xb892ff,a:.3,name:"Astral"},
@@ -2996,7 +3235,8 @@ function drawWorldMap(){
   [0,0,"HUB","#e1a0ff"],[-235,50,"FROST","#d9ecff"],
   [105,230,"FOREST","#9bdfa7"],[255,280,"DESERT","#ffd391"],
   [260,30,"CRYSTAL","#d4a9ff"],[230,-35,"EMBER","#f59e7d"],
-  [318,-295,"VOLCANO","#ff846b"],[45,-240,"ASTRAL","#ada3ff"]
+  [318,-295,"VOLCANO","#ff846b"],[45,-240,"ASTRAL","#ada3ff"],
+  [-137,-81,"GLIDE","#ffecaa"]
  ];
  c.font="bold 9px Arial";c.textAlign="center";
  for(const p of places){
@@ -3014,19 +3254,95 @@ function drawWorldMap(){
 }
 
 // Start on the front of the raised plaza rather than inside the crystal.
-player.position.set(0,spawnHub.topY+.5,21);
+player.position.set(0,spawnHub.topY+.5,35);
+// V14 sculpted glider: articulated violet/cyan membranes, ribs and wakes.
 const glideWings=new T.Group();player.add(glideWings);
-const sailMat=new T.MeshStandardMaterial({color:0xa8e6ff,emissive:0x1a6a9a,emissiveIntensity:.55,side:T.DoubleSide,transparent:true,opacity:.9,depthWrite:false});
+const sailMat=new T.MeshStandardMaterial({
+ color:0x8d6cff,emissive:0x4124a6,emissiveIntensity:.72,
+ metalness:.08,roughness:.34,side:T.DoubleSide,
+ transparent:true,opacity:.92,depthWrite:false
+});
+const webMat=new T.LineBasicMaterial({color:0xe0b4ff,transparent:true,opacity:.87});
+const glideWingHinges=[];
 function makeWing(side){
- const shape=new T.Shape();
- shape.moveTo(0,0);
- shape.bezierCurveTo(side*.8,.4,side*2.2,.9,side*3.6,.15);
- shape.bezierCurveTo(side*3.2,-.5,side*1.6,-.7,0,-.25);
- shape.lineTo(0,0);
- const wing=new T.Mesh(new T.ShapeGeometry(shape),sailMat);
- wing.position.set(0,2.35,.1);wing.rotation.x=-.4;glideWings.add(wing);
+ const hinge=new T.Group();hinge.position.set(side*.37,2.43,-.13);
+ glideWings.add(hinge);
+ const wing=new T.Shape();wing.moveTo(0,0);
+ wing.bezierCurveTo(side*1.2,.86,side*3.5,1.28,side*5.8,1.58);
+ wing.lineTo(side*6.45,.48);
+ wing.quadraticCurveTo(side*5.24,.58,side*4.85,-.7);
+ wing.quadraticCurveTo(side*3.9,-.25,side*3.2,-1.28);
+ wing.quadraticCurveTo(side*2.45,-.57,side*1.48,-.99);
+ wing.quadraticCurveTo(side*.68,-.37,0,-.24);
+ wing.closePath();
+ const meshWing=mesh(new T.ShapeGeometry(wing,16),sailMat,hinge);
+ meshWing.castShadow=false;
+ const guides=[
+  [[0,0],[side*5.8,1.58]],[[0,0],[side*4.85,-.7]],
+  [[0,-.1],[side*3.2,-1.28]],[[0,.1],[side*1.48,-.99]]
+ ];
+ for(const ends of guides){
+  const geo=new T.BufferGeometry().setFromPoints(ends.map(p=>new T.Vector3(p[0],p[1],.022)));
+  const line=new T.Line(geo,webMat);hinge.add(line);
+ }
+ const border=new T.ShapeGeometry(wing,8);
+ // Additional underside facets create solid color depth rather than flat glass.
+ const under=mesh(border,new T.MeshStandardMaterial({
+  color:0x4b86d4,emissive:0x242f88,emissiveIntensity:.38,
+  transparent:true,opacity:.45,side:T.DoubleSide,depthWrite:false
+ }),hinge,0,0,-.11);
+ under.castShadow=false;
+ glideWingHinges.push({hinge,side});
 }
-makeWing(1);makeWing(-1);glideWings.visible=false;
+makeWing(-1);makeWing(1);glideWings.visible=false;
+// Thin, gently pulsing magical wake behind the glider.
+const glideWakeCount=48,glideWakePositions=new Float32Array(glideWakeCount*3);
+const glideWakeGeometry=new T.BufferGeometry();
+glideWakeGeometry.setAttribute("position",new T.BufferAttribute(glideWakePositions,3));
+const glideWake=new T.Points(glideWakeGeometry,new T.PointsMaterial({
+ color:0xb69aff,size:.47,transparent:true,opacity:.64,
+ depthWrite:false,blending:T.AdditiveBlending,sizeAttenuation:true
+}));
+glideWake.visible=false;glideWake.frustumCulled=false;scene.add(glideWake);
+function animateGlideAppearance(t,heading,speed,bank){
+ for(const o of glideWingHinges){
+  o.hinge.rotation.z=o.side*(-.11-Math.sin(t*4.2+o.side*.7)*.1-Math.min(1,speed/48)*.085);
+  o.hinge.rotation.x=.1+Math.sin(t*2.2+o.side)*.04;
+  o.hinge.rotation.y=o.side*bank*.18;
+ }
+ sailMat.emissiveIntensity=.68+Math.sin(t*5.1)*.09;
+ glideWake.visible=gliding;
+ if(!gliding)return;
+ for(let i=0;i<glideWakeCount;i++){
+  const age=i/glideWakeCount,phase=i*2.399963+t*2.7;
+  const behind=3+age*21;
+  const spread=(.5+age*3)*Math.sin(phase);
+  const x=player.position.x-Math.sin(heading)*behind+Math.cos(heading)*spread;
+  const z=player.position.z-Math.cos(heading)*behind-Math.sin(heading)*spread;
+  glideWakePositions[i*3]=x;
+  glideWakePositions[i*3+1]=player.position.y+1.7+age*2+Math.cos(phase)*1.2;
+  glideWakePositions[i*3+2]=z;
+ }
+ glideWakeGeometry.attributes.position.needsUpdate=true;
+}
+const flightHud=document.createElement("div");flightHud.id="flightHud";
+flightHud.style.cssText="display:none;position:fixed;right:14px;top:179px;z-index:9;border:1px solid #bd9fff88;border-radius:14px;background:linear-gradient(135deg,#1a1237e8,#221943d9);box-shadow:0 12px 35px #090821a9;padding:13px 17px;color:#f5eaff;min-width:198px;font:12px Arial,sans-serif;pointer-events:none;line-height:1.6";
+flightHud.innerHTML='<b style="font-size:15px;color:#d8bbff">✦ GLIDING</b><div id="flightStats"></div><div style="color:#c8b9e9;font-size:11px">A / D TURN · W DIVE · S CLIMB<br>SHIFT BOOST · SPACE FLARE</div>';
+document.body.appendChild(flightHud);
+let glideHeading=0,glideSpeed=30,glidePitch=0,glideKeyLatch=false,glideHudFrame=0;
+function startGlide(heading,boost=false){
+ gliding=true;onGround=false;glideBank=0;glidePitch=0;glideHeading=heading;
+ glideSpeed=boost?33:27;velocityY=0;
+ glideVel.set(Math.sin(heading)*glideSpeed,boost?1.4:-1.4,Math.cos(heading)*glideSpeed);
+ glideWings.visible=true;glideWake.visible=true;
+ flightHud.style.display="block";glideReady=performance.now()+900;
+}
+function finishGlide(){
+ gliding=false;onGround=true;glideReady=performance.now()+2300;
+ glideVel.set(0,0,0);velocityY=0;glidePitch=0;glideBank=0;
+ glideWings.visible=false;glideWake.visible=false;flightHud.style.display="none";
+ yaw=glideHeading+Math.PI;
+}
 const rig = new T.Group();
 player.add(rig);
 const cloth = new T.MeshStandardMaterial({
@@ -3558,7 +3874,7 @@ sprintButton.onclick = () => {
 };
 const respawnButton=$("respawnButton");
 respawnButton.onclick=()=>{
- player.position.set(0,spawnHub.topY+2,21);
+ if(gliding)finishGlide();player.position.set(0,spawnHub.topY+2,35);
  velocityY=0;onGround=false;gliding=false;glideVel.set(0,0,0);glideWings.visible=false;
  for(const k of Object.keys(keys))keys[k]=false;
  if(document.pointerLockElement===renderer.domElement)document.exitPointerLock();
@@ -3592,13 +3908,23 @@ window.addEventListener("resize", () => {
 let lastBiome = "",
     frameN = 0;
 
+const missingWorldUniforms=new Set();
+function setWorldUniformTime(material,t,label){
+ const uniform=material&&material.uniforms&&material.uniforms.uTime;
+ if(uniform){uniform.value=t;return;}
+ if(!missingWorldUniforms.has(label)){
+   console.warn('INFINITY RNG: missing uTime uniform for '+label,material);
+   missingWorldUniforms.add(label);
+ }
+}
 function animate() {
     requestAnimationFrame(animate);
     let dt = Math.min(clock.getDelta(), .05),
         t = clock.elapsedTime;
     animateWind(t);
     animateSpawnHub(t);
-    skyDomeMaterial.uniforms.uTime.value=t;
+    setWorldUniformTime(skyDomeMaterial,t,'sky');
+    for(const mist of mountainMistMaterials)setWorldUniformTime(mist,t,'mountain mist');
     animateBiomeGeometry(t);
     animateRealmGateBanners(t);
     animateWaystations(t);
@@ -3607,9 +3933,9 @@ function animate() {
     animateCliffBeacons(t);
     riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
-    for(const m of biomeAtmosphere)m.uniforms.uTime.value=t;
-    for(const fx of environmentFX)fx.uniforms.uTime.value=t;
-    riverFlowMaterial.uniforms.uTime.value=t;
+    for(const m of biomeAtmosphere)setWorldUniformTime(m,t,'biome particle effects');
+    for(const fx of environmentFX)setWorldUniformTime(fx,t,'legacy environment FX');
+    setWorldUniformTime(riverFlowMaterial,t,'river');
     for (const c of cloudGroups) {
         c.g.position.x += c.speed * dt;
         if (c.g.position.x > 450) c.g.position.x = -450
@@ -3641,43 +3967,84 @@ function animate() {
         let angle = Math.atan2(-dx, -dz);
         player.rotation.y += Math.atan2(Math.sin(angle - player.rotation.y), Math.cos(angle - player.rotation.y)) * Math.min(1, dt * 12)
     }
+    // Towers launch automatically; G also deploys the glider after a high jump.
     if(!gliding&&performance.now()>glideReady){
       for(const tw of launchTowers){
         if(Math.hypot(player.position.x-tw.x,player.position.z-tw.z)<10&&Math.abs(player.position.y-tw.top)<3){
-          gliding=true;onGround=false;glideBank=0;
-          glideVel.set(Math.sin(tw.a)*32,9.5,Math.cos(tw.a)*32);
-          player.position.y=tw.top+2.5;velocityY=0;
-          glideReady=performance.now()+5000;glideWings.visible=true;break;
+          startGlide(tw.a,true);
+          player.position.y=Math.max(player.position.y,tw.top+3.3);
+          break;
         }
       }
     }
+    if(keys.KeyG&&!glideKeyLatch&&!gliding&&performance.now()>glideReady&&
+       player.position.y-ground(player.position.x,player.position.z)>13&&velocityY<4){
+      startGlide(player.rotation.y,false);
+    }
+    glideKeyLatch=!!keys.KeyG;
     if(gliding){
       const steer=Number(!!(keys.KeyD||keys.ArrowRight))-Number(!!(keys.KeyA||keys.ArrowLeft));
-      const pitchCtrl=Number(!!(keys.KeyS||keys.ArrowDown))-Number(!!(keys.KeyW||keys.ArrowUp));
-      const speed=(keys.ShiftLeft||keys.ShiftRight)?19:30;
-      const tx=Math.sin(yaw)*speed+Math.cos(yaw)*steer*11;
-      const tz=Math.cos(yaw)*speed-Math.sin(yaw)*steer*11;
-      const smooth=1-Math.exp(-dt*1.6);
-      glideVel.x+=(tx-glideVel.x)*smooth;glideVel.z+=(tz-glideVel.z)*smooth;
-      glideVel.y=Math.max(-11,Math.min(8,glideVel.y+(-6.5+pitchCtrl*5)*dt));
-      const nx=player.position.x+glideVel.x*dt,nz=player.position.z+glideVel.z*dt;
-      const ny=player.position.y+glideVel.y*dt;
-      if(Math.abs(nx)>415||Math.abs(nz)>415||!canStand(nx,nz,ny)){
-        // Impact ends the glide; no bounce into solid structures.
-        gliding=false;glideVel.set(0,0,0);glideReady=performance.now()+3500;velocityY=-1;
-      }else{
-        player.position.x=nx;player.position.z=nz;player.position.y=ny;
-        const face=Math.atan2(glideVel.x,glideVel.z);
-        player.rotation.y+=Math.atan2(Math.sin(face-player.rotation.y),Math.cos(face-player.rotation.y))*Math.min(1,dt*6);
+      // S pulls up and W dives; steering is independent from the mouse camera.
+      const climb=Number(!!(keys.KeyS||keys.ArrowDown))-Number(!!(keys.KeyW||keys.ArrowUp));
+      const flare=!!keys.Space,boost=!!(keys.ShiftLeft||keys.ShiftRight);
+      const smooth=(k)=>1-Math.exp(-dt*k);
+      glidePitch+=(climb*.58-glidePitch)*smooth(2.9);
+      glideHeading+=steer*dt*(.82+.25*Math.min(1,glideSpeed/42));
+      const targetSpeed=Math.max(20,Math.min(49,31-glidePitch*17+(boost?8:0)-(flare?9:0)));
+      glideSpeed+=(targetSpeed-glideSpeed)*smooth(boost?2.2:1.15);
+      const thermal=Math.hypot(player.position.x-volcano.x,player.position.z-volcano.z)<93?1.15:0;
+      const lift=Math.max(-10,Math.min(2,
+        -2.5+(glideSpeed-25)*.18+glidePitch*4.9
+        +Math.min(0,glidePitch)*5.4 +thermal
+        +(flare?1.45:0)-Math.abs(glideBank)*.65));
+      glideVel.y+=(lift-glideVel.y)*smooth(2.7);
+      glideVel.x=Math.sin(glideHeading)*glideSpeed;
+      glideVel.z=Math.cos(glideHeading)*glideSpeed;
+      let nx=player.position.x+glideVel.x*dt,nz=player.position.z+glideVel.z*dt;
+      // Invisible safety wall turns the glider back toward the landscape.
+      if(Math.abs(nx)>405||Math.abs(nz)>405){
+        const inbound=Math.atan2(-player.position.x,-player.position.z);
+        glideHeading+=Math.atan2(Math.sin(inbound-glideHeading),Math.cos(inbound-glideHeading))*smooth(8);
+        glideSpeed=Math.max(19,glideSpeed*.89);
+        nx=Math.max(-404.7,Math.min(404.7,nx));
+        nz=Math.max(-404.7,Math.min(404.7,nz));
       }
-      glideBank+=(steer*.45-glideBank)*(1-Math.exp(-dt*5));
-      player.rotation.z=glideBank;
-      player.rotation.x=Math.max(-.25,Math.min(.2,glideVel.y*-.02));
-      glideWings.visible=gliding;
-      glideWings.rotation.z=Math.sin(t*3)*.04;
-      glideWings.rotation.x=-.15+Math.sin(t*2.2)*.03;
+      let ny=player.position.y+glideVel.y*dt;
+      const water=nx>-304&&nx<339&&Math.abs(nz-riverPathZ(nx))<8?
+        riverWaterHeight(nx)-.65:-Infinity;
+      const landingFloor=Math.max(ground(nx,nz),roadWalkHeight(nx,nz),
+        waystationWalkHeight(nx,nz),hubWalkHeight(nx,nz),water);
+      if(!canStand(nx,nz,ny+.35)){
+        // Deflect from buildings/trees instead of phasing through them.
+        glideHeading+=steer!==0?steer*.42:1.05;
+        glideSpeed=Math.max(16,glideSpeed*.77);
+        glideVel.y=Math.min(-1.4,glideVel.y);
+      }else if(ny<=landingFloor+1.15){
+        player.position.set(nx,landingFloor,nz);
+        finishGlide();
+      }else{
+        player.position.set(nx,ny,nz);
+      }
+      if(gliding){
+        const face=Math.atan2(glideVel.x,glideVel.z);
+        player.rotation.y+=Math.atan2(Math.sin(face-player.rotation.y),Math.cos(face-player.rotation.y))*smooth(7);
+        glideBank+=(steer*.48-glideBank)*smooth(4.5);
+        player.rotation.z=-glideBank;
+        player.rotation.x=-glidePitch*.3-glideVel.y*.015;
+        glideWings.visible=true;
+        glideWings.rotation.x=-.12+Math.sin(t*2.5)*.035;
+        animateGlideAppearance(t,glideHeading,glideSpeed,glideBank);
+        if(++glideHudFrame%5===0){
+          const altitude=Math.max(0,Math.round(player.position.y-ground(player.position.x,player.position.z)));
+          document.getElementById("flightStats").textContent=
+            "AIR SPEED  "+Math.round(glideSpeed)+"   ·   ALTITUDE  "+altitude+
+            "   ·   "+(flare?"LANDING FLARE":glidePitch>.25?"CLIMBING":glidePitch<-.25?"DIVING":"GLIDING");
+        }
+      }
     }else{
-      glideWings.visible=false;player.rotation.z*=Math.max(0,1-8*dt);player.rotation.x*=Math.max(0,1-8*dt);
+      glideWings.visible=false;glideWake.visible=false;
+      player.rotation.z*=Math.max(0,1-7*dt);
+      player.rotation.x*=Math.max(0,1-7*dt);
     }
     let floor = ground(player.position.x, player.position.z);
     // Shallow wading keeps the player from sinking invisibly under the river.
@@ -3727,7 +4094,7 @@ function animate() {
     if (player.position.y <= floor) {
         player.position.y = floor;
         velocityY = 0;
-        onGround = true; if(gliding){gliding=false;glideVel.set(0,0,0);glideReady=performance.now()+3500;}
+        onGround = true; if(gliding)finishGlide();
     }
     // Volcano slopes are solid: slide outward and downward instead of teleporting
     // into the cone or snapping onto the ramp after a jump.
@@ -3778,7 +4145,7 @@ function animate() {
     const erupting=elapsed<volcano.eruption;
     lavaPool.scale.y=erupting?2.8:1;
     const eruptionProgress=elapsed/volcano.eruption;
-    flowingLavaMaterial.uniforms.uTime.value=t;
+    setWorldUniformTime(flowingLavaMaterial,t,'volcano lava');
     lavaFlows.forEach(stream=>{stream.mesh.visible=erupting&&eruptionProgress>.04;});
     lavaPool.position.y=volcanoBase+volcano.height+(erupting?5:.5);
     lavaColumns.forEach((o,i)=>{o.visible=erupting;o.position.y=volcanoTop+5+Math.abs(Math.sin(t*2+i))*8});
@@ -3847,27 +4214,28 @@ function animate() {
     }
 
     if(mapPanel.style.display!=="none"&&frameN%8===0)drawWorldMap();
-    // Improved camera smoothing
-    const target = new T.Vector3(
-        player.position.x + Math.sin(yaw) * Math.cos(pitch) * distance,
-        player.position.y + 2.15 + Math.sin(pitch) * distance,
-        player.position.z + Math.cos(yaw) * Math.cos(pitch) * distance
+    // V14 smooth walking orbit and cinematic flight chase camera.
+    const eye=new T.Vector3(player.position.x,player.position.y+(gliding?2.55:2.05),player.position.z);
+    const travelHeading=gliding?glideHeading+Math.PI:yaw;
+    const travelDistance=gliding?Math.max(15,Math.min(20,glideSpeed*.47)):distance;
+    const travelPitch=gliding?.24:pitch;
+    const target=new T.Vector3(
+      player.position.x+Math.sin(travelHeading)*Math.cos(travelPitch)*travelDistance,
+      player.position.y+(gliding?5.1:2.15)+Math.sin(travelPitch)*travelDistance,
+      player.position.z+Math.cos(travelHeading)*Math.cos(travelPitch)*travelDistance
     );
-    // Keep the third-person camera above the actual heightfield, including
-    // the ground between the player and the camera (prevents seeing through hills).
-    const eye = new T.Vector3(player.position.x,player.position.y+2.05,player.position.z);
-    for(let i=1;i<=16;i++){
-      const f=i/16,px=eye.x+(target.x-eye.x)*f,pz=eye.z+(target.z-eye.z)*f;
-      const floor=ground(px,pz)+1.15,rayY=eye.y+(target.y-eye.y)*f;
-      if(rayY<floor){const safe=Math.max(.12,(i-1)/16);
-        target.lerpVectors(eye,target,safe);
-        break;
-      }
+    for(let i=1;i<=18;i++){
+      const f=i/18,px=eye.x+(target.x-eye.x)*f,pz=eye.z+(target.z-eye.z)*f;
+      const floor=ground(px,pz)+(gliding?1.5:1.15),rayY=eye.y+(target.y-eye.y)*f;
+      if(rayY<floor){target.lerpVectors(eye,target,Math.max(.12,(i-1)/18));break;}
     }
     target.y=Math.max(target.y,ground(target.x,target.z)+1.45);
-    camera.position.lerp(target, 1 - Math.exp(-dt * 11));
+    camera.position.lerp(target,1-Math.exp(-dt*(gliding?4.4:11)));
     camera.position.y=Math.max(camera.position.y,ground(camera.position.x,camera.position.z)+1.45);
     camera.lookAt(eye);
+    const desiredFov=gliding?67+Math.max(0,glideSpeed-32)*.35:62;
+    camera.fov+=(desiredFov-camera.fov)*(1-Math.exp(-dt*2.5));
+    camera.updateProjectionMatrix();
     if (++frameN % 18 === 0) {
         refreshLuck();
         let remaining = Math.max(0, Math.ceil((luckExpires - Date.now()) / 1000));
