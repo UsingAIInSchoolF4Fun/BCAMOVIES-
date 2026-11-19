@@ -2743,7 +2743,9 @@ function authoredRiver(){
   const x=first+(last-first)*i/segments,z=riverPathZ(x);
   // Ends taper into the existing riverbed instead of ending in straight walls.
   const taper=Math.min(1,Math.max(.08,(x-first)/19),Math.max(.08,(last-x)/19));
-  const halfWidth=width*taper,y=riverWaterHeight(x);
+  const halfWidth=width*taper;
+  // Feather the source and outlet into the terrain, with no abrupt floating cap.
+  const y=riverWaterHeight(x)*taper+(ground(x,z)+.18)*(1-taper);
   for(const side of [-1,1]){
    positions.push(x,y,z+halfWidth*side);
    uvs.push(side<0?0:1,i/segments*20);
@@ -3666,6 +3668,11 @@ function animate() {
       glideWings.visible=false;player.rotation.z*=Math.max(0,1-8*dt);player.rotation.x*=Math.max(0,1-8*dt);
     }
     let floor = ground(player.position.x, player.position.z);
+    // Shallow wading keeps the player from sinking invisibly under the river.
+    // Crossing a bridge still takes priority via its higher collision surface.
+    const riverX=player.position.x,riverZ=player.position.z;
+    if(riverX>-304&&riverX<339&&Math.abs(riverZ-riverPathZ(riverX))<7.8)
+      floor=Math.max(floor,riverWaterHeight(riverX)-.65);
     floor=Math.max(floor,roadWalkHeight(player.position.x,player.position.z));
     floor=Math.max(floor,waystationWalkHeight(player.position.x,player.position.z));
     // The plaza and the broad staircase are real walkable collision surfaces.
