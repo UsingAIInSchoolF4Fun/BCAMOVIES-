@@ -64,6 +64,12 @@ jobs:
                   }));
                   console.log('GLIDE TEST position='+JSON.stringify(position)+' result='+JSON.stringify(flight));
                   if(flight.display!=='block'||!flight.isGliding){failed=true;console.log('FAIL flight did not activate');}
+                  await page.mouse.move(1050,425);
+                  await page.waitForTimeout(350);
+                  const mouseFlight=await page.evaluate(()=>({aim:flightAimX,heading:glideHeading}));
+                  console.log('CURSOR GLIDE STEERING TEST '+JSON.stringify(mouseFlight));
+                  if(mouseFlight.aim<.2){failed=true;console.log('FAIL cursor did not steer');}
+                  await page.mouse.move(625,425);
                   await page.keyboard.down('w');await page.waitForTimeout(350);await page.keyboard.up('w');
                   await page.keyboard.down('d');await page.waitForTimeout(350);await page.keyboard.up('d');
                   console.log('GLIDE STEERING CHECK '+JSON.stringify(await page.evaluate(()=>({
@@ -176,6 +182,48 @@ jobs:
                     failed=true;console.log('FAIL aura themes, motion, levitation or reduced effects setting');
                   }
                 }catch(e){failed=true;console.log('FAIL AURA TEST '+String(e.stack||e));}
+              }
+              if(pageName==='index.html'&&errors.length===0){
+                try{
+                  const landmarks=await page.evaluate(()=>{
+                    const sites=gameLandmarks.map(g=>({
+                      name:g.name,mode:g.mode,
+                      level:g.top,
+                      archUp:Math.abs(g.root.children.find(c=>c.isMesh&&c.geometry?.type==='TorusGeometry'&&Math.abs(c.position.y-12.25)<.1)?.rotation.x||0)<.2,
+                      walk:gameArenaWalkHeight(g.x,g.z)
+                    }));
+                    const tower=launchTowers[0];
+                    return {count:sites.length,types:{
+                        rune:sites.filter(x=>x.mode==='runes').length,
+                        sky:sites.filter(x=>x.mode==='sky').length
+                      },towerSolid:!canStand(tower.x,tower.z,tower.base+3),
+                      towerClearAtRamp:canStand(tower.x+tower.rampRadius,tower.z,tower.base+10),
+                      sites};
+                  });
+                  console.log('GAME LANDMARK TEST '+JSON.stringify(landmarks));
+                  if(landmarks.count!==12||landmarks.types.rune!==7||
+                     landmarks.types.sky!==5||!landmarks.towerSolid||
+                     !landmarks.towerClearAtRamp||
+                     landmarks.sites.some(s=>!Number.isFinite(s.walk)||s.walk<s.level-.8)){
+                    failed=true;console.log('FAIL game landmarks, foundations or flight tower collision');
+                  }
+                  const names=await page.evaluate(()=>{
+                    const values=A.filter(x=>x.length>3).slice(0,180).map(x=>auraDisplayName(x));
+                    const varied=values.filter(x=>!x.startsWith('Faint ')).length;
+                    const a=A.find(x=>x.length>3);
+                    const p=auraVisualProfile(a);
+                    const rarity=auraRarity(A[auraLookup.get('Astral Sovereign')]);
+                    state.equipped='INFINITY';renderAura();
+                    return {varied,unique:new Set(values).size,total:values.length,
+                      alias:auraDisplayName(a),saveKey:a[0],tier:p.tier,rarity,
+                      rarePose:equippedAuraProfile.pose,
+                      fxCount:auraParts.length};
+                  });
+                  console.log('AURA NAMING/RARITY TEST '+JSON.stringify(names));
+                  if(names.unique!==names.total||names.varied<80||names.rarity!=='INFINITE'||names.fxCount<15){
+                    failed=true;console.log('FAIL aura display aliases, rarity or effects');
+                  }
+                }catch(e){failed=true;console.log('FAIL LANDMARK/NAMING TEST '+String(e.stack||e));}
               }
               if(errors.length){failed=true;console.log('FAIL Browser runtime errors: '+errors.length);}
               for(const e of errors.slice(0,15))console.log(e);
