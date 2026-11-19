@@ -101,6 +101,21 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 @media(max-width:680px){#overlay.homeMode .screen{padding:12px;justify-content:center}.homeStage{width:100%}.homeRight{display:none}.heroLogo{font-size:clamp(58px,15vw,95px)}.heroLogo em{font-size:19px}.homeDescription{font-size:12px}.menuFeatures{gap:5px}.menuFeatures span{font-size:8px}.menuActions .btn.ghost{font-size:9px}.homeStats .heroStat{min-width:67px;padding:8px}.homeStats .heroStat strong{font-size:16px}.homeTagline{margin-top:18px}.heroLine{margin:12px 0}.homeStage{padding:8px}#overlay.garageMode .garageHead h1{font-size:29px}}
 @media(max-height:700px){#overlay.homeMode .screen{padding-top:12px;padding-bottom:12px}.heroLogo{font-size:clamp(58px,7vw,93px)}.homeDescription{line-height:1.4}.menuFeatures{margin-bottom:8px}.homeStats .heroStats{margin:8px 0}.homeTagline{margin-top:14px}}
 @media(prefers-reduced-motion:reduce){.heroLine,.heroLogo strong,.pulseLight,.homeStage,.homeRight,.menuActions .heroStart:after,#overlay.garageMode .carCard{animation:none!important}}
+
+/* V9 island overview */
+#overlay.atlasMode{background:linear-gradient(100deg,#061424f2,#071c2ae9);backdrop-filter:blur(6px)}
+#overlay.atlasMode .screen{width:min(1320px,100%);max-width:none;animation:homeEnter .55s both}
+.atlasHead{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:13px}
+.atlasHead h1{font-size:clamp(34px,5vw,64px);letter-spacing:-2px;font-style:italic;font-family:Impact,'Arial Black',Arial,sans-serif;margin:6px 0}
+.atlasHead h1 span{color:#f1b880}.atlasHead p{font-size:12px;color:#c3d6d7;margin:0}
+.atlasLayout{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:14px;align-items:stretch}
+#atlasCanvas{display:block;width:100%;height:auto;max-height:72vh;object-fit:contain;border:1px solid #97d9d05e;border-radius:16px;background:#0a3a52;box-shadow:0 16px 45px #0009}
+.atlasLegend{border:1px solid #8ad7ce3b;border-radius:13px;background:#0c2638;padding:16px;font-size:12px;color:#d1e6de}
+.atlasLegend h2{font-family:Impact,'Arial Black',Arial;font-style:italic;letter-spacing:1px;font-size:23px;margin:2px 0 8px}
+.atlasLegend p{line-height:1.6;color:#acc5c4}.atlasLegend>div:not(.atlasWarning){display:flex;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid #ffffff17}
+.atlasLegend b{font-size:17px;color:#82eac9;min-width:20px}.atlasWarning{margin-top:18px;background:#5f322c55;border:1px solid #fcb27b66;border-radius:9px;padding:12px;line-height:1.4;color:#ffc8aa;font-weight:800;font-size:10px;letter-spacing:.5px}
+.atlasLegend small{display:block;margin-top:14px;font-size:10px;color:#91afc2}
+@media(max-width:800px){.atlasLayout{grid-template-columns:1fr}.atlasLegend{display:none}.atlasHead{align-items:start}.atlasHead .btn{min-height:39px;padding:8px 12px;font-size:10px}#atlasCanvas{max-height:65vh}}
 </style>
 </head>
 <body>
@@ -1113,12 +1128,77 @@ function renderGarage(){mode='garage';let selected=CARS.find(c=>c.id===garageFoc
  <div class="specGrid"><span>TOP SPEED <b>${Math.round(selected.speed*.65)} KM/H</b></span><span>ACCEL <b>${selected.accel}</b></span><span>GRIP <b>${Math.round(selected.grip*100)}%</b></span><span>OFF ROAD <b>${Math.round(selected.offroad*100)}%</b></span><span>ARMOR <b>${selected.armor}</b></span><span>NITRO <b>${selected.boost}</b></span></div>
  <div class="inspectActions"><button class="btn ${save.owned.includes(selected.id)?'primary':'gold'}" data-action="acquire" data-id="${selected.id}" ${selected.id===save.selected?'disabled':''}>${selected.id===save.selected?'✓ EQUIPPED':save.owned.includes(selected.id)?'EQUIP THIS CAR':'BUY FOR $'+fmt(selected.price)}</button><span class="smalltext" id="garageMsg"></span></div>
  </div></div><div class="garageFoot"><div><div class="kicker" style="margin-bottom:8px">YOUR GLOBAL UPGRADES</div><div class="upgradeRow">${buttons}</div><div class="smalltext" style="margin-top:9px">Engine increases acceleration and top speed; armor protects from police rams; nitro lasts longer.</div><div style="display:flex;align-items:center;gap:9px;margin-top:9px"><span class="smalltext">CAR PAINT:</span>${painter}</div></div><div class="buttons"><button class="btn ghost" data-action="home">BACK</button><button class="btn primary" data-action="start">▶ START CHASE</button></div></div>`)}
+let atlasReturn='home';
+function renderAtlas(){
+ atlasReturn=mode==='playing'||mode==='pause'?'playing':'home';
+ mode='atlas';
+ showOverlay(`<div class="atlasHead"><div><div class="kicker">WILDLANDS // EXPLORATION</div><h1>THE <span>ISLAND.</span></h1><p>Rural highlands, mountain switchbacks, forests, one small village, beaches, and the open ocean.</p></div><button class="btn primary" data-action="mapBack">← ${atlasReturn==='playing'?'RESUME CHASE':'BACK TO MENU'}</button></div>
+ <div class="atlasLayout"><canvas id="atlasCanvas" width="1060" height="720" aria-label="Map of the fictional mountain island, roads and landmarks"></canvas>
+ <aside class="atlasLegend">
+ <h2>DISCOVER THE ISLAND</h2>
+ <p>Roads twist around seven large mountain regions. Use the valley town to rejoin the coastal beltway, or take a dirt shortcut over the highlands.</p>
+ <div><b>⛰</b> Mountain ridges & passes</div><div><b>🌲</b> Pine forest & wilderness</div><div><b>⌖</b> Sunset Village</div><div><b>⚓</b> Bayfront Port</div><div><b>✈</b> Highland Airstrip</div><div><b>〰</b> Coastal highway</div>
+ <div class="atlasWarning">OCEAN IS NOT DRIVABLE. Driving off the coastline ends your chase.</div>
+ <small>Press M during a chase to view this map.</small>
+ </aside></div>`);
+ drawAtlasCanvas();
+}
+function leaveAtlas(){
+ if(atlasReturn==='playing'&&car){mode='playing';resume();}
+ else renderHome();
+}
+function drawAtlasCanvas(){
+ const cvs=$('atlasCanvas');if(!cvs||!cvs.getContext)return;
+ const g=cvs.getContext('2d');if(!g)return;
+ const W=cvs.width,H=cvs.height;
+ const ocean=g.createLinearGradient(0,0,W,H);
+ ocean.addColorStop(0,'#092844');ocean.addColorStop(.55,'#0f5067');ocean.addColorStop(1,'#071e38');
+ g.fillStyle=ocean;g.fillRect(0,0,W,H);
+ g.save();g.translate(W*.52,H*.52);g.scale(.36,.36);
+ g.shadowColor='#051423';g.shadowBlur=32;pathIsland(g,0);g.fillStyle='#d1b18a';g.fill();g.shadowBlur=0;
+ pathIsland(g,25);g.fillStyle='#527e68';g.fill();
+ g.save();pathIsland(g,27);g.clip();
+ for(const m of MOUNTAINS){
+  const gradient=g.createRadialGradient(m.x,m.z,8,m.x,m.z,m.sx*1.44);
+  gradient.addColorStop(0,'#c4ccc3');gradient.addColorStop(.25,'#a4b6a2');gradient.addColorStop(.54,'#6b8f78');gradient.addColorStop(1,'#517e6400');
+  g.fillStyle=gradient;g.beginPath();g.ellipse(m.x,m.z,m.sx*1.5,m.sz*1.48,0,0,TAU);g.fill();
+  for(let j=1;j<=4;j++){g.beginPath();g.ellipse(m.x,m.z,m.sx*j*.27,m.sz*j*.27,0,0,TAU);g.lineWidth=j===1?4:2.1;g.strokeStyle=j===1?'#f7e4c49c':'#e6e6b866';g.stroke();}
+ }
+ // Woodland dots suggest forested slopes without overcrowding labels.
+ for(let i=0;i<trees.length;i+=4){let t=trees[i];if(t.kind==='rock')continue;g.fillStyle=t.kind==='pine'||t.kind==='fir'?'#254f4185':'#315e4880';g.beginPath();g.arc(t.x,t.y,4.2*t.s,0,TAU);g.fill();}
+ // Roads accurately match the drivable map.
+ for(const road of roads){
+  const ps=road.points;
+  polyStroke(g,ps,road.width+6,'#273f47a6');
+  polyStroke(g,ps,road.width,road.style==='mountain'?'#c8cebd':road.style==='coastal'?'#e0d1af':road.style==='urban'?'#909c9c':'#a9b8b3');
+  if(road.style==='mountain')polyStroke(g,ps,1.7,'#efe9d1',[16,16]);
+ }
+ for(const b of structures){g.fillStyle='#ddd6bdb8';g.save();g.translate(b.x,b.y);g.rotate(b.rot);g.fillRect(-b.w/2,-b.h/2,b.w,b.h);g.restore();}
+ g.restore();
+ pathIsland(g,0);g.lineWidth=7;g.strokeStyle='#ffffff94';g.stroke();
+ for(const l of landmarks){
+  g.beginPath();g.arc(l.x,l.y,13,0,TAU);
+  g.fillStyle=l.type==='mountain'?'#2d7c60':l.type==='harbor'?'#366f9c':'#e1b56f';g.fill();
+  g.lineWidth=4;g.strokeStyle='#eaf8e9';g.stroke();
+  g.font='bold 25px Arial';g.textAlign='center';g.textBaseline='middle';
+  g.lineWidth=5;g.strokeStyle='#112637bd';g.strokeText(l.name,l.x,l.y-30);
+  g.fillStyle='#ecf7ea';g.fillText(l.name,l.x,l.y-30);
+ }
+ if(car&&atlasReturn==='playing'){
+  g.fillStyle='#fd7b86';g.beginPath();g.arc(car.x,car.y,16,0,TAU);g.fill();
+  g.strokeStyle='#fff';g.lineWidth=4;g.stroke();
+ }
+ g.restore();
+ g.fillStyle='#d9eee6';g.font='bold 14px Arial';g.fillText('SUNSET CITY  //  WILDLANDS',25,30);
+ g.font='11px Arial';g.fillStyle='#b4c8d1';g.fillText('SCENIC HIGHWAYS • HIGHLANDS • COAST',25,49);
+ g.save();g.translate(W-66,52);g.strokeStyle='#cae4dc';g.lineWidth=3;g.beginPath();g.moveTo(0,22);g.lineTo(0,-23);g.lineTo(-7,-11);g.moveTo(0,-23);g.lineTo(7,-11);g.stroke();g.fillStyle='#e6f1e9';g.font='bold 15px Arial';g.fillText('N',-5,-32);g.restore();
+}
 function renderHelp(){mode='help';showOverlay(`<div class="kicker">SURVIVAL GUIDE // SINGLE-PLAYER ARCADE PURSUIT</div><h1 class="endHeading">ESCAPE. <span>SURVIVE.</span> UPGRADE.</h1><div class="subtitle">The police are chasing you the entire time. Every 40 seconds your wanted level increases, adding more police. Every getaway car now has distinct acceleration, braking, off-road ability and grip. Police look for routes around buildings instead of charging straight through them. Your cash grows continuously while your car is still running. At the end of every run, you keep the money you earned—even if the police wreck your ride.</div><div class="resultGrid"><div class="resultStat"><small>W / ↑</small><strong style="font-size:18px">ACCELERATE</strong></div><div class="resultStat"><small>A/D / ←→</small><strong style="font-size:18px">STEER</strong></div><div class="resultStat"><small>S / ↓</small><strong style="font-size:18px">BRAKE / REVERSE</strong></div><div class="resultStat"><small>SHIFT</small><strong style="font-size:18px">NITRO BOOST</strong></div><div class="resultStat"><small>SPACE</small><strong style="font-size:18px">DRIFT</strong></div><div class="resultStat"><small>ESC</small><strong style="font-size:18px">PAUSE</strong></div></div><p class="smalltext">Collect glowing money pickups, pull off drifts, and narrowly miss civilian cars for bonus cash. The coastline has no invisible walls, but the ocean is NOT driveable. Driving into the sea ends your run and banks your earned money. All cars physically bounce during impacts and buildings are solid. You can climb mountain slopes off-road, with slower uphill driving and faster descents. Cars and upgrades persist in this browser.</p><div class="buttons"><button class="btn primary" data-action="start">START CHASE</button><button class="btn ghost" data-action="home">BACK</button></div>`)}
 function renderResults(){showOverlay(`<div class="kicker">PURSUIT ENDED // RUN ${save.runs}</div><h1 class="endHeading">CHASE <span>OVER.</span></h1><p class="reason">${finishReason}</p><div class="resultGrid"><div class="resultStat"><small>SURVIVED</small><strong>${timeFmt(runningSeconds)}</strong></div><div class="resultStat"><small>NEW CASH BANKED</small><strong style="color:#9efcc7">+$${fmt(earned)}</strong></div><div class="resultStat"><small>HEAT REACHED</small><strong>${'★'.repeat(wave)}</strong></div><div class="resultStat"><small>NEAR MISSES</small><strong>${fmt(runInfo.nearMisses)}</strong></div><div class="resultStat"><small>DRIFT BONUSES</small><strong>${fmt(runInfo.drifts)}</strong></div><div class="resultStat"><small>BANK TOTAL</small><strong>$${fmt(save.wallet)}</strong></div></div><div class="buttons"><button class="btn primary" data-action="start">↻ TRY AGAIN</button><button class="btn gold" data-action="garage">◈ BUY BETTER CARS</button><button class="btn ghost" data-action="home">MAIN MENU</button></div>`)}
 function togglePause(){if(mode==='playing'){paused=true;mode='pause';showOverlay(`<div class="kicker">SUNSET CITY // CHASE PAUSED</div><h1 class="endHeading">TAKE A <span>BREATHER.</span></h1><p class="subtitle">Your run is paused at ${timeFmt(runningSeconds)}. Cash earned: $${fmt(earned)}. Resume to keep building your payout, or bank it and return to the garage.</p><div class="buttons"><button class="btn primary" data-action="resume">▶ RESUME CHASE</button><button class="btn gold" data-action="cashout">BANK CASH & GARAGE</button><button class="btn ghost" data-action="restart">RESTART</button></div>`)}else if(mode==='pause')resume()}
 function resume(){mode='playing';paused=false;keys={};$('overlay').classList.add('hidden');last=performance.now()}
 function clickAction(e){const el=e.target.closest('[data-action]');if(!el)return;const act=el.dataset.action,id=el.dataset.id;
- if(act==='start'){beginRun();return}if(act==='home'){renderHome();return}if(act==='garage'){renderGarage();return}if(act==='help'){renderHelp();return}if(act==='resume'){resume();return}if(act==='restart'){finishRun('You ended this chase early.');beginRun();return}if(act==='cashout'){finishRun('You escaped with your earnings.');renderGarage();return}
+ if(act==='start'){beginRun();return}if(act==='home'){renderHome();return}if(act==='map'){renderAtlas();return}if(act==='mapBack'){leaveAtlas();return}if(act==='garage'){renderGarage();return}if(act==='help'){renderHelp();return}if(act==='resume'){resume();return}if(act==='restart'){finishRun('You ended this chase early.');beginRun();return}if(act==='cashout'){finishRun('You escaped with your earnings.');renderGarage();return}
  if(act==='vehicle'){if(CARS.some(c=>c.id===id)){garageFocus=id;renderGarage()}return;}
  if(act==='acquire'){
   const v=CARS.find(c=>c.id===id);if(!v)return;
@@ -1132,7 +1212,7 @@ function clickAction(e){const el=e.target.closest('[data-action]');if(!el)return
 }
 $('screen').addEventListener('click',clickAction);
 $('escapeBtn').addEventListener('click',togglePause);
-addEventListener('keydown',e=>{let k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright','shift','escape','w','a','s','d'].includes(k))e.preventDefault();if(k==='escape'&&!e.repeat){togglePause();return}if(mode==='playing')keys[k]=true;});
+addEventListener('keydown',e=>{let k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright','shift','escape','w','a','s','d','m'].includes(k))e.preventDefault();if(k==='m'&&!e.repeat){if(mode==='atlas')leaveAtlas();else if(['home','playing','pause'].includes(mode))renderAtlas();return}if(k==='escape'&&!e.repeat){if(mode==='atlas')leaveAtlas();else togglePause();return}if(mode==='playing')keys[k]=true;});
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 addEventListener('blur',()=>{keys={};if(mode==='playing')togglePause()});
 for(let b of document.querySelectorAll('.touch')){const key=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);if(mode==='playing'){keys[key]=true;b.classList.add('on')}});for(let evt of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(evt,()=>{keys[key]=false;b.classList.remove('on')})}
