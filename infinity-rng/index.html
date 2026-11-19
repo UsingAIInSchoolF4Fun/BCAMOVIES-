@@ -2719,7 +2719,8 @@ function riverWaterHeight(x){
  const z=riverPathZ(x);
  // The lower bank defines the level across the whole channel at this x.
  // A small lift makes the surface visible without hovering over either bank.
- return Math.min(ground(x,z-8.3),ground(x,z+8.3))+.22;
+ const banks=Math.min(ground(x,z-8.3),ground(x,z+8.3));
+ return Math.max(banks+.22,ground(x,z)+.2);
 }
 const riverFlowMaterial=new T.ShaderMaterial({
  uniforms:{uTime:{value:0}},
@@ -2737,20 +2738,31 @@ function makeWaterSurface(positions,uvs,indices){
  scene.add(water);return water;
 }
 function authoredRiver(){
- const first=-307,last=342,segments=230,width=8.4;
+ const first=-307,last=342,segments=230,width=8.4,lanes=6;
  const positions=[],uvs=[],indices=[];
  for(let i=0;i<=segments;i++){
   const x=first+(last-first)*i/segments,z=riverPathZ(x);
-  // Ends taper into the existing riverbed instead of ending in straight walls.
-  const taper=Math.min(1,Math.max(.08,(x-first)/19),Math.max(.08,(last-x)/19));
-  const halfWidth=width*taper;
-  // Feather the source and outlet into the terrain, with no abrupt floating cap.
-  const y=riverWaterHeight(x)*taper+(ground(x,z)+.18)*(1-taper);
-  for(const side of [-1,1]){
-   positions.push(x,y,z+halfWidth*side);
-   uvs.push(side<0?0:1,i/segments*20);
+  const bank=Math.min(ground(x,z-8.3),ground(x,z+8.3));
+  const mid=ground(x,z),highGround=Math.max(0,mid-bank);
+  // Narrow into a shallow stream where a landmark sits on high ground.
+  // No water sheets extend through the raised crystal or hub districts.
+  const narrowed=Math.max(.37,1-highGround*.105);
+  const taper=Math.min(1,Math.max(.05,(x-first)/19),Math.max(.05,(last-x)/19));
+  const halfWidth=width*taper*narrowed;
+  const waterY=riverWaterHeight(x);
+  const y=waterY*taper+(mid+.18)*(1-taper);
+  for(let k=0;k<=lanes;k++){
+   const across=k/lanes*2-1;
+   const zz=z+halfWidth*across;
+   // Edge vertices meet the real shore rather than vanishing into its mesh.
+   const yy=Math.max(y,ground(x,zz)+.13);
+   positions.push(x,yy,zz);
+   uvs.push(k/lanes,i/segments*20);
+   if(i<segments&&k<lanes){
+    const n=i*(lanes+1)+k;
+    indices.push(n,n+1,n+lanes+1,n+1,n+lanes+2,n+lanes+1);
+   }
   }
-  if(i<segments){const k=i*2;indices.push(k,k+1,k+2,k+1,k+3,k+2);}
  }
  return makeWaterSurface(positions,uvs,indices);
 }
