@@ -73,6 +73,31 @@ jobs:
               }
               if(pageName==='index.html'&&errors.length===0){
                 try{
+                  // End-to-end shrine reward logic using the actual in-game
+                  // interaction/update code and all four airborne checkpoints.
+                  const trial=await page.evaluate(()=>{
+                    if(gliding)finishGlide();
+                    state.pendingLuck=1;
+                    const c=trialCourses.find(x=>x.id==='frost');
+                    player.position.set(c.x,c.shrineY+1,c.z);
+                    keys.KeyF=true;updateBiomeTrials(1);keys.KeyF=false;updateBiomeTrials(1);
+                    const started=activeBiomeTrial?.course?.id==='frost',stages=[];
+                    for(let i=0;i<4;i++){
+                      const rune=c.checkpoints[i];
+                      player.position.set(rune.x,rune.y+1.65,rune.z);
+                      updateBiomeTrials(2+i);stages.push(activeBiomeTrial?.stage);
+                    }
+                    player.position.set(c.x,c.shrineY+1,c.z);
+                    keys.KeyF=true;updateBiomeTrials(7);keys.KeyF=false;updateBiomeTrials(7);
+                    return {started,stages,wins:state.trialWins.frost||0,
+                      ownedVariant:c.names.some(n=>!!state.owned[n]),boost:state.pendingLuck,
+                      cooldown:(state.trialCooldowns.frost||0)-Date.now(),
+                      effectiveLuck:refreshLuck(),courseCount:trialCourses.length};
+                  });
+                  console.log('BIOME TRIAL RESULT '+JSON.stringify(trial));
+                  if(!trial.started||trial.stages.join(',')!=='1,2,3,4'||trial.wins!==1||!trial.ownedVariant||trial.boost!==5||trial.effectiveLuck!==5||trial.cooldown<1000000||trial.courseCount!==7){
+                    failed=true;console.log('FAIL biome trial reward, jump course or cooldown');
+                  }
                   await page.click('#settingsButton');
                   const before=await page.evaluate(()=>({
                     settingsOpen:document.querySelector('#settingsPanel').classList.contains('open'),
@@ -92,7 +117,7 @@ jobs:
                     saved:!!JSON.parse(localStorage.getItem('infinity-rng-save-v1')).redeemedCodes?.HOMOPHOBIC
                   }));
                   console.log('REDEMPTION RESULT '+JSON.stringify(success));
-                  if(success.owned!==success.total||success.total!==2060||!success.redeemed||!success.saved||success.rare<1){
+                  if(success.owned!==success.total||success.total!==2088||!success.redeemed||!success.saved||success.rare<1){
                     failed=true;console.log('FAIL Unlock all auras not saved');
                   }
                   await page.fill('#codeInput','HOMOPHOBIC');
