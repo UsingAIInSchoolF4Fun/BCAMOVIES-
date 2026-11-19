@@ -65,7 +65,7 @@ body:not(.compact-ui) #challengeStatus{display:block}
  <label class="settings-line"><input type="checkbox" id="settingTips"> Show controls and notices</label>
  <label class="settings-line"><input type="checkbox" id="settingParkour"> Show parkour tracker</label>
  <h3>BIOME EXPEDITIONS</h3>
- <p>Find a glowing shrine in every region. Press <b>F</b> to start. Collect four numbered runes in 95 seconds and return to press F. The shrine awards a rare regional aura and one ×5 luck roll. Each shrine has a 20-minute cooldown.</p>
+ <p>Find a glowing shrine in every region. Press <b>F</b> to start. Jump into four numbered runes in 75 seconds and return to press F. The shrine awards a rare regional aura and one ×5 luck roll. Each shrine has a 20-minute cooldown.</p>
  <div id="trialWinsSummary" style="font-size:11px;color:#b6dff8"></div>
  <h3>GAME CONTROLS</h3>
  <div class="settings-actions">
@@ -753,7 +753,7 @@ const landmarkPads = [
  [0,0,107],         // main Origin plaza, shops, and extended galleries
  [105,230,58],      // forest temple/village
  [-235,50,37],      // frozen citadel
- [260,30,37],       // crystal gardens
+ [260,30,48],       // crystal gardens
  [230,-35,38],      // ember fortress
  [-260,-60,27],     // desert ruins
  [45,-240,29],      // astral sanctuary
@@ -812,19 +812,19 @@ function rawHeight(x,z){
 
 function height(x,z){
  const original=rawHeight(x,z);
- let best=0,level=original;
+ let total=0,weightedLevel=0;
  for(const [cx,cz,r] of landmarkPads){
-  const distance=Math.hypot(x-cx,z-cz);
-  const outer=r+28;
-  if(distance>=outer)continue;
-  const f=Math.max(0,Math.min(1,(outer-distance)/28));
-  const blend=f*f*(3-2*f);
-  if(blend>best){
-   best=blend;
-   level=rawHeight(cx,cz);
-  }
+  const d=Math.hypot(x-cx,z-cz),feather=28;
+  if(d>=r+feather)continue;
+  const t=Math.max(0,Math.min(1,(r+feather-d)/feather));
+  const smooth=t*t*(3-2*t);
+  // Weight blending avoids visible seams when two landmark pads overlap.
+  const weight=smooth*smooth;
+  total+=weight;
+  weightedLevel+=rawHeight(cx,cz)*weight;
  }
- return original*(1-best)+level*best;
+ const blend=Math.min(1,total);
+ return total>0?original*(1-blend)+(weightedLevel/total)*blend:original;
 }
 const authoredRoutes=[{"name":"Forest Trail","theme":"forest","width":9,"points":[[0,78],[4,99],[24,132],[61,189],[105,230]]},{"name":"Forest Temple","theme":"forest","width":7,"points":[[18,79],[26,105],[22,159],[20,213],[20,250]]},{"name":"Frost Citadel","theme":"frost","width":8,"points":[[-77,17],[-87,27],[-146,39],[-196,49],[-235,50]]},{"name":"Frost Tower","theme":"frost","width":7,"points":[[-233,54],[-286,45],[-317,23],[-350,10]]},{"name":"Snow Road","theme":"frost","width":8,"points":[[-72,-32],[-111,-21],[-181,-42],[-248,-64]]},{"name":"Ruins Road","theme":"desert","width":7,"points":[[-185,-44],[-227,-60],[-260,-60],[-285,-102]]},{"name":"Astral Road","theme":"astral","width":8,"points":[[-62,-68],[-92,-95],[-155,-153],[-209,-205],[-245,-230]]},{"name":"Astral Tower","theme":"astral","width":7,"points":[[-15,-44],[-14,-99],[3,-161],[37,-225],[30,-270],[-14,-320],[-55,-350]]},{"name":"Crystal Road","theme":"crystal","width":9,"points":[[79,8],[93,17],[150,28],[201,36],[260,30]]},{"name":"Crystal Gardens","theme":"crystal","width":7,"points":[[153,29],[202,81],[255,103],[285,120]]},{"name":"Desert Road","theme":"desert","width":9,"points":[[58,58],[77,78],[119,119],[166,160],[207,216],[255,280]]},{"name":"Ember Citadel","theme":"ember","width":7,"points":[[78,-44],[105,-32],[176,-32],[230,-35]]},{"name":"Volcano Road","theme":"ember","width":9,"points":[[49,-69],[98,-105],[157,-145],[216,-183],[285,-211],[318,-210]]},{"name":"Forest Watchtower","theme":"forest","width":7,"points":[[120,229],[179,269],[235,309],[310,345]]}];
 // Extra waypoints complete the route network; endpoints share existing paths
@@ -3432,6 +3432,14 @@ function drawWorldMap(){
   c.fillStyle=p[3];c.beginPath();c.arc(x,z,3.2,0,Math.PI*2);c.fill();
   c.fillStyle="#f8f0ff";c.fillText(p[2],x,z-8.2);
  }
+ for(const trial of BIOME_REWARDS){
+  const xx=px(trial.x),zz=py(trial.z);
+  c.fillStyle="#1c1838";c.fillRect(xx-4.4,zz-4.4,8.8,8.8);
+  c.strokeStyle="#ffffff";c.lineWidth=1;c.strokeRect(xx-4.4,zz-4.4,8.8,8.8);
+  c.fillStyle="#f8dbff";c.font="bold 9px Arial";c.textAlign="center";c.fillText("✦",xx,zz+3);
+ }
+ c.fillStyle="#dbc2fa";c.font="10px Arial";c.textAlign="right";
+ c.fillText("✦ = BIOME TRIAL",337,29);
  const x=px(player.position.x),z=py(player.position.z);
  c.beginPath();c.arc(x,z,7,0,Math.PI*2);c.fillStyle="#1c1332";c.fill();
  c.beginPath();c.arc(x,z,4.4,0,Math.PI*2);c.fillStyle="#ffffff";c.fill();
@@ -4035,7 +4043,7 @@ renderAura();
 // Players must activate a shrine with F, collect FOUR distant runes in order,
 // then RETURN to the shrine within 95 seconds. Winners earn a weighted 5×
 // themed aura roll and ONE consumable 5× boost for their next normal roll.
-const BIOME_TRIAL_SECONDS=95,BIOME_TRIAL_COOLDOWN=20*60*1000;
+const BIOME_TRIAL_SECONDS=75,BIOME_TRIAL_COOLDOWN=20*60*1000;
 const trialCourses=[];
 let activeBiomeTrial=null,trialInteractLatch=false;
 const trialPanel=document.createElement("div");
@@ -4186,7 +4194,7 @@ function updateBiomeTrials(t){
   if(active.stage<4){
    const target=course.checkpoints[active.stage];
    if(Math.hypot(p.x-target.x,p.z-target.z)<3.9&&
-      Math.abs(p.y-target.y)<5&&!gliding){
+      p.y>target.y+1.05&&p.y<target.y+5.2&&!gliding){
     active.stage++;
     trialNotification("RUNE "+active.stage+"/4 ACTIVATED");
   }
@@ -4201,7 +4209,7 @@ function updateBiomeTrials(t){
    trialNotification("Use your saved ×5 normal roll first, then return for another trial.");
   }else{
    activeBiomeTrial={course:c,stage:0,ends:now+BIOME_TRIAL_SECONDS*1000};
-   trialNotification("TRIAL STARTED · Collect runes 1 → 4, then return and press F!");
+   trialNotification("TRIAL STARTED · Jump through runes 1 → 4, then return and press F!");
   }
  }
  for(const c of trialCourses){
@@ -4221,7 +4229,7 @@ function updateBiomeTrials(t){
  if(activeBiomeTrial){
   const active=activeBiomeTrial,c=active.course,seconds=Math.max(0,Math.ceil((active.ends-now)/1000));
   const next=active.stage>=4?"Return to the shrine and press F":
-    "Find rune "+(active.stage+1)+" of 4 (numbers mark the order)";
+    "JUMP into rune "+(active.stage+1)+" of 4";
   trialPanel.style.display="block";
   trialPanel.innerHTML="<b style='color:#ffe0a2'>✦ "+c.name+" · "+seconds+"s</b><div>"+next+"</div><div style='color:#a6ecdb'>Reward: 5× themed aura roll + 5× next roll</div>";
  }else if(nearby.dist<24){
@@ -4229,7 +4237,7 @@ function updateBiomeTrials(t){
   trialPanel.style.display="block";
   trialPanel.innerHTML="<b style='color:#ffe2a5'>✦ "+c.name+" Shrine</b>"+
    "<div>"+(remaining?"Ready in "+Math.ceil(remaining/60000)+"m":
-    state.pendingLuck>=5?"Use your saved ×5 roll first":"Press F nearby to start a 95-second rune trial")+"</div>"+
+    state.pendingLuck>=5?"Use your saved ×5 roll first":"Press F nearby to start a 75-second jumping rune trial")+"</div>"+
    "<div style='color:#a6ecdb'>Four runes · rare aura variants · 5× luck</div>";
  }else trialPanel.style.display="none";
 }
