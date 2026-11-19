@@ -705,6 +705,25 @@ for (let z = 0; z < GRID; z++)
    if(count)verts[k]=v*.55+(sum/count)*.45;
   }
  }
+ // Final edge relaxation removes isolated one-cell ledges, including the
+ // map-edge cliffs. Every adjustment changes both endpoints of an edge,
+ // keeping mountains broad rather than creating artificial plateaus.
+ for(let pass=0;pass<10;pass++){
+  for(let z=0;z<=GRID;z++)for(let x=0;x<GRID;x++){
+   const i=(z*n+x)*3+1,j=i+3,d=verts[i]-verts[j];
+   if(Math.abs(d)>maxRise){
+    const change=(Math.abs(d)-maxRise)*Math.sign(d)*.5;
+    verts[i]-=change;verts[j]+=change;
+   }
+  }
+  for(let z=0;z<GRID;z++)for(let x=0;x<=GRID;x++){
+   const i=(z*n+x)*3+1,j=i+n*3,d=verts[i]-verts[j];
+   if(Math.abs(d)>maxRise){
+    const change=(Math.abs(d)-maxRise)*Math.sign(d)*.5;
+    verts[i]-=change;verts[j]+=change;
+   }
+  }
+ }
 })();
 let geo = new T.BufferGeometry();
 geo.setAttribute("position", new T.Float32BufferAttribute(verts, 3));
