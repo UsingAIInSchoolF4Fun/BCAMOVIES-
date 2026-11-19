@@ -43,6 +43,64 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 @media(max-width:900px){.carGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.garageInspect{grid-template-columns:1fr 1.15fr}}
 @media(max-width:650px){.garageInspect{grid-template-columns:1fr}.garageVehicle.large{height:110px}.garageSpotlight{min-height:104px}.carSil{height:58px}.carCard{min-height:145px}.carGrid{max-height:33vh}.garageInfo h2{font-size:20px}}
 @media(prefers-reduced-motion:reduce){.previewFloat{animation:none}}
+
+/* V9 - cinematic mountain menu and animated showroom */
+#overlay.homeMode{justify-content:flex-start;background:linear-gradient(93deg,#040e19f7 0%,#051622de 30%,#071827a8 50%,#0717221c 100%);backdrop-filter:none}
+#overlay.homeMode .screen{width:100%;max-width:none;min-height:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:30px clamp(18px,5.5vw,94px)}
+.homeStage{width:min(590px,56vw);position:relative;z-index:2;animation:homeEnter .7s cubic-bezier(.21,.86,.23,1) both}
+.menuEyebrow{font-size:11px;letter-spacing:3.3px;font-weight:900;color:#a2f9e4;display:flex;align-items:center;gap:12px}
+.pulseLight{width:9px;height:9px;border-radius:50%;background:#6df7c8;box-shadow:0 0 0 5px #59f9cd23,0 0 24px #57f4c5;animation:pulseLight 2s ease-in-out infinite}
+.menuSlash{color:#eec38c}
+.heroLine{height:2px;width:150px;margin:23px 0;background:linear-gradient(90deg,#7ffde7,#eeb67b,transparent);box-shadow:0 0 25px #7bdec5;animation:heroLine 4s ease-in-out infinite}
+.heroLogo{line-height:.76;letter-spacing:-.09em;font-size:clamp(62px,9vw,132px);font-style:italic;font-weight:1000;font-family:Impact,'Arial Black',Arial,sans-serif;text-shadow:0 8px 28px #000b;filter:drop-shadow(0 4px 0 #062539)}
+.heroLogo>span{display:block;color:#fff;transform:skew(-5deg)}
+.heroLogo strong{display:block;background:linear-gradient(120deg,#f8c18b 0%,#f5a981 35%,#fb759f 72%,#f8c18b 100%);background-size:240% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shineText 9s linear infinite}
+.heroLogo .heroDot{color:#7cfce2}.heroLogo em{display:block;letter-spacing:.29em;font-size:clamp(20px,2.6vw,36px);font-style:normal;margin:12px 0 0 5px;color:#90ffdb;text-shadow:0 0 18px #54f8c68c}
+.homeTagline{font-size:clamp(13px,1.5vw,20px);letter-spacing:2.3px;font-weight:1000;margin:26px 0 7px}
+.homeDescription{font-size:13px;line-height:1.75;max-width:560px;color:#ccdee1;margin:0 0 14px}
+.menuFeatures{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.menuFeatures span{font-size:9px;font-weight:900;letter-spacing:1.2px;color:#b2ece5;background:#103746bc;padding:7px 10px;border:1px solid #73dbca49;border-radius:6px}
+.menuActions{display:flex;gap:9px;flex-wrap:wrap;max-width:565px;align-items:stretch}
+.menuActions .btn{font-size:10px;padding:12px 15px;min-height:46px;letter-spacing:1px;box-shadow:inset 0 1px #ffffff22}
+.menuActions .heroStart{font-size:15px;width:100%;min-height:63px;letter-spacing:1.7px;text-align:left;display:flex;align-items:center;gap:13px;position:relative;overflow:hidden}
+.menuActions .heroStart>span{font-size:22px}.menuActions .heroStart small{margin-left:auto;font-size:9px;opacity:.7}
+.menuActions .heroStart:after{content:'';position:absolute;inset:-35% -20%;width:28%;background:linear-gradient(90deg,transparent,#ffffff80,transparent);transform:skew(-28deg) translateX(-300%);animation:startShimmer 5s ease-in-out infinite}
+.menuActions .btn.ghost{border:1px solid #b7ebe956;background:#092338c4;backdrop-filter:blur(4px);flex:1}
+.menuActions .btn.ghost:hover{background:#1e647485;box-shadow:0 0 18px #62e4d32e}
+.homeStats .heroStats{margin:20px 0 12px;gap:7px}
+.homeStats .heroStat{min-width:100px;flex:1;padding:10px;background:#081d2bba;border:1px solid #92d4c63a}
+.homeStats .heroStat strong{font-size:19px}.homeStats .heroStat span{font-size:8px;letter-spacing:1.2px}
+.homeFooter{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:10px;letter-spacing:1px;font-weight:900;color:#b8ced4;margin-top:14px}
+.homeFooter b{color:#97fdd5}.homeFooter span{font-size:9px;font-weight:700;color:#8eacb8}
+.homeRight{flex:1;min-height:80vh;position:relative;pointer-events:none;display:flex;justify-content:space-between;align-items:end;flex-direction:column;animation:homeEnter .9s .25s both}
+.scenicWeather{font-size:10px;letter-spacing:2px;color:#ddf5e9;background:#0618279e;border:1px solid #9deee34a;padding:11px 14px;border-radius:7px}
+.scenicWeather span{color:#f3b970;margin:0 9px}
+.scenicCaption{align-self:flex-end;text-align:right;padding:18px;background:linear-gradient(90deg,transparent,#06142497);border-right:3px solid #84f1df;margin-bottom:2vh;text-shadow:0 3px 16px #000}
+.scenicCaption span,.scenicCaption small{display:block;font-size:10px;letter-spacing:2px;color:#afdbd6}
+.scenicCaption strong{font-size:19px;display:block;margin:6px 0;letter-spacing:1px}
+.scenicCaption small{font-size:10px;letter-spacing:0;color:#d4e5e4}
+#overlay.garageMode{background:linear-gradient(90deg,#04101bec,#071929cd 56%,#06182792);backdrop-filter:blur(2px)}
+#overlay.garageMode .screen{max-width:1200px;animation:homeEnter .5s ease-out}
+#overlay.garageMode .garageHead h1{font-family:Impact,'Arial Black',Arial,sans-serif;font-style:italic;font-size:clamp(28px,4vw,50px);letter-spacing:0}
+#overlay.garageMode .carGrid{max-height:30vh}
+#overlay.garageMode .garageInspect{background:linear-gradient(110deg,#061726eb,#0d2638d9 72%,#122a3da8);box-shadow:0 20px 50px #0007}
+#overlay.garageMode .garageSpotlight{background:radial-gradient(ellipse at 50% 75%,#77dec674,transparent 62%),linear-gradient(160deg,#14374caa,#091b2c66);border:1px solid #93e9e43a}
+#overlay.garageMode .garageVehicle.large{height:180px;filter:drop-shadow(0 14px 10px #000b)}
+#overlay.garageMode .garageInfo h2{font-family:Impact,'Arial Black',Arial,sans-serif;font-size:31px;font-style:italic;letter-spacing:0}
+#overlay.garageMode .carCard{animation:garageCardEnter .43s both;transform-origin:50% 100%}
+#overlay.garageMode .carCard:nth-child(2){animation-delay:.05s}#overlay.garageMode .carCard:nth-child(3){animation-delay:.1s}#overlay.garageMode .carCard:nth-child(4){animation-delay:.15s}
+#overlay.garageMode .carCard:nth-child(5){animation-delay:.2s}#overlay.garageMode .carCard:nth-child(6){animation-delay:.25s}#overlay.garageMode .carCard:nth-child(7){animation-delay:.3s}
+#overlay.garageMode .carCard:hover{transform:translateY(-3px) scale(1.015);border-color:#9fffe4}
+@keyframes homeEnter{from{opacity:0;transform:translateY(24px);filter:blur(5px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes heroLine{0%,100%{width:120px}50%{width:245px}}
+@keyframes shineText{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@keyframes pulseLight{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
+@keyframes startShimmer{0%,45%,100%{transform:skew(-28deg) translateX(-300%)}70%{transform:skew(-28deg) translateX(850%)}}
+@keyframes garageCardEnter{from{opacity:0;transform:translateY(12px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:980px){#overlay.homeMode .screen{padding:20px;align-items:center}.homeStage{width:min(650px,75vw)}.homeRight{opacity:.6}.heroLogo{font-size:clamp(58px,9vw,95px)}}
+@media(max-width:680px){#overlay.homeMode .screen{padding:12px;justify-content:center}.homeStage{width:100%}.homeRight{display:none}.heroLogo{font-size:clamp(58px,15vw,95px)}.heroLogo em{font-size:19px}.homeDescription{font-size:12px}.menuFeatures{gap:5px}.menuFeatures span{font-size:8px}.menuActions .btn.ghost{font-size:9px}.homeStats .heroStat{min-width:67px;padding:8px}.homeStats .heroStat strong{font-size:16px}.homeTagline{margin-top:18px}.heroLine{margin:12px 0}.homeStage{padding:8px}#overlay.garageMode .garageHead h1{font-size:29px}}
+@media(max-height:700px){#overlay.homeMode .screen{padding-top:12px;padding-bottom:12px}.heroLogo{font-size:clamp(58px,7vw,93px)}.homeDescription{line-height:1.4}.menuFeatures{margin-bottom:8px}.homeStats .heroStats{margin:8px 0}.homeTagline{margin-top:14px}}
+@media(prefers-reduced-motion:reduce){.heroLine,.heroLogo strong,.pulseLight,.homeStage,.homeRight,.menuActions .heroStart:after,#overlay.garageMode .carCard{animation:none!important}}
 </style>
 </head>
 <body>
@@ -990,9 +1048,29 @@ function vehicle(v,type){
 }
 
 function render(){resize();if(webgl)render3D();else renderSoftware3D()}
-function showOverlay(html){$('overlay').classList.remove('hidden');$('screen').innerHTML=html;keys={};}
+function showOverlay(html){const o=$('overlay');o.classList.remove('hidden');o.classList.remove('homeMode','garageMode','atlasMode');if(mode==='home')o.classList.add('homeMode');if(mode==='garage')o.classList.add('garageMode');if(mode==='atlas')o.classList.add('atlasMode');$('screen').innerHTML=html;keys={};}
 function statsStrip(){return `<div class="heroStats"><div class="heroStat"><span>BANK BALANCE</span><strong class="money">$${fmt(save.wallet)}</strong></div><div class="heroStat"><span>BEST CHASE</span><strong>${timeFmt(save.best)}</strong></div><div class="heroStat"><span>CHASES PLAYED</span><strong>${fmt(save.runs)}</strong></div><div class="heroStat"><span>OWNED VEHICLES</span><strong>${save.owned.length} / ${CARS.length}</strong></div></div>`}
-function renderHome(){mode='home';paused=false;$('hud').classList.remove('show');showOverlay(`<div class="kicker">A SUNSET CITY GAME // VERSION 8.0 — DRIVING REBUILT</div><div class="overTitle">ISLAND<em>PURSUIT.</em></div><div class="subtitle">A rebuilt island pursuit with organized streets, scenic mountain roads, more believable police and traffic, brighter visuals, and seven truly different cars. Inspect each vehicle in the new showroom, survive longer and earn cash. Driving into the ocean ends your chase.</div>${statsStrip()}<div class="buttons"><button class="btn primary" data-action="start">▶ START POLICE CHASE</button><button class="btn ghost" data-action="garage">◈ GARAGE & UPGRADES</button><button class="btn ghost" data-action="help">HOW TO PLAY</button></div><div class="smalltext" style="margin-top:22px">Selected ride: <b style="color:#8defdd">${CARS.find(c=>c.id===save.selected)?.name||'STREET COMPACT'}</b> · WASD / Arrows to drive · Shift for Nitro · Space for drift · Esc to pause</div>`)}
+function renderHome(){
+ mode='home';paused=false;$('hud').classList.remove('show');
+ const selected=CARS.find(c=>c.id===save.selected)||CARS[0];
+ showOverlay(`<section class="homeStage">
+ <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V9.0 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
+ <div class="heroLine"></div>
+ <div class="heroLogo"><span>ISLAND</span><strong>PURSUIT<span class="heroDot">.</span></strong><em>WILDLANDS</em></div>
+ <p class="homeTagline">OUTRUN THE LAW. OWN THE MOUNTAINS.</p>
+ <p class="homeDescription">One massive wilderness island. Towering pine forests, cliffside highways, hidden mountain passes, beaches and a small coastal town. Survive longer, earn more, upgrade your escape.</p>
+ <div class="menuFeatures"><span>⛰ 7 MOUNTAIN REGIONS</span><span>🚔 ESCALATING PURSUIT</span><span>⚡ 7 UNIQUE CARS</span></div>
+ <div class="menuActions">
+ <button class="btn primary heroStart" data-action="start"><span>▶</span> START CHASE <small>DRIVE THE ISLAND</small></button>
+ <button class="btn ghost" data-action="garage">◈ GARAGE & CAR SHOP</button>
+ <button class="btn ghost" data-action="map">⌖ EXPLORE ISLAND</button>
+ <button class="btn ghost" data-action="help">HOW TO PLAY</button>
+ </div>
+ <div class="homeStats">${statsStrip()}</div>
+ <div class="homeFooter">CURRENT RIDE <b>${selected.name}</b><span>WASD DRIVE · SHIFT NITRO · SPACE DRIFT · ESC PAUSE</span></div>
+ </section>
+ <aside class="homeRight"><div class="scenicWeather">WILDLANDS // GOLDEN HOUR <span>●</span> LIVE 3D BACKDROP</div><div class="scenicCaption"><span>MOUNTAIN ISLAND</span><strong>NO LIMITS BUT THE COAST.</strong><small>Explore forest trails, coastal roads and high-altitude switchbacks.</small></div></aside>`);
+}
 function dots(count){return `<span class="statdots">${Array.from({length:5},(_,i)=>`<i class="${i<count?'on':''}"></i>`).join('')}</span>`}
 let garageFocus=save.selected;
 // Each vehicle's side silhouette is authored independently; previews reflect actual chassis types.
