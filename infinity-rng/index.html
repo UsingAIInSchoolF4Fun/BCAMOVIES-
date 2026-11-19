@@ -1156,8 +1156,8 @@ function district(x,z,kind){
 // stairs, lanterns, monumental crystal fountain, arches, banners, waterfalls.
 // All geometry uses shared, stylized materials rather than scattered props.
 function buildSpawnHub(){
- const base=ground(0,0),top=base+2.4;
- const root=new T.Group();root.position.y=base;scene.add(root);
+ const base=ground(0,0),hubScale=1.56,hubY=1.18,top=base+2.52*hubY;
+ const root=new T.Group();root.position.y=base;root.scale.set(hubScale,hubY,hubScale);scene.add(root);
  function material(color,roughness=0.82,emissive=0x000000,emissiveIntensity=0){
   return new T.MeshStandardMaterial({color,roughness,metalness:.08,emissive,emissiveIntensity});
  }
@@ -1206,10 +1206,10 @@ function buildSpawnHub(){
  const darkWater=material(0x174a79,.26,0x075e97,.4);
  const animations={crystal:null,halo:[],banners:[],waterfalls:[],lights:[],motes:[]};
  // One raised, walkable 31-unit plaza with stone rims and a subtly textured surface.
- cyl(32.5,32.5,2.36,edge,root,0,1.18,0,64);
- cyl(31.7,31.7,.23,stone,root,0,2.35,0,64);
- cyl(31.35,31.35,.1,paving,root,0,2.46,0,64);
- for(const [radius,thickness,mat] of [[30.8,.27,trim],[28.4,.13,violet],[18.5,.15,trim],[12.6,.2,violet]]){
+ cyl(38.5,38.5,2.36,edge,root,0,1.18,0,72);
+ cyl(37.8,37.8,.23,stone,root,0,2.35,0,72);
+ cyl(37.45,37.45,.1,paving,root,0,2.46,0,72);
+ for(const [radius,thickness,mat] of [[36.6,.28,trim],[33.6,.14,violet],[25.9,.15,trim],[19.9,.2,violet]]){
   const tor=torus(radius,thickness,mat,root,0,2.54,0);tor.rotation.x=Math.PI/2;
  }
  // Broad approach and six level staircase treads; walk height is matched below.
@@ -1237,7 +1237,7 @@ function buildSpawnHub(){
  }
  for(const x of [-12,12])for(const z of [39.5,28,15])hubLantern(x,z,z>31?.2:2.52,2.2);
  for(const a of [-Math.PI*.72,-Math.PI*.28,Math.PI*.72,Math.PI*.28]){
-  hubLantern(Math.cos(a)*27.2,Math.sin(a)*27.2,2.52,2.5);
+  hubLantern(Math.cos(a)*34.5,Math.sin(a)*34.5,2.52,2.5);
  }
  // Central fountain: stacked dressed-stone basin, turquoise water and moving magic.
  cyl(11.6,11.85,.8,edge,root,0,2.85,-4,56);
@@ -1249,7 +1249,7 @@ function buildSpawnHub(){
  cyl(7.5,8.1,1.45,edge,root,0,4.2,-4,12);
  cyl(7.1,7.6,.32,stone,root,0,4.99,-4,12);
  cyl(6.7,6.9,.25,trim,root,0,5.25,-4,12);
- const crystalRig=new T.Group();crystalRig.position.set(0,5.6,-4);root.add(crystalRig);
+ const crystalRig=new T.Group();crystalRig.position.set(0,5.6,-4);crystalRig.scale.y=1.23;root.add(crystalRig);
  const crystalMat=new T.MeshStandardMaterial({color:0xb477fa,emissive:0x7231ff,emissiveIntensity:1.1,roughness:.16,metalness:.19,flatShading:true,transparent:true,opacity:.96,side:T.DoubleSide});
  const innerMat=new T.MeshStandardMaterial({color:0xffabed,emissive:0xbc53ff,emissiveIntensity:1.55,metalness:.12,roughness:.2,flatShading:true});
  let mainGem=mesh(new T.OctahedronGeometry(4.4,0),crystalMat,crystalRig,0,9,0);mainGem.scale.set(.95,2.15,.83);
@@ -1325,7 +1325,7 @@ function buildSpawnHub(){
  // porch counters, warm lit windows, readable neon signs.
  function shopBuilding(x,label){
   const g=new T.Group();g.position.set(x,.35,-6);root.add(g);
-  const baseY=ground(x,-6)-base+.05;g.position.y=baseY;
+  const baseY=(ground(x*hubScale,-6*hubScale)-base)/hubY+.05;g.position.y=baseY;
   box(23,1.1,17,edge,g,0,.55,0);
   box(21.5,8.1,15.5,plaster,g,0,5.4,0);
   for(const sx of [-1,1]){
@@ -1382,17 +1382,17 @@ function buildSpawnHub(){
    }
   }
  }
- shopBuilding(-43,"SHOP");shopBuilding(43,"UPGRADES");
+ shopBuilding(-55,"SHOP");shopBuilding(55,"UPGRADES");
  // Keep the character out of the fountain and building walls.
- registerCollider(0,-4,8.1,18);
- registerCollider(-43,-6,10.3,15);
- registerCollider(43,-6,10.3,15);
+ registerCollider(0,-4*hubScale,8.1*hubScale,24);
+ registerCollider(-55*hubScale,-6*hubScale,13.5*hubScale,22);
+ registerCollider(55*hubScale,-6*hubScale,13.5*hubScale,22);
 
  // Rear waterfalls are single, terrain-anchored water sheets over stone cliffs.
  // Subdivided sheets add texture without isolated, flickering panels.
  for(const side of [-1,1]){
-  const cx=side*45,cz=-39;
-  const area=new T.Group();area.position.set(cx,ground(cx,cz)-base,cz);root.add(area);
+  const cx=side*61,cz=-39;
+  const area=new T.Group();area.position.set(cx,(ground(cx*hubScale,cz*hubScale)-base)/hubY,cz);root.add(area);
   box(17,10,6,edge,area,0,4,-2.5);
   for(let i=0;i<5;i++){
    box(3.1,7+(i%3)*1.5,6.1,stone,area,(i-2)*3.1,4.1,-2.6);
@@ -1413,7 +1413,7 @@ function buildSpawnHub(){
  }
  // A small number of deliberately placed ornamental trees frame the plaza.
  function ornamentalTree(x,z,pink){
-  const g=new T.Group();g.position.set(x,ground(x,z)-base,z);root.add(g);
+  const g=new T.Group();g.position.set(x,(ground(x*hubScale,z*hubScale)-base)/hubY,z);root.add(g);
   const trunk=material(0x76503d,.95),crown=pink?bloom:leaves;
   cyl(.7,1.15,10,trunk,g,0,5,0,8);
   for(let i=0;i<6;i++){
@@ -1424,14 +1424,14 @@ function buildSpawnHub(){
    leavesBall.scale.y=.78;
   }
   sphere(4.2,crown,g,0,14.3,0).scale.y=.76;
-  registerCollider(x,z,1.6,11);
+  registerCollider(x*hubScale,z*hubScale,1.85*hubScale,14);
  }
  ornamentalTree(-70,18,true);ornamentalTree(70,18,true);
  ornamentalTree(-64,-33,false);ornamentalTree(64,-33,false);
  // Low, mirrored flower gardens define the edge without blocking footpaths.
  for(const side of [-1,1])for(const z of [18,29]){
   const x=side*29;
-  const group=new T.Group();group.position.set(x,ground(x,z)-base,z);root.add(group);
+  const group=new T.Group();group.position.set(x,(ground(x*hubScale,z*hubScale)-base)/hubY,z);root.add(group);
   box(7,.6,3.5,stone,group,0,.3,0);
   for(let i=0;i<5;i++){
    const px=(i-2)*1.25;
@@ -1443,8 +1443,8 @@ function buildSpawnHub(){
  // Matching short wooden bridges across the two shallow cyan channels.
  // Plank decks are simple and have their own walking collision heights.
  for(const side of [-1,1]){
-  const cx=side*42,cz=22;
-  const bridgeGroup=new T.Group();bridgeGroup.position.set(cx,ground(cx,cz)-base,cz);root.add(bridgeGroup);
+  const cx=side*48,cz=22;
+  const bridgeGroup=new T.Group();bridgeGroup.position.set(cx,(ground(cx*hubScale,cz*hubScale)-base)/hubY,cz);root.add(bridgeGroup);
   box(15,.14,10,darkWater,bridgeGroup,0,.17,0);
   for(let i=0;i<11;i++){
    const px=(i-5)*1.25;
@@ -1461,6 +1461,46 @@ function buildSpawnHub(){
   }
   for(const px of [-6.1,6.1]){
    hubLantern(cx+px,cz-5.2,bridgeGroup.position.y+.2,2.4);
+  }
+ }
+ // Grand side galleries turn the hub into a full destination, not a small circle.
+ // Both are walkable, mirrored, and deliberately leave a generous main avenue.
+ for(const side of [-1,1]){
+  const tx=side*45;
+  box(25.5,2.5,30,edge,root,tx,1.25,10);
+  box(25.5,.22,30,paving,root,tx,2.52,10);
+  box(25.8,.2,.42,trim,root,tx,2.64,25);
+  for(const zz of [-1,21]){
+   for(const dx of [-9,9]){
+    const x=tx+dx;
+    cyl(.75,.95,4.3,stone,root,x,4.67,zz,10);
+    cyl(.95,.95,.4,trim,root,x,7,zz,10);
+    sphere(.36,goldLight,root,x,7.54,zz);
+   }
+  }
+  const gx=side*34;
+  // Raised tiered gardens sit outside the main walking corridor.
+  box(9,.65,10,edge,root,gx,2.92,20);
+  box(8,.43,9,leaves,root,gx,3.47,20);
+  for(let i=0;i<10;i++){
+   const ang=i*2.399,rad=2.8+(i%3)*.35;
+   sphere(.43,i%2?bloom:glow,root,gx+Math.cos(ang)*rad,4.1,20+Math.sin(ang)*rad);
+  }
+  for(const z of [0,10,22]){
+   const x=side*54;
+   cyl(.95,1.15,2.9,edge,root,x,4.12,z,10);
+   const vase=mesh(new T.OctahedronGeometry(.73,0),glow,root,x,6.25,z);
+   vase.scale.y=1.5;animations.motes.push({mesh:vase,phase:x*.1+z*.08,x,y:6.25,z});
+  }
+ }
+ // Wider central arrival courtyard extends out toward the long main road.
+ box(34,1.05,24,edge,root,0,.53,49);
+ box(33.7,.15,23.6,paving,root,0,1.14,49);
+ for(const side of [-1,1]){
+  for(const zz of [38,46,56]){
+   const bx=side*16.5;
+   cyl(.75,.87,3.6,stone,root,bx,2.95,zz,9);
+   sphere(.38,goldLight,root,bx,5.1,zz);
   }
  }
  // Front compass design: memorable spawn landmark and easy navigation.
@@ -1920,15 +1960,27 @@ function animateSpawnHub(t){
  });
 }
 function hubWalkHeight(x,z){
- // The paired bridge decks also carry the character, not just the visuals.
- if(Math.abs(Math.abs(x)-42)<6.7&&Math.abs(z-22)<4.5){
-  return ground(Math.sign(x)*42,22)+1.35;
+ const S=1.56,Y=1.18,base=spawnHub.baseY;
+ const lx=x/S,lz=z/S;
+ const r=Math.hypot(lx,lz);
+ // Full enlarged central plaza and the paired, walkable side galleries.
+ if(r<37.3)return spawnHub.topY+.01;
+ if(Math.abs(Math.abs(lx)-45)<12.55&&lz>-4.6&&lz<25.1)
+  return base+2.63*Y;
+ if(Math.abs(lx)<16.8&&lz>37.1&&lz<60.8)
+  return base+1.29*Y;
+ // The broad six-step entrance, aligned with its physical stone geometry.
+ if(Math.abs(lx)<12.4&&lz>=28.6&&lz<46.1){
+  const step=Math.max(0,Math.min(5,Math.floor((45.5-lz)/2.65)));
+  return base+(.48+step*.4)*Y;
  }
- const d=Math.hypot(x,z);
- if(d<31.1)return spawnHub.topY+.11;
- if(Math.abs(x)<12.5&&z>=29.6&&z<45.5){
-  const step=Math.max(0,Math.min(5,Math.floor((45.5-z)/2.65)));
-  return spawnHub.baseY+.4+step*.4+.08;
+ // Mirrored wooden footbridges at the outside of the galleries.
+ for(const side of [-1,1]){
+  const cx=side*48*S,cz=22*S;
+  if(Math.abs(x-cx)<6.4*S&&Math.abs(z-cz)<4.2*S){
+   const rise=1.35*Y;
+   return ground(cx,cz)+rise;
+  }
  }
  return -Infinity;
 }
@@ -3041,7 +3093,7 @@ function drawWorldMap(){
 }
 
 // Start on the front of the raised plaza rather than inside the crystal.
-player.position.set(0,spawnHub.topY+.5,21);
+player.position.set(0,spawnHub.topY+.5,35);
 const glideWings=new T.Group();player.add(glideWings);
 const sailMat=new T.MeshStandardMaterial({color:0xa8e6ff,emissive:0x1a6a9a,emissiveIntensity:.55,side:T.DoubleSide,transparent:true,opacity:.9,depthWrite:false});
 function makeWing(side){
@@ -3585,7 +3637,7 @@ sprintButton.onclick = () => {
 };
 const respawnButton=$("respawnButton");
 respawnButton.onclick=()=>{
- player.position.set(0,spawnHub.topY+2,21);
+ player.position.set(0,spawnHub.topY+2,35);
  velocityY=0;onGround=false;gliding=false;glideVel.set(0,0,0);glideWings.visible=false;
  for(const k of Object.keys(keys))keys[k]=false;
  if(document.pointerLockElement===renderer.domElement)document.exitPointerLock();
