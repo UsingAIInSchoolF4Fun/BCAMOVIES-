@@ -4288,6 +4288,13 @@ window.addEventListener("keydown", e => {
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
     keys[e.code] = true;
     if(e.code==="KeyE"&&!e.repeat)document.getElementById("sprintButton").click();
+    // Deployment is an input action, not something that can be missed when
+    // a slow Chromebook drops render frames.
+    if(e.code==="KeyG"&&!e.repeat&&!gliding&&performance.now()>glideReady&&
+       player.position.y-ground(player.position.x,player.position.z)>13&&velocityY<4){
+      startGlide(player.rotation.y,false);
+      glideKeyLatch=true;
+    }
 });
 window.addEventListener("keyup", e => keys[e.code] = false);
 let pointerLast = null,
