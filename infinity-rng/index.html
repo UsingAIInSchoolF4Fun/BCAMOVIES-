@@ -56,7 +56,7 @@ body:not(.compact-ui) #challengeStatus{display:block}
  .bottom{bottom:6px}
  .side{top:59px;right:6px;max-height:calc(100dvh - 92px)}
 }
-.flight-controls-help{display:none}body.show-tips .flight-controls-help{display:block}#flightHud{right:10px!important;top:92px!important;max-width:188px!important}</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V14.3</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
+.flight-controls-help{display:none}body.show-tips .flight-controls-help{display:block}#flightHud{right:10px!important;top:92px!important;max-width:188px!important}</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V14.3</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find biome shrines and finish timed rune trials for themed auras</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
  <h2>⚙ Settings</h2>
  <p>Keep your screen clean. Keyboard shortcuts still work.</p>
  <h3>DISPLAY</h3>
@@ -104,6 +104,20 @@ const legacyCount = A.length;
 for (let rank = 0; rank < 8; rank++)
     for (let theme = 0; theme < 16; theme++)
         for (let word = 0; word < 16; word++) A.push([ranks[rank] + " " + themes[theme] + " " + words[word], 3 * Math.pow(5, rank) * (1 + word / 14), palettes[theme], theme, word, rank]);
+// Ultra-rare themed aura variations from each region's shrine trials.
+const BIOME_REWARDS=[
+ {id:"origin",name:"Origin",x:-36,z:113,color:0xdfc9ff,theme:9,names:["Origin Dust","Firstlight Spark","Genesis Halo","Primordial Eternity"]},
+ {id:"frost",name:"Frozen Expanse",x:-274,z:98,color:0x9beaff,theme:6,names:["Frost Dust","Glacial Spark","Winter Crown","Absolute Zero"]},
+ {id:"forest",name:"Whispering Forest",x:127,z:202,color:0x8ee7ac,theme:11,names:["Forest Dust","Verdant Spark","Elderwood Halo","Heart of the Grove"]},
+ {id:"crystal",name:"Amethyst Canyon",x:199,z:108,color:0xd69cff,theme:5,names:["Crystal Dust","Prismatic Spark","Amethyst Crown","Eternal Prism"]},
+ {id:"ember",name:"Ember Wastes",x:160,z:-85,color:0xff996b,theme:4,names:["Ember Dust","Phoenix Spark","Inferno Crown","Eternal Flame"]},
+ {id:"astral",name:"Astral Highlands",x:-172,z:-188,color:0xb8a0ff,theme:15,names:["Astral Dust","Starlight Spark","Cosmic Halo","Astral Sovereign"]},
+ {id:"desert",name:"Sunstone Desert",x:258,z:237,color:0xffd07e,theme:7,names:["Sunstone Dust","Mirage Spark","Solar Crown","Golden Eternity"]}
+];
+const BIOME_RARITIES=[18000,85000,350000,1600000];
+for(const region of BIOME_REWARDS)for(let tier=0;tier<4;tier++)
+ A.push([region.names[tier],BIOME_RARITIES[tier],region.color,
+  region.theme,[0,7,8,14][tier],[3,4,5,7][tier]]);
 // A single normalized distribution ensures displayed odds match actual probability.
 // Future luck boosts should modify weights in buildRollTable(), never displayed odds alone.
 const BASE_BOOST = 1;
@@ -140,15 +154,12 @@ function displayOdds(a) {
     return odds[auraLookup.get(a[0])] || a[1]
 }
 
-function refreshLuck() {
-    let now = Date.now(),
-        active = Math.max(now < luckExpires ? luckBoost : 1,volcanoZoneActive ? 2 : 1);
-    if (active !== rollTable.boost) {
-        rollTable = buildRollTable(active);
-        rollTable.boost = active;
-        odds = rollTable.odds
-    }
-    return active
+function refreshLuck(){
+ const active=state.pendingLuck>1?state.pendingLuck:1;
+ if(active!==rollTable.boost){
+  rollTable=buildRollTable(active);rollTable.boost=active;odds=rollTable.odds;
+ }
+ return active;
 }
 const $ = id => document.getElementById(id),
     hex = n => "#" + n.toString(16).padStart(6, "0");
@@ -161,7 +172,10 @@ const state = {
     rolls: stored.rolls || 0,
     owned: stored.owned || {},
     equipped: stored.equipped || "Dust",
-    redeemedCodes: stored.redeemedCodes && typeof stored.redeemedCodes === "object" ? stored.redeemedCodes : {}
+    redeemedCodes: stored.redeemedCodes && typeof stored.redeemedCodes === "object" ? stored.redeemedCodes : {},
+    pendingLuck: stored.pendingLuck>=2?Math.min(5,stored.pendingLuck):1,
+    trialCooldowns: stored.trialCooldowns && typeof stored.trialCooldowns==="object"?stored.trialCooldowns:{},
+    trialWins: stored.trialWins && typeof stored.trialWins==="object"?stored.trialWins:{}
 };
 const hudPrefs={
     compact: stored.hudPrefs?.compact!==false,
@@ -352,14 +366,17 @@ function roll() {
             setTimeout(() => requestAnimationFrame(tick), 40 + Math.pow(p, 2) * 180);
             return
         }
+        const luckUsed=refreshLuck();
         let win = randomAura(),
+            wonOdds=displayOdds(win),
             newAura = !state.owned[win[0]];
+        if(luckUsed>1){state.pendingLuck=1;refreshLuck();}
         state.rolls++;
         state.owned[win[0]] = (state.owned[win[0]] || 0) + 1;
         if (state.rolls === 1) state.equipped = win[0];
         $("result").textContent = win[0].toUpperCase();
         $("result").style.color = hex(auraColor(win));
-        $("chance").textContent = "1 IN " + displayOdds(win).toLocaleString() + (newAura ? " · NEW DISCOVERY!" : " · DUPLICATE");
+        $("chance").textContent="1 IN "+wonOdds.toLocaleString()+(luckUsed>1?" · ×"+luckUsed+" LUCK USED":"")+(newAura?" · NEW DISCOVERY!":" · DUPLICATE");
         $("rollLabel").textContent = "YOUR DESTINY";
         $("rollProgress").style.width = "0%";
         save();
@@ -4008,7 +4025,11 @@ renderAura = () => {
     }
 };
 renderAura();
-function awardTrial(site){if(Date.now()<site.cooldown)return;site.cooldown=Date.now()+180000;luckBoost=Math.max(luckBoost,2);luckExpires=Date.now()+180000;refreshLuck();save();$("challengeStatus").textContent=site.name+" conquered! ×2 luck for 3 minutes."}
+function awardTrial(site){
+ if(site.discovered)return;
+ site.discovered=true;
+ $("challengeStatus").textContent=site.name+" discovered! Complete a timed shrine challenge for rare auras and luck.";
+}
 const keys = {},
     clock = new T.Clock();
 let yaw = 0,
@@ -4297,11 +4318,9 @@ function animate() {
                 $("parkourHud").textContent = "Skybridge Parkour · " + parkourProgress + "/" + parkourPlatforms.length;
                 if (parkourProgress === parkourPlatforms.length) {
                     parkourCompleted = true;
-                    luckBoost = Math.max(luckBoost, 3);
-                    luckExpires = Date.now() + 180000;
-                    refreshLuck();
-                    save();
-                    $("parkourHud").textContent = "PARKOUR COMPLETE · ×3 luck for 3 minutes!"
+                    state.pendingLuck=Math.max(state.pendingLuck,2);
+                    refreshLuck();save();
+                    $("parkourHud").textContent = "PARKOUR COMPLETE · ×2 next roll!"
                 }
                 break
             }
@@ -4326,7 +4345,7 @@ function animate() {
     if(lavaContact&&Date.now()-lastLavaDamage>2000){
       lavaSlowUntil=Date.now()+300000;lastLavaDamage=Date.now();save();$("challengeStatus").textContent="LAVA HIT! Roll speed slowed for 5 minutes!";
     }
-    if(Math.floor(t*3)%3===0){const remaining=Math.ceil((volcano.cycle-elapsed)/1000),mm=Math.floor(remaining/60),ss=String(remaining%60).padStart(2,"0");volcanoLabel.textContent=erupting?"VOLCANO ERUPTING! Avoid the lava!":"VOLCANO · eruption in "+mm+":"+ss+(volcanoZoneActive?" · ×2 LUCK ACTIVE":"");}
+    if(Math.floor(t*3)%3===0){const remaining=Math.ceil((volcano.cycle-elapsed)/1000),mm=Math.floor(remaining/60),ss=String(remaining%60).padStart(2,"0");volcanoLabel.textContent=erupting?"VOLCANO ERUPTING! Avoid the lava!":"VOLCANO · eruption in "+mm+":"+ss+(volcanoZoneActive?" · CRATER":"");}
     let stride = moving ? Math.sin(t * ((keys.ShiftLeft || keys.ShiftRight) ? 17 : 11)) * .65 : 0;
     arms[0].rotation.x = stride;
     arms[1].rotation.x = -stride;
@@ -4408,7 +4427,7 @@ function animate() {
         refreshLuck();
         let remaining = Math.max(0, Math.ceil((luckExpires - Date.now()) / 1000));
         
-        const activeLuck=refreshLuck();$("luckStatus").textContent="Luck ×"+activeLuck+(volcanoZoneActive?" · VOLCANO ZONE":"")+(Date.now()<lavaSlowUntil?" · LAVA SLOW "+Math.ceil((lavaSlowUntil-Date.now())/60000)+"m":"");
+        const activeLuck=refreshLuck();$("luckStatus").textContent=activeLuck>1?"NEXT ROLL ×"+activeLuck+" LUCK":"Luck ×1 · earn boosts in trials";
         let b = biomeAt(player.position.x, player.position.z);
         if (b !== lastBiome) {
             $("biome").textContent = b;
