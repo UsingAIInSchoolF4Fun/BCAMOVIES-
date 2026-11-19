@@ -839,6 +839,37 @@ function showOverlay(html){$('overlay').classList.remove('hidden');$('screen').i
 function statsStrip(){return `<div class="heroStats"><div class="heroStat"><span>BANK BALANCE</span><strong class="money">$${fmt(save.wallet)}</strong></div><div class="heroStat"><span>BEST CHASE</span><strong>${timeFmt(save.best)}</strong></div><div class="heroStat"><span>CHASES PLAYED</span><strong>${fmt(save.runs)}</strong></div><div class="heroStat"><span>OWNED VEHICLES</span><strong>${save.owned.length} / ${CARS.length}</strong></div></div>`}
 function renderHome(){mode='home';paused=false;$('hud').classList.remove('show');showOverlay(`<div class="kicker">A SUNSET CITY GAME // VERSION 7.0 — MOUNTAIN ISLAND</div><div class="overTitle">ISLAND<em>PURSUIT.</em></div><div class="subtitle">A larger third-person 3D island with scenic ridges, open off-road slopes and mountain switchback roads. Cars are slower for easier handling, with fairer police chases. Explore the highlands, survive and earn cash for upgrades. Drive into the ocean and your chase ends.</div>${statsStrip()}<div class="buttons"><button class="btn primary" data-action="start">▶ START POLICE CHASE</button><button class="btn ghost" data-action="garage">◈ GARAGE & UPGRADES</button><button class="btn ghost" data-action="help">HOW TO PLAY</button></div><div class="smalltext" style="margin-top:22px">Selected ride: <b style="color:#8defdd">${CARS.find(c=>c.id===save.selected)?.name||'STREET COMPACT'}</b> · WASD / Arrows to drive · Shift for Nitro · Space for drift · Esc to pause</div>`)}
 function dots(count){return `<span class="statdots">${Array.from({length:5},(_,i)=>`<i class="${i<count?'on':''}"></i>`).join('')}</span>`}
+let garageFocus=save.selected;
+// Each vehicle's side silhouette is authored independently; previews reflect actual chassis types.
+const CAR_OUTLINES={
+ hatch:['M27 79 L32 58 L69 53 L83 41 L137 42 L155 57 L189 64 L193 81 Z','M85 47 L137 47 L150 60 L69 60 Z'],
+ sedan:['M20 80 L29 62 L61 59 L81 43 L145 43 L165 59 L198 64 L204 82 Z','M84 49 L144 49 L160 61 L66 61 Z'],
+ muscle:['M16 82 L26 65 L69 62 L84 52 L131 50 L155 62 L201 64 L209 83 Z','M86 56 L131 55 L151 64 L65 64 Z'],
+ rally:['M18 84 L19 53 L42 49 L63 35 L145 35 L168 49 L201 55 L205 85 Z','M65 42 L145 42 L162 55 L49 55 Z'],
+ super:['M10 81 L26 71 L62 64 L90 48 L154 48 L174 64 L210 71 L216 83 Z','M91 54 L151 54 L170 65 L68 65 Z'],
+ armored:['M16 87 L16 45 L52 44 L65 28 L154 28 L172 47 L204 48 L204 87 Z','M70 34 L151 34 L165 49 L53 49 Z'],
+ hyper:['M8 81 L22 70 L84 63 L104 44 L157 44 L185 64 L212 71 L216 84 Z','M107 50 L157 50 L181 66 L89 66 Z']
+};
+function garageCarSVG(c,large=false){
+ let [body,glass]=CAR_OUTLINES[c.style]||CAR_OUTLINES.sedan;
+ let paint=save.paint[c.id]||c.color,light=c.style==='hyper'?'#a0fff0':'#f1e3b8';
+ let wheel=c.style==='armored'||c.style==='rally'?16:13;
+ let extras=c.style==='rally'?'<path d="M64 29h85m-70-5h55" stroke="#dbe6e4" stroke-width="3"/>':c.style==='muscle'?'<path d="M45 66h27m96-6h30" stroke="#222e39" stroke-width="5"/>':c.style==='hyper'||c.style==='super'?'<path d="M183 57h27m-27-6h21" stroke="#28364a" stroke-width="4"/>':c.style==='armored'?'<path d="M22 64h177" stroke="#24394a" stroke-width="5"/>':'';
+ return `<svg class="garageVehicle ${large?'large':''}" viewBox="0 0 222 112" role="img" aria-label="${c.name} car preview">
+ <ellipse cx="111" cy="91" rx="101" ry="13" fill="#051321" opacity=".45"/>
+ <g class="previewFloat">
+ <ellipse cx="57" cy="80" rx="${wheel}" ry="${wheel}" fill="#101c2b" stroke="#647382" stroke-width="2"/>
+ <ellipse cx="173" cy="80" rx="${wheel}" ry="${wheel}" fill="#101c2b" stroke="#647382" stroke-width="2"/>
+ <ellipse cx="57" cy="80" rx="6" ry="6" fill="#cad5db"/>
+ <ellipse cx="173" cy="80" rx="6" ry="6" fill="#cad5db"/>
+ <path d="${body}" fill="${paint}" stroke="#e3efef" stroke-width="1.5" stroke-linejoin="round"/>
+ <path d="${glass}" fill="#294e66" stroke="#aacdd5" stroke-width="1.7"/>
+ <path d="M110 49v12" stroke="#98b5be" stroke-width="1.4"/>
+ ${extras}
+ <path d="M28 74h17" stroke="${light}" stroke-width="3" stroke-linecap="round"/>
+ <path d="M193 75h13" stroke="#fb637b" stroke-width="3" stroke-linecap="round"/>
+ </g></svg>`;
+}
 function renderGarage(){mode='garage';let selected=CARS.find(c=>c.id===save.selected)||CARS[0],body=CARS.map(c=>{let owned=save.owned.includes(c.id),chosen=c.id===save.selected;return `<button class="carCard ${chosen?'selected':''}" data-action="vehicle" data-id="${c.id}"><div class="carTop"><b>${c.name}</b><span class="carTag ${owned?'owned':''}">${chosen?'✓ EQUIPPED':owned?'OWNED':'$'+fmt(c.price)}</span></div><div class="carSil"><div class="silShape" style="background:${save.paint[c.id]||c.color}"></div></div><div class="carStat"><span>SPEED</span>${dots(c.rating[0])}</div><div class="carStat"><span>ARMOR</span>${dots(c.rating[1])}</div><div class="carStat"><span>HANDLING</span>${dots(c.rating[2])}</div></button>`}).join('');
  let buttons=Object.entries(UPGRADES).map(([id,u])=>{let level=save.upgrades[id]||0,cost=UPGRADE_COST[id][level];return `<button class="btn mini ${level>=3?'ghost':'gold'}" data-action="upgrade" data-id="${id}" ${level>=3||save.wallet<cost?'disabled':''}>${u.name} ${level}/3 · ${level>=3?'MAX':'$'+fmt(cost)}</button>`}).join('');
  let painter=['#61e6dc','#ffcc72','#ff7882','#9c95ff','#c5e4e9','#8fe692','#ff91ce'].map(color=>`<button data-action="paint" data-id="${color}" title="Paint vehicle ${color}" style="width:25px;height:25px;border-radius:50%;border:2px solid ${((save.paint[selected.id]||selected.color).toLowerCase()===color.toLowerCase())?'#fff':'#ffffff44'};background:${color};margin-right:4px"></button>`).join('');
