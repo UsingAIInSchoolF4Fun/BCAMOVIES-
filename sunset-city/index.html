@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V6 — 3D ISLAND PURSUIT</title>
+<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V6.1 — COMPACT CITY & BALANCED POLICE</title>
 <style>
 :root{--ink:#0c1a2b;--panel:#101f30f2;--line:#ffffff29;--cyan:#63e6e5;--orange:#ffb36b;--muted:#a8bbc9;--green:#89f4ac}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#081b2b;color:#fff;font-family:Inter,Arial,Helvetica,sans-serif;user-select:none;touch-action:none}
@@ -28,7 +28,7 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 <body>
 <canvas id="game" aria-label="3D third-person police chase driving game"></canvas><div id="tint"></div>
 <div id="hud">
-  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V6 3D</small></div><div class="hudMid">
+  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V6.1 3D</small></div><div class="hudMid">
    <div class="pill"><label>SURVIVAL</label><strong id="survive">00:00</strong></div><div class="pill cash"><label>RUN EARNINGS</label><strong id="earn">$0</strong></div><div class="pill heat"><label>HEAT LEVEL</label><strong id="stars">★☆☆☆☆</strong></div></div></div>
   <div id="hudLeft"><div class="meter"><div class="meterhead"><span>CAR INTEGRITY</span><span id="healthText">100%</span></div><div class="track"><div class="fill" id="healthbar"></div></div></div><div class="meter"><div class="meterhead"><span>NITRO</span><span id="boostText">100%</span></div><div class="track"><div class="fill boost" id="boostbar"></div></div></div><div class="tips"><b>W/S</b> accelerate / brake<br><b>A/D</b> steer &nbsp; <b>SHIFT</b> boost<br><b>SPACE</b> handbrake drift<br><b>ESC</b> pause<br><b>WATER</b> amphibious driving</div></div>
   <button id="escapeBtn" type="button">Ⅱ PAUSE</button>
@@ -65,6 +65,7 @@ let mode='home',paused=false,keys={},now=0,last=0,runningSeconds=0,earned=0,comb
 let car=null,cops=[],traffic=[],particles=[],pickups=[],camera={x:0,y:0,zoom:1};let runInfo={nearMisses:0,drifts:0,rammed:0};
 const view={w:innerWidth,h:innerHeight,dpr:1};
 function resize(){view.dpr=Math.min(1.6,window.devicePixelRatio||1);view.w=innerWidth;view.h=innerHeight;let w=Math.round(view.w*view.dpr),h=Math.round(view.h*view.dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;if(webgl)webgl.viewport(0,0,w,h);} }
+const CITY_COMPACT=.80; // Tighter island layout, while keeping vehicles and road widths full size.
 const STATIC={canvas:null,bounds:{minX:-1250,minY:-1100,maxX:1250,maxY:1100},scale:1};
 let roads=[],roadSamples=[],structures=[],trees=[],streetProps=[],parkingLots=[];
 const landmarks=[
@@ -76,22 +77,22 @@ const landmarks=[
  {name:'PALM PARK',x:-255,y:390,type:'park'},
  {name:'NEON DISTRICT',x:-320,y:-350,type:'neon'},
  {name:'OCEAN AIRFIELD',x:40,y:-630,type:'airfield'}
-];
+].map(p=>({...p,x:p.x*CITY_COMPACT,y:p.y*CITY_COMPACT}));
 const DISTRICTS=[
  {name:'MIDTOWN',x:0,y:0,r:350,colors:['#718594','#d0aaa0','#6f788e','#637f89','#bfada4'],roof:'#405569'},
  {name:'NEON QUARTER',x:-310,y:-340,r:270,colors:['#674e8f','#4d6b99','#765a7f','#846c98'],roof:'#513363'},
  {name:'PALM HEIGHTS',x:-345,y:340,r:270,colors:['#bf9276','#a7ab90','#d9bea2','#9faeb2'],roof:'#8c6f66'},
  {name:'HARBOR WORKS',x:420,y:430,r:320,colors:['#6c8691','#9d8b78','#647686','#8f9396'],roof:'#344d60'},
  {name:'GOLD COAST',x:470,y:-330,r:290,colors:['#e0b493','#b7cbca','#e5b9a6','#9faec0'],roof:'#66858d'},
-];
-function shorelineRadius(a){return 850+42*Math.sin(3*a+.25)+24*Math.cos(7*a-.7)+23*Math.sin(11*a+.9)+15*Math.cos(16*a)}
+].map(d=>({...d,x:d.x*CITY_COMPACT,y:d.y*CITY_COMPACT,r:d.r*CITY_COMPACT}));
+function shorelineRadius(a){return CITY_COMPACT*(850+42*Math.sin(3*a+.25)+24*Math.cos(7*a-.7)+23*Math.sin(11*a+.9)+15*Math.cos(16*a))}
 function coastDistance(x,y){let xx=x/1.23,yy=y/.92,a=Math.atan2(yy,xx);return shorelineRadius(a)-Math.hypot(xx,yy)}
 function isWater(x,y){return coastDistance(x,y)<0}
 function pathIsland(g,inset=0){let count=300;g.beginPath();for(let i=0;i<=count;i++){let a=(i/count)*TAU,R=shorelineRadius(a)-inset,x=Math.cos(a)*R*1.23,y=Math.sin(a)*R*.92;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}g.closePath();}
 function makeRoad(id,points,width=27,style='urban'){roads.push({id,points,width,style});for(let i=0;i<points.length-1;i++){let a=points[i],b=points[i+1],d=Math.hypot(b.x-a.x,b.y-a.y),n=Math.max(1,Math.floor(d/20));for(let j=0;j<n;j++){let t=j/n,pt={x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),a:Math.atan2(b.y-a.y,b.x-a.x),id};if(coastDistance(pt.x,pt.y)>36)roadSamples.push(pt)}}}
 function line(points){return points.map(p=>({x:p[0],y:p[1]}))}
-function curveRoad(id,points,width,style){const ps=[];const src=points.map(p=>({x:p[0],y:p[1]}));for(let i=0;i<src.length-1;i++){let p0=src[Math.max(0,i-1)],p1=src[i],p2=src[i+1],p3=src[Math.min(src.length-1,i+2)];for(let j=0;j<18;j++){let t=j/18,t2=t*t,t3=t2*t;ps.push({x:.5*((2*p1.x)+(-p0.x+p2.x)*t+(2*p0.x-5*p1.x+4*p2.x-p3.x)*t2+(-p0.x+3*p1.x-3*p2.x+p3.x)*t3),y:.5*((2*p1.y)+(-p0.y+p2.y)*t+(2*p0.y-5*p1.y+4*p2.y-p3.y)*t2+(-p0.y+3*p1.y-3*p2.y+p3.y)*t3)})}}ps.push(src.at(-1));makeRoad(id,ps,width,style)}
-function ringRoad(id,cx,cy,rx,ry,w=30,style='boulevard'){const pts=[];for(let i=0;i<=170;i++){let a=TAU*i/170;pts.push({x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry})}makeRoad(id,pts,w,style)}
+function curveRoad(id,points,width,style){const ps=[];const src=points.map(p=>({x:p[0]*CITY_COMPACT,y:p[1]*CITY_COMPACT}));for(let i=0;i<src.length-1;i++){let p0=src[Math.max(0,i-1)],p1=src[i],p2=src[i+1],p3=src[Math.min(src.length-1,i+2)];for(let j=0;j<18;j++){let t=j/18,t2=t*t,t3=t2*t;ps.push({x:.5*((2*p1.x)+(-p0.x+p2.x)*t+(2*p0.x-5*p1.x+4*p2.x-p3.x)*t2+(-p0.x+3*p1.x-3*p2.x+p3.x)*t3),y:.5*((2*p1.y)+(-p0.y+p2.y)*t+(2*p0.y-5*p1.y+4*p2.y-p3.y)*t2+(-p0.y+3*p1.y-3*p2.y+p3.y)*t3)})}}ps.push(src.at(-1));makeRoad(id,ps,width,style)}
+function ringRoad(id,cx,cy,rx,ry,w=30,style='boulevard'){cx*=CITY_COMPACT;cy*=CITY_COMPACT;rx*=CITY_COMPACT;ry*=CITY_COMPACT;const pts=[];for(let i=0;i<=170;i++){let a=TAU*i/170;pts.push({x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry})}makeRoad(id,pts,w,style)}
 function nearestRoad(x,y){let nearest=1e9;for(const road of roads){const p=road.points;for(let j=0;j<p.length-1;j+=Math.max(1,Math.floor(p.length/160))){let a=p[j],b=p[Math.min(j+1,p.length-1)],dx=b.x-a.x,dy=b.y-a.y;let t=clamp(((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy||1),0,1);let d=Math.hypot(x-(a.x+t*dx),y-(a.y+t*dy))-road.width*.5;if(d<nearest)nearest=d}}return nearest}
 function roadsNear(x,y,max=20){for(const road of roads){const ps=road.points;for(let i=1;i<ps.length;i+=2){let a=ps[i-1],b=ps[i],dx=b.x-a.x,dy=b.y-a.y;let t=clamp(((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy||1),0,1);if(Math.hypot(x-(a.x+t*dx),y-(a.y+t*dy))<road.width*.5+max)return true}}return false}
 function addBuilding(x,y,w,h,rot=0,kind='office',zone=null){const d=zone||DISTRICTS[0],colors=d.colors;let n=structures.length;structures.push({x,y,w,h,rot,kind,zone:d.name,color:colors[n%colors.length],roof:d.roof,seed:n,rad:Math.hypot(w,h)*.5})}
@@ -120,28 +121,29 @@ function buildWorld(){
   for(let x of [-225,160,545])curveRoad('cross_v_'+x,[[x,-450],[x-22,-300],[x+12,-170],[x,0],[x+20,155],[x,300]],20,'urban');
   for(let y of [-180,170,485])curveRoad('cross_h_'+y,[[-400,y],[-250,y+15],[-100,y-10],[85,y+10],[280,y],[475,y+10]],20,'urban');
   // Landmark footprints are intentionally different in shape, location, and layout.
-  addBuilding(515,-437,119,82,.16,'stadium',DISTRICTS[4]);
-  addBuilding(303,130,90,55,.1,'hospital',DISTRICTS[0]);
-  addBuilding(565,480,112,53,.08,'warehouse',DISTRICTS[3]);
-  addBuilding(35,-631,150,41,.1,'airport',DISTRICTS[4]);
-  addBuilding(-322,-392,68,68,.3,'nightclub',DISTRICTS[1]);
-  addBuilding(-620,-170,62,50,-.15,'marina',DISTRICTS[4]);
-  addBuilding(185,225,70,66,.36,'tower',DISTRICTS[0]);
-  addBuilding(-228,385,56,40,-.17,'greenhouse',DISTRICTS[2]);
-  addBuilding(640,330,99,50,-.2,'market',DISTRICTS[3]);
-  addBuilding(-562,90,66,40,.2,'hotel',DISTRICTS[2]);
-  addBuilding(-340,-90,53,48,.45,'arcade',DISTRICTS[1]);
+  addBuilding(515*CITY_COMPACT,-437*CITY_COMPACT,119,82,.16,'stadium',DISTRICTS[4]);
+  addBuilding(303*CITY_COMPACT,130*CITY_COMPACT,90,55,.1,'hospital',DISTRICTS[0]);
+  addBuilding(565*CITY_COMPACT,480*CITY_COMPACT,112,53,.08,'warehouse',DISTRICTS[3]);
+  addBuilding(35*CITY_COMPACT,-631*CITY_COMPACT,150,41,.1,'airport',DISTRICTS[4]);
+  addBuilding(-322*CITY_COMPACT,-392*CITY_COMPACT,68,68,.3,'nightclub',DISTRICTS[1]);
+  addBuilding(-620*CITY_COMPACT,-170*CITY_COMPACT,62,50,-.15,'marina',DISTRICTS[4]);
+  addBuilding(185*CITY_COMPACT,225*CITY_COMPACT,70,66,.36,'tower',DISTRICTS[0]);
+  addBuilding(-228*CITY_COMPACT,385*CITY_COMPACT,56,40,-.17,'greenhouse',DISTRICTS[2]);
+  addBuilding(640*CITY_COMPACT,330*CITY_COMPACT,99,50,-.2,'market',DISTRICTS[3]);
+  addBuilding(-562*CITY_COMPACT,90*CITY_COMPACT,66,40,.2,'hotel',DISTRICTS[2]);
+  addBuilding(-340*CITY_COMPACT,-90*CITY_COMPACT,53,48,.45,'arcade',DISTRICTS[1]);
   const important=structures.slice();
   // Varied lots: irregular roof silhouettes, plazas, gardens, and nonuniform spacing.
   let id=0;
   for(let y=-590;y<=590;y+=66)for(let x=-735;x<=735;x+=66){
     id++;let jitterX=(hash(id+101)-.5)*23,jitterY=(hash(id+201)-.5)*23;
-    const px=x+jitterX,py=y+jitterY;
-    if(coastDistance(px,py)<72||Math.hypot(px,py)<130||Math.hypot(px+420,py-390)<100||Math.hypot(px-520,py+290)<111)continue;
+    const px=(x+jitterX)*CITY_COMPACT,py=(y+jitterY)*CITY_COMPACT;
+    if(coastDistance(px,py)<60||Math.hypot(px,py)<115||Math.hypot(px+420*CITY_COMPACT,py-390*CITY_COMPACT)<86||Math.hypot(px-520*CITY_COMPACT,py+290*CITY_COMPACT)<94)continue;
     const zone=DISTRICTS.reduce((best,d)=>Math.hypot(px-d.x,py-d.y)<Math.hypot(px-best.x,py-best.y)?d:best,DISTRICTS[0]);
     const bsize=22+hash(id+19)*19,w=bsize*(.75+hash(id+21)*.9),h=bsize*(.73+hash(id+23)*1.1);
     if(roadsNear(px,py,Math.max(w,h)*.52+9))continue;
-    if(important.some(b=>Math.hypot(px-b.x,py-b.y)<b.rad+54))continue;
+    if(important.some(b=>Math.hypot(px-b.x,py-b.y)<b.rad+45))continue;
+     if(structures.some(b=>Math.abs(px-b.x)<(w+b.w)*.46&&Math.abs(py-b.y)<(h+b.h)*.46))continue;
     if(hash(id+31)<.22){parkingLots.push({x:px,y:py,w:w+12,h:h+13,rot:(hash(id+47)-.5)*.3});continue}
     if(hash(id+57)<.10){trees.push({x:px,y:py,kind:'garden',s:1.7});continue}
     let kind=zone.name==='HARBOR WORKS'?'warehouse':zone.name==='NEON QUARTER'?'neon':zone.name==='PALM HEIGHTS'?'villa':zone.name==='GOLD COAST'?'hotel':hash(id+85)<.35?'tower':'office';
@@ -149,7 +151,7 @@ function buildWorld(){
     addBuilding(px,py,w,h,rot,kind,zone);
   }
   // Larger landmarks and believable greenery in shared spaces.
-  for(let i=0;i<670;i++){let x=(hash(i+213)*2-1)*1010,y=(hash(i+723)*2-1)*770;if(coastDistance(x,y)<16||insideBuilding(x,y,12)||roadsNear(x,y,10))continue;if(i%3===0&&Math.hypot(x+255,y-385)>180&&Math.hypot(x-40,y-30)<300)continue;trees.push({x,y,s:.6+hash(i+119)*.95,kind:coastDistance(x,y)<90?'palm':i%4===0?'cypress':'oak'});}
+  for(let i=0;i<670;i++){let x=(hash(i+213)*2-1)*1010*CITY_COMPACT,y=(hash(i+723)*2-1)*770*CITY_COMPACT;if(coastDistance(x,y)<16||insideBuilding(x,y,12)||roadsNear(x,y,10))continue;if(i%3===0&&Math.hypot(x+255*CITY_COMPACT,y-385*CITY_COMPACT)>155&&Math.hypot(x-40*CITY_COMPACT,y-30*CITY_COMPACT)<260)continue;trees.push({x,y,s:.6+hash(i+119)*.95,kind:coastDistance(x,y)<90?'palm':i%4===0?'cypress':'oak'});}
   for(let i=0;i<65;i++){let p=roadSamples[(Math.floor(hash(i+1337)*roadSamples.length))];if(p&&coastDistance(p.x,p.y)>70)streetProps.push({x:p.x+Math.sin(p.a)*30,y:p.y-Math.cos(p.a)*30,a:p.a,kind:i%4===0?'billboard':'lamp'});}
 }
 function polypath(g,p){g.beginPath();for(let i=0;i<p.length;i++){const q=p[i];if(i===0)g.moveTo(q.x,q.y);else g.lineTo(q.x,q.y)}}
@@ -258,8 +260,8 @@ function drawWorldBase(){
 function randomRoadSample(x=0,y=0,minD=120,maxD=1000){let choices=[];for(let j=0;j<80;j++){const p=roadSamples[Math.floor(Math.random()*roadSamples.length)],d=Math.hypot(p.x-x,p.y-y);if(d>minD&&d<maxD&&coastDistance(p.x,p.y)>35)choices.push(p)}return choices.length?choices[Math.floor(Math.random()*choices.length)]:roadSamples[Math.floor(Math.random()*roadSamples.length)]}
 function showBanner(title,desc,duration=1.8){$('bannerTitle').textContent=title;$('bannerDesc').textContent=desc;$('runbanner').classList.add('show');bannerEnd=now+duration}
 function carStats(c){return {maxSpeed:c.speed*(1+save.upgrades.engine*.065),accel:c.accel*(1+save.upgrades.engine*.08),turn:c.turn,health:c.armor*(1+save.upgrades.armor*.20),boost:c.boost*(1+save.upgrades.nitro*.22)}}
-function spawnPlayer(){let template=CARS.find(c=>c.id===save.selected)||CARS[0],s=carStats(template);return {x:-65,y:137,a:0,speed:0,vx:0,vy:0,health:s.health,maxHealth:s.health,nitro:s.boost,maxNitro:s.boost,template,color:save.paint[template.id]||template.color,hitCooldown:0,driftScore:0,water:0,slip:0}}
-function spawnCop(){const p=randomRoadSample(car.x,car.y,210,405),d=Math.hypot(car.x-p.x,car.y-p.y);if(!p||d<120)return;let a=Math.atan2(car.x-p.x,-(car.y-p.y));cops.push({x:p.x,y:p.y,a,speed:55+wave*6,hp:85+wave*12,hitCooldown:0,stun:0,type:wave>=4&&Math.random()<.26?'heavy':'patrol',phase:Math.random()*TAU})}
+function spawnPlayer(){let template=CARS.find(c=>c.id===save.selected)||CARS[0],s=carStats(template);return {x:-65*CITY_COMPACT,y:137*CITY_COMPACT,a:0,speed:0,vx:0,vy:0,health:s.health,maxHealth:s.health,nitro:s.boost,maxNitro:s.boost,template,color:save.paint[template.id]||template.color,hitCooldown:0,driftScore:0,water:0,slip:0}}
+function spawnCop(){const p=randomRoadSample(car.x,car.y,210,405),d=Math.hypot(car.x-p.x,car.y-p.y);if(!p||d<120)return;let a=Math.atan2(car.x-p.x,-(car.y-p.y));cops.push({x:p.x,y:p.y,a,speed:33+wave*4,hp:85+wave*12,hitCooldown:0,stun:0,type:wave>=4&&Math.random()<.26?'heavy':'patrol',phase:Math.random()*TAU})}
 function spawnTraffic(n=20){for(let k=0;k<n;k++){let road=roads[Math.floor(Math.random()*roads.length)];if(!road||road.points.length<3)continue;const i=Math.floor(rand(0,road.points.length-1)),p=road.points[i];if(coastDistance(p.x,p.y)<30)continue;traffic.push({road:road.id,roadRef:road,pathIndex:i,dir:Math.random()<.5?1:-1,x:p.x,y:p.y,a:0,speed:rand(60,112),color:['#e7b66c','#d5e5e8','#94c7c2','#d38a7b','#94afce','#f3d3ae'][k%6],near:false,hitCooldown:0})}}
 function spark(x,y,n=9,color='#ffc988',scale=1){if(particles.length>240)return;for(let i=0;i<n;i++){let a=rand(-Math.PI,Math.PI),v=rand(30,140)*scale;particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:rand(.2,.55),life:.55,col:color,size:rand(1.5,3.6)})}}
 function createPickups(){pickups=[];let used=[];for(let i=0;i<26;i++){let p=randomRoadSample(0,0,130,720);if(!p||used.some(o=>Math.hypot(o.x-p.x,o.y-p.y)<70))continue;pickups.push({x:p.x,y:p.y,claimed:false,t:Math.random()*TAU});used.push(p)}}
@@ -324,14 +326,14 @@ function updateCar(dt){if(!car)return;
 }
 function updateTraffic(dt){for(const v of traffic){v.hitCooldown=Math.max(0,v.hitCooldown-dt);if(!v.roadRef||v.roadRef.points.length===0)continue;let ps=v.roadRef.points,idx=v.pathIndex;let p=ps[idx],nx=ps[idx+v.dir];if(!nx){v.dir*=-1;nx=ps[idx+v.dir];if(!nx)continue}let dx=nx.x-v.x,dy=nx.y-v.y,d=Math.hypot(dx,dy);if(d<Math.max(3,v.speed*dt)){v.pathIndex=clamp(v.pathIndex+v.dir,0,ps.length-1);v.x=nx.x;v.y=nx.y}else{v.a=Math.atan2(dx,-dy);v.x+=dx/d*v.speed*dt;v.y+=dy/d*v.speed*dt;}if(v.knockVX||v.knockVY){let xx=v.x,yy=v.y;v.x+=(v.knockVX||0)*dt;v.y+=(v.knockVY||0)*dt;v.knockVX=(v.knockVX||0)*Math.pow(.88,dt*60);v.knockVY=(v.knockVY||0)*Math.pow(.88,dt*60);if(carCollision(v.x,v.y,8.2)){v.x=xx;v.y=yy;v.knockVX*=-.2;v.knockVY*=-.2;}}if(carCollision(v.x,v.y,8.2)){v.x=p.x;v.y=p.y;v.speed*=.7;} }
 }
-function updateCops(dt){copTimer-=dt;let wanted=Math.min(5,1+Math.floor(runningSeconds/27));wave=wanted;
- let count=Math.min(11,2+(wave-1)*2);
+function updateCops(dt){copTimer-=dt;let wanted=Math.min(5,1+Math.floor(runningSeconds/40));wave=wanted;
+ let count=Math.min(8,2+(wave-1)*2);
  if(copTimer<=0&&cops.length<count){spawnCop();copTimer=.8}
- for(let c of cops){c.hitCooldown=Math.max(0,c.hitCooldown-dt);c.stun=Math.max(0,c.stun-dt);let dx=car.x-c.x+car.vx*.23,dy=car.y-c.y+car.vy*.23,d=Math.hypot(dx,dy)||1,want=Math.atan2(dx,-dy);
+ for(let c of cops){c.hitCooldown=Math.max(0,c.hitCooldown-dt);c.stun=Math.max(0,c.stun-dt);let dx=car.x-c.x+car.vx*.13,dy=car.y-c.y+car.vy*.13,d=Math.hypot(dx,dy)||1,want=Math.atan2(dx,-dy);
   let checkX=c.x+Math.sin(c.a)*35,checkY=c.y-Math.cos(c.a)*35;
   if(carCollision(checkX,checkY,13))want+=1.15*(hash(c.x+c.y)>.5?1:-1);
-  c.a=angleTurn(c.a,want,dt*(c.type==='heavy'?1.7:2.1));
-  let max=(wave>=4?245:196)+wave*16,acc=c.type==='heavy'?165:225;
+  c.a=angleTurn(c.a,want,dt*(c.type==='heavy'?1.4:1.75));
+  let max=(wave>=4?149:108)+wave*11,acc=c.type==='heavy'?93:120;
   c.speed=clamp(c.speed+dt*acc*(c.stun>0?.15:1),0,max);
   let mx=(Math.sin(c.a)*c.speed+(c.knockVX||0))*dt,my=(-Math.cos(c.a)*c.speed+(c.knockVY||0))*dt,ox=c.x,oy=c.y;c.knockVX=(c.knockVX||0)*Math.pow(.90,dt*60);c.knockVY=(c.knockVY||0)*Math.pow(.90,dt*60);
   c.x+=mx;c.y+=my;
@@ -339,7 +341,7 @@ function updateCops(dt){copTimer-=dt;let wanted=Math.min(5,1+Math.floor(runningS
   if(isWater(c.x,c.y)){c.speed*=.91;c.a=angleTurn(c.a,Math.atan2(-c.x,c.y),dt*2.3)}
   let realD=Math.hypot(c.x-car.x,c.y-car.y);
   // Collisions with player and traffic are handled by resolveVehicleContacts().
-  if(realD>690){let p=randomRoadSample(car.x,car.y,220,380);c.x=p.x;c.y=p.y;c.speed=65;c.stun=0}
+  if(realD>570){let p=randomRoadSample(car.x,car.y,180,345);c.x=p.x;c.y=p.y;c.speed=65;c.stun=0}
  }
 }
 function bodyVelocity(v){return v===car?[car.vx,car.vy]:[Math.sin(v.a)*v.speed+(v.knockVX||0),-Math.cos(v.a)*v.speed+(v.knockVY||0)]}
@@ -494,7 +496,7 @@ function build3DCity(){
  for(let p of streetProps){let m=tileAt(p.x,p.y);if(p.kind==='lamp'){m.box(p.x,4.5,p.y,.28,9,.28,'#526373');m.box(p.x+.9,9.3,p.y,2,.18,.45,'#dfd5b8',0,.6)}else{m.box(p.x,5,p.y,12,9,.9,'#33415b',-p.a);m.box(p.x,5.4,p.y+0.6,11,5,.14,'#fcb787',-p.a,.32)}}
  // Decorative crosswalks at key arterial intersections.
  const crossings=[[40,32],[-310,-340],[-340,90],[160,-180],[365,-65],[-450,130],[-60,285]];
- for(const [x,z] of crossings){let m=tileAt(x,z);for(let j=-5;j<=5;j++){m.box(x+j*2.3,.215,z,1.3,.035,7.5,'#ddd5be')}}
+ for(const [ax,az] of crossings){const x=ax*CITY_COMPACT,z=az*CITY_COMPACT;let m=tileAt(x,z);for(let j=-5;j<=5;j++){m.box(x+j*2.3,.215,z,1.3,.035,7.5,'#ddd5be')}}
  for(let [key,obj] of tiles){if(!obj.mesh.d.length)continue;g3.tiles.set(key,{x:obj.x,z:obj.z,draw:upload3(obj.mesh)});g3.stats.triangles+=obj.mesh.d.length/30}g3.stats.tiles=g3.tiles.size;
 }
 function perspective3(fovy,ratio,near,far){let f=1/Math.tan(fovy*.5),nf=1/(near-far);return [f/ratio,0,0,0,0,f,0,0,0,0,(far+near)*nf,-1,0,0,2*far*near*nf,0]}
@@ -594,13 +596,13 @@ function renderSoftware3D(){
 function render(){resize();if(webgl)render3D();else renderSoftware3D()}
 function showOverlay(html){$('overlay').classList.remove('hidden');$('screen').innerHTML=html;keys={};}
 function statsStrip(){return `<div class="heroStats"><div class="heroStat"><span>BANK BALANCE</span><strong class="money">$${fmt(save.wallet)}</strong></div><div class="heroStat"><span>BEST CHASE</span><strong>${timeFmt(save.best)}</strong></div><div class="heroStat"><span>CHASES PLAYED</span><strong>${fmt(save.runs)}</strong></div><div class="heroStat"><span>OWNED VEHICLES</span><strong>${save.owned.length} / ${CARS.length}</strong></div></div>`}
-function renderHome(){mode='home';paused=false;$('hud').classList.remove('show');showOverlay(`<div class="kicker">A SUNSET CITY GAME // VERSION 6.0 — TRUE 3D</div><div class="overTitle">ISLAND<em>PURSUIT.</em></div><div class="subtitle">A proper third-person 3D island city with solid buildings and physics-based collisions. Evade police cars that ram and bounce instead of passing through you. Drive into the ocean and continue steering in amphibious mode. The longer you survive, the more you earn for faster cars.</div>${statsStrip()}<div class="buttons"><button class="btn primary" data-action="start">▶ START POLICE CHASE</button><button class="btn ghost" data-action="garage">◈ GARAGE & UPGRADES</button><button class="btn ghost" data-action="help">HOW TO PLAY</button></div><div class="smalltext" style="margin-top:22px">Selected ride: <b style="color:#8defdd">${CARS.find(c=>c.id===save.selected)?.name||'STREET COMPACT'}</b> · WASD / Arrows to drive · Shift for Nitro · Space for drift · Esc to pause</div>`)}
+function renderHome(){mode='home';paused=false;$('hud').classList.remove('show');showOverlay(`<div class="kicker">A SUNSET CITY GAME // VERSION 6.1 — COMPACT CITY</div><div class="overTitle">ISLAND<em>PURSUIT.</em></div><div class="subtitle">A tighter third-person 3D island city with solid buildings and physics-based collisions. Evade police cars that ram and bounce instead of passing through you. Drive into the ocean and continue steering in amphibious mode. The longer you survive, the more you earn for faster cars.</div>${statsStrip()}<div class="buttons"><button class="btn primary" data-action="start">▶ START POLICE CHASE</button><button class="btn ghost" data-action="garage">◈ GARAGE & UPGRADES</button><button class="btn ghost" data-action="help">HOW TO PLAY</button></div><div class="smalltext" style="margin-top:22px">Selected ride: <b style="color:#8defdd">${CARS.find(c=>c.id===save.selected)?.name||'STREET COMPACT'}</b> · WASD / Arrows to drive · Shift for Nitro · Space for drift · Esc to pause</div>`)}
 function dots(count){return `<span class="statdots">${Array.from({length:5},(_,i)=>`<i class="${i<count?'on':''}"></i>`).join('')}</span>`}
 function renderGarage(){mode='garage';let selected=CARS.find(c=>c.id===save.selected)||CARS[0],body=CARS.map(c=>{let owned=save.owned.includes(c.id),chosen=c.id===save.selected;return `<button class="carCard ${chosen?'selected':''}" data-action="vehicle" data-id="${c.id}"><div class="carTop"><b>${c.name}</b><span class="carTag ${owned?'owned':''}">${chosen?'✓ EQUIPPED':owned?'OWNED':'$'+fmt(c.price)}</span></div><div class="carSil"><div class="silShape" style="background:${save.paint[c.id]||c.color}"></div></div><div class="carStat"><span>SPEED</span>${dots(c.rating[0])}</div><div class="carStat"><span>ARMOR</span>${dots(c.rating[1])}</div><div class="carStat"><span>HANDLING</span>${dots(c.rating[2])}</div></button>`}).join('');
  let buttons=Object.entries(UPGRADES).map(([id,u])=>{let level=save.upgrades[id]||0,cost=UPGRADE_COST[id][level];return `<button class="btn mini ${level>=3?'ghost':'gold'}" data-action="upgrade" data-id="${id}" ${level>=3||save.wallet<cost?'disabled':''}>${u.name} ${level}/3 · ${level>=3?'MAX':'$'+fmt(cost)}</button>`}).join('');
  let painter=['#61e6dc','#ffcc72','#ff7882','#9c95ff','#c5e4e9','#8fe692','#ff91ce'].map(color=>`<button data-action="paint" data-id="${color}" title="Paint vehicle ${color}" style="width:25px;height:25px;border-radius:50%;border:2px solid ${((save.paint[selected.id]||selected.color).toLowerCase()===color.toLowerCase())?'#fff':'#ffffff44'};background:${color};margin-right:4px"></button>`).join('');
  showOverlay(`<div class="garageHead"><div><div class="kicker">POLICE CHASE GARAGE // PERMANENT UPGRADES</div><h1>CHOOSE YOUR GETAWAY.</h1><p>Buy cars with money earned from surviving pursuits.</p></div><div class="wallet">$${fmt(save.wallet)}</div></div><div class="carGrid">${body}</div><div class="garageFoot"><div><div class="kicker" style="margin-bottom:8px">YOUR GLOBAL UPGRADES</div><div class="upgradeRow">${buttons}</div><div class="smalltext" style="margin-top:9px">Engine increases acceleration and top speed; armor protects from police rams; nitro lasts longer.</div><div style="display:flex;align-items:center;gap:9px;margin-top:9px"><span class="smalltext">CAR PAINT:</span>${painter}</div></div><div class="buttons"><button class="btn ghost" data-action="home">BACK</button><button class="btn primary" data-action="start">▶ START CHASE</button></div></div>`)}
-function renderHelp(){mode='help';showOverlay(`<div class="kicker">SURVIVAL GUIDE // SINGLE-PLAYER ARCADE PURSUIT</div><h1 class="endHeading">ESCAPE. <span>SURVIVE.</span> UPGRADE.</h1><div class="subtitle">The police are chasing you the entire time. Each 27 seconds your wanted level increases, sending faster and more dangerous officers. Your cash grows continuously while your car is still running. At the end of every run, you keep the money you earned—even if the police wreck your ride.</div><div class="resultGrid"><div class="resultStat"><small>W / ↑</small><strong style="font-size:18px">ACCELERATE</strong></div><div class="resultStat"><small>A/D / ←→</small><strong style="font-size:18px">STEER</strong></div><div class="resultStat"><small>S / ↓</small><strong style="font-size:18px">BRAKE / REVERSE</strong></div><div class="resultStat"><small>SHIFT</small><strong style="font-size:18px">NITRO BOOST</strong></div><div class="resultStat"><small>SPACE</small><strong style="font-size:18px">DRIFT</strong></div><div class="resultStat"><small>ESC</small><strong style="font-size:18px">PAUSE</strong></div></div><p class="smalltext">Collect glowing money pickups, pull off drifts, and narrowly miss civilian cars for bonus cash. The coast is open: drive straight into the water and your car floats and keeps moving, at reduced speed. All cars physically bounce during impacts and buildings are solid. Cars and upgrades persist in this browser.</p><div class="buttons"><button class="btn primary" data-action="start">START CHASE</button><button class="btn ghost" data-action="home">BACK</button></div>`)}
+function renderHelp(){mode='help';showOverlay(`<div class="kicker">SURVIVAL GUIDE // SINGLE-PLAYER ARCADE PURSUIT</div><h1 class="endHeading">ESCAPE. <span>SURVIVE.</span> UPGRADE.</h1><div class="subtitle">The police are chasing you the entire time. Every 40 seconds your wanted level increases, adding more police. Police now accelerate more slowly and have lower top speeds, especially in early waves. Your cash grows continuously while your car is still running. At the end of every run, you keep the money you earned—even if the police wreck your ride.</div><div class="resultGrid"><div class="resultStat"><small>W / ↑</small><strong style="font-size:18px">ACCELERATE</strong></div><div class="resultStat"><small>A/D / ←→</small><strong style="font-size:18px">STEER</strong></div><div class="resultStat"><small>S / ↓</small><strong style="font-size:18px">BRAKE / REVERSE</strong></div><div class="resultStat"><small>SHIFT</small><strong style="font-size:18px">NITRO BOOST</strong></div><div class="resultStat"><small>SPACE</small><strong style="font-size:18px">DRIFT</strong></div><div class="resultStat"><small>ESC</small><strong style="font-size:18px">PAUSE</strong></div></div><p class="smalltext">Collect glowing money pickups, pull off drifts, and narrowly miss civilian cars for bonus cash. The coast is open: drive straight into the water and your car floats and keeps moving, at reduced speed. All cars physically bounce during impacts and buildings are solid. Cars and upgrades persist in this browser.</p><div class="buttons"><button class="btn primary" data-action="start">START CHASE</button><button class="btn ghost" data-action="home">BACK</button></div>`)}
 function renderResults(){showOverlay(`<div class="kicker">PURSUIT ENDED // RUN ${save.runs}</div><h1 class="endHeading">CHASE <span>OVER.</span></h1><p class="reason">${finishReason}</p><div class="resultGrid"><div class="resultStat"><small>SURVIVED</small><strong>${timeFmt(runningSeconds)}</strong></div><div class="resultStat"><small>NEW CASH BANKED</small><strong style="color:#9efcc7">+$${fmt(earned)}</strong></div><div class="resultStat"><small>HEAT REACHED</small><strong>${'★'.repeat(wave)}</strong></div><div class="resultStat"><small>NEAR MISSES</small><strong>${fmt(runInfo.nearMisses)}</strong></div><div class="resultStat"><small>DRIFT BONUSES</small><strong>${fmt(runInfo.drifts)}</strong></div><div class="resultStat"><small>BANK TOTAL</small><strong>$${fmt(save.wallet)}</strong></div></div><div class="buttons"><button class="btn primary" data-action="start">↻ TRY AGAIN</button><button class="btn gold" data-action="garage">◈ BUY BETTER CARS</button><button class="btn ghost" data-action="home">MAIN MENU</button></div>`)}
 function togglePause(){if(mode==='playing'){paused=true;mode='pause';showOverlay(`<div class="kicker">SUNSET CITY // CHASE PAUSED</div><h1 class="endHeading">TAKE A <span>BREATHER.</span></h1><p class="subtitle">Your run is paused at ${timeFmt(runningSeconds)}. Cash earned: $${fmt(earned)}. Resume to keep building your payout, or bank it and return to the garage.</p><div class="buttons"><button class="btn primary" data-action="resume">▶ RESUME CHASE</button><button class="btn gold" data-action="cashout">BANK CASH & GARAGE</button><button class="btn ghost" data-action="restart">RESTART</button></div>`)}else if(mode==='pause')resume()}
 function resume(){mode='playing';paused=false;keys={};$('overlay').classList.add('hidden');last=performance.now()}
