@@ -173,40 +173,62 @@ function buildWorld(){
   curveRoad('HIGHLAND CUT-THROUGH',[[-215,-245],[-60,-350],[70,-475],[210,-420],[320,-370]],22,'mountain');
   curveRoad('GOLDEN COAST DRIVE',[[-700,-415],[-775,-185],[-765,65],[-695,300],[-535,480],[-335,625],[-70,655],[210,655],[455,620],[730,485]],25,'coastal');
   curveRoad('EAST CLIFF ROAD',[[700,-510],[795,-320],[805,-80],[770,145],[730,480]],23,'coastal');
-  // Landmark footprints are intentionally different in shape, location, and layout.
-  addBuilding(515*CITY_COMPACT,-437*CITY_COMPACT,119,82,.16,'stadium',DISTRICTS[4]);
-  addBuilding(303*CITY_COMPACT,130*CITY_COMPACT,90,55,.1,'hospital',DISTRICTS[0]);
-  addBuilding(565*CITY_COMPACT,480*CITY_COMPACT,112,53,.08,'warehouse',DISTRICTS[3]);
-  addBuilding(35*CITY_COMPACT,-631*CITY_COMPACT,150,41,.1,'airport',DISTRICTS[4]);
-  addBuilding(-322*CITY_COMPACT,-392*CITY_COMPACT,68,68,.3,'nightclub',DISTRICTS[1]);
-  addBuilding(-620*CITY_COMPACT,-170*CITY_COMPACT,62,50,-.15,'marina',DISTRICTS[4]);
-  addBuilding(185*CITY_COMPACT,225*CITY_COMPACT,70,66,.36,'tower',DISTRICTS[0]);
-  addBuilding(-228*CITY_COMPACT,385*CITY_COMPACT,56,40,-.17,'greenhouse',DISTRICTS[2]);
-  addBuilding(640*CITY_COMPACT,330*CITY_COMPACT,99,50,-.2,'market',DISTRICTS[3]);
-  addBuilding(-562*CITY_COMPACT,90*CITY_COMPACT,66,40,.2,'hotel',DISTRICTS[2]);
-  addBuilding(-340*CITY_COMPACT,-90*CITY_COMPACT,53,48,.45,'arcade',DISTRICTS[1]);
+  // Rural landmarks. Most of the island is wilderness, not high-rises.
+  addBuilding(83*CITY_COMPACT,218*CITY_COMPACT,73,46,.07,'market',DISTRICTS[0]);
+  addBuilding(-5*CITY_COMPACT,175*CITY_COMPACT,76,51,0,'hotel',DISTRICTS[0]);
+  addBuilding(177*CITY_COMPACT,65*CITY_COMPACT,65,51,.1,'hospital',DISTRICTS[0]);
+  addBuilding(-150*CITY_COMPACT,78*CITY_COMPACT,56,36,-.09,'arcade',DISTRICTS[0]);
+  addBuilding(55*CITY_COMPACT,-35*CITY_COMPACT,52,39,.11,'neon',DISTRICTS[0]);
+  addBuilding(-282*CITY_COMPACT,320*CITY_COMPACT,52,38,.06,'villa',DISTRICTS[1]);
+  addBuilding(-354*CITY_COMPACT,282*CITY_COMPACT,43,37,.13,'market',DISTRICTS[1]);
+  addBuilding(-230*CITY_COMPACT,392*CITY_COMPACT,44,33,-.1,'greenhouse',DISTRICTS[1]);
+  addBuilding(635*CITY_COMPACT,402*CITY_COMPACT,103,50,.06,'warehouse',DISTRICTS[2]);
+  addBuilding(570*CITY_COMPACT,460*CITY_COMPACT,77,44,-.11,'market',DISTRICTS[2]);
+  addBuilding(685*CITY_COMPACT,-176*CITY_COMPACT,122,35,.08,'airport',DISTRICTS[3]);
   const important=structures.slice();
-  // Varied lots: irregular roof silhouettes, plazas, gardens, and nonuniform spacing.
+  const settlements=[
+    {x:40,y:125,rx:220,ry:166,count:150,zone:0},
+    {x:-270,y:310,rx:110,ry:125,count:48,zone:1},
+    {x:615,y:430,rx:108,ry:110,count:40,zone:2},
+    {x:710,y:-185,rx:72,ry:80,count:24,zone:3}
+  ];
   let id=0;
-  for(let y=-600;y<=600;y+=62)for(let x=-730;x<=730;x+=62){
-    id++;let jitterX=(hash(id+101)-.5)*23,jitterY=(hash(id+201)-.5)*23;
-    const px=(x+jitterX)*CITY_COMPACT,py=(y+jitterY)*CITY_COMPACT;
-    if(coastDistance(px,py)<60||Math.hypot(px,py)<115||Math.hypot(px+420*CITY_COMPACT,py-390*CITY_COMPACT)<86||Math.hypot(px-520*CITY_COMPACT,py+290*CITY_COMPACT)<94)continue;
-    const zone=DISTRICTS.reduce((best,d)=>Math.hypot(px-d.x,py-d.y)<Math.hypot(px-best.x,py-best.y)?d:best,DISTRICTS[0]);
-    const bsize=20+hash(id+19)*17,w=bsize*(.72+hash(id+21)*.86),h=bsize*(.70+hash(id+23)*1.00);
-    if(roadsNear(px,py,Math.max(w,h)*.62+11))continue;
-    if(important.some(b=>Math.hypot(px-b.x,py-b.y)<b.rad+45))continue;
-     if(terrainHeight(px,py)>42&&hash(id+257)<.98)continue; // Open off-road mountain ridges.
-     if(structures.some(b=>Math.abs(px-b.x)<(w+b.w)*.46&&Math.abs(py-b.y)<(h+b.h)*.46))continue;
-    if(hash(id+31)<.22){parkingLots.push({x:px,y:py,w:w+12,h:h+13,rot:(hash(id+47)-.5)*.3});continue}
-    if(hash(id+57)<.10){trees.push({x:px,y:py,kind:'garden',s:1.7});continue}
-    let kind=zone.name==='HARBOR WORKS'?'warehouse':zone.name==='NEON QUARTER'?'neon':zone.name==='PALM HEIGHTS'?'villa':zone.name==='GOLD COAST'?'hotel':hash(id+85)<.35?'tower':'office';
-    let rot=(hash(id+81)-.5)*(kind==='villa'||kind==='neon'?0.68:0.28);
-    addBuilding(px,py,w,h,rot,kind,zone);
+  for(const region of settlements)for(let i=0;i<region.count;i++){
+    id++;const phi=hash(id*2.23+3)*TAU,radius=Math.sqrt(hash(id*13.77+4));
+    const px=(region.x+Math.cos(phi)*radius*region.rx)*CITY_COMPACT;
+    const py=(region.y+Math.sin(phi)*radius*region.ry)*CITY_COMPACT;
+    if(coastDistance(px,py)<57||terrainHeight(px,py)>37)continue;
+    const zone=DISTRICTS[region.zone],bsize=17+hash(id+19)*20;
+    const w=bsize*(.79+hash(id+21)*.70),h=bsize*(.76+hash(id+23)*.78);
+    if(roadsNear(px,py,Math.max(w,h)*.63+14))continue;
+    if(important.some(b=>Math.hypot(px-b.x,py-b.y)<b.rad+37))continue;
+    if(structures.some(b=>Math.abs(px-b.x)<(w+b.w)*.60&&Math.abs(py-b.y)<(h+b.h)*.60))continue;
+    if(hash(id*7+14)<.16){parkingLots.push({x:px,y:py,w:w+9,h:h+8,rot:(hash(id+47)-.5)*.3});continue;}
+    const kind=region.zone===2?'warehouse':region.zone===3?'airport':region.zone===1?'villa':hash(id+32)>.73?'hotel':hash(id+52)>.44?'villa':'office';
+    addBuilding(px,py,w,h,(hash(id+81)-.5)*.24,kind,zone);
   }
-  // Larger landmarks and believable greenery in shared spaces.
-  for(let i=0;i<670;i++){let x=(hash(i+213)*2-1)*1010*CITY_COMPACT,y=(hash(i+723)*2-1)*770*CITY_COMPACT;if(coastDistance(x,y)<16||insideBuilding(x,y,12)||roadsNear(x,y,10))continue;if(i%3===0&&Math.hypot(x+255*CITY_COMPACT,y-385*CITY_COMPACT)>155&&Math.hypot(x-40*CITY_COMPACT,y-30*CITY_COMPACT)<260)continue;trees.push({x,y,s:.6+hash(i+119)*.95,kind:coastDistance(x,y)<90?'palm':i%4===0?'cypress':'oak'});}
-  for(let i=0;i<65;i++){let p=roadSamples[(Math.floor(hash(i+1337)*roadSamples.length))];if(p&&coastDistance(p.x,p.y)>70)streetProps.push({x:p.x+Math.sin(p.a)*30,y:p.y-Math.cos(p.a)*30,a:p.a,kind:i%4===0?'billboard':'lamp'});}
+  // The majority of the scenery is highland forests.
+  for(let i=0;i<1350;i++){
+    const x=(hash(i+213)*2-1)*970*CITY_COMPACT,y=(hash(i+723)*2-1)*715*CITY_COMPACT;
+    const shore=coastDistance(x,y),elev=terrainHeight(x,y);
+    if(shore<38||insideBuilding(x,y,10)||roadsNear(x,y,5))continue;
+    if(Math.hypot(x-40*CITY_COMPACT,y-125*CITY_COMPACT)<165)continue;
+    if(elev>165&&hash(i+183)<.83)continue;
+    const kind=shore<95?'palm':elev>105?'fir':hash(i+33)>.53?'pine':hash(i+57)>.42?'cypress':'oak';
+    trees.push({x,y,s:.6+hash(i+119)*1.05,kind});
+  }
+  for(let i=0;i<250;i++){
+    const x=(hash(i+1841)*2-1)*950*CITY_COMPACT,y=(hash(i+7221)*2-1)*700*CITY_COMPACT;
+    if(coastDistance(x,y)<48||terrainHeight(x,y)<42||roadsNear(x,y,9)||insideBuilding(x,y,12))continue;
+    trees.push({x,y,s:.75+hash(i+310)*1.3,kind:'rock'});
+  }
+  // Sparse country route signage, with denser streetlights in Sunset Village.
+  for(let i=0;i<100;i++){
+    const p=roadSamples[Math.floor(hash(i+1337)*roadSamples.length)];
+    if(!p||coastDistance(p.x,p.y)<60)continue;
+    const urban=Math.hypot(p.x-40*CITY_COMPACT,p.y-125*CITY_COMPACT)<300;
+    streetProps.push({x:p.x+Math.sin(p.a)*24,y:p.y-Math.cos(p.a)*24,a:p.a,kind:urban&&i%4!==0?'lamp':'billboard'});
+  }
 }
 function polypath(g,p){g.beginPath();for(let i=0;i<p.length;i++){const q=p[i];if(i===0)g.moveTo(q.x,q.y);else g.lineTo(q.x,q.y)}}
 function polyStroke(g,p,w,color,dash=[],offset=0){g.save();g.lineJoin='round';g.lineCap='round';polypath(g,p);g.lineWidth=w;g.strokeStyle=color;g.setLineDash(dash);g.lineDashOffset=offset;g.stroke();g.restore()}
