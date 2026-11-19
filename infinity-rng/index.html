@@ -56,7 +56,7 @@ body:not(.compact-ui) #challengeStatus{display:block}
  .bottom{bottom:6px}
  .side{top:59px;right:6px;max-height:calc(100dvh - 92px)}
 }
-.flight-controls-help{display:none}body.show-tips .flight-controls-help{display:block}#flightHud{right:10px!important;top:92px!important;max-width:188px!important}</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V14.4</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find biome shrines and finish timed rune trials for themed auras</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
+.flight-controls-help{display:none}body.show-tips .flight-controls-help{display:block}#flightHud{right:10px!important;top:92px!important;max-width:188px!important}</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V14.4</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find biome shrines and finish timed rune trials for themed auras</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
  <h2>⚙ Settings</h2>
  <p>Keep your screen clean. Keyboard shortcuts still work.</p>
  <h3>DISPLAY</h3>
@@ -215,9 +215,34 @@ function updateHUD() {
 }
 
 let inventoryVisible=80;
+function renderAuraInventoryPreview(){
+    const data=A[auraLookup.get(state.equipped)??0];
+    const profile=auraVisualProfile(data);
+    const color=hex(auraColor(data)),isOwned=!!state.owned[state.equipped];
+    const poseLabels={
+       ready:"Subtle glow",drift:"Soft drifting aura",power:"Power stance",
+       channel:"Spellcasting pose",regal:"Royal aura pose",
+       meditate:"Meditation pose",ascend:"Ascending energy"
+    };
+    const region=BIOME_REWARDS.find(b=>b.names.includes(data[0]));
+    const themeLabel=region?region.name:data.length>3?themes[data[3]]:"Original aura";
+    const rarity=auraRarity(data);
+    const panel=$("auraPreview");
+    panel.style.borderColor=color;
+    panel.style.background="linear-gradient(110deg,#17142e, "+color+"28)";
+    const strong=document.createElement("strong");
+    strong.style.color=color;strong.style.fontSize="14px";
+    strong.textContent=isOwned?data[0]:"No aura equipped";
+    const label=document.createElement("div");
+    label.style.marginTop="4px";
+    label.textContent=themeLabel+" · "+rarity+" · "+
+       (profile.hover?"Levitating pose":poseLabels[profile.pose]);
+    panel.replaceChildren(strong,label);
+}
 function inventory(){
     const root=$("items"),query=$("inventorySearch").value.trim().toLowerCase();
     if(!$("inventory").classList.contains("open"))return;
+    renderAuraInventoryPreview();
     root.replaceChildren();
     const owned=A.filter(a=>state.owned[a[0]]&&a[0].toLowerCase().includes(query))
         .sort((a,b)=>displayOdds(b)-displayOdds(a));
@@ -3833,7 +3858,9 @@ renderAura = () => {
     trim.color.setHex(trimColor);
     refreshAuraTag(data);
     auraLight.color.setHex(activeColor);
-    auraLight.intensity = state.owned[state.equipped] ? 2.5 + level * .7 : 0;
+    auraLight.intensity=state.owned[state.equipped]?
+        Math.min(5.5,2.25+level*.28):0;
+    auraLight.distance=8.5+Math.min(3,level*.2);
     const accentColor=new T.Color(activeColor).offsetHSL(.095,.08,.19).getHex();
     const secondaryColor=new T.Color(activeColor).offsetHSL(-.085,.07,.12).getHex();
     // Use visibly colored solid geometry instead of additive-only light effects.
@@ -4046,7 +4073,8 @@ renderAura = () => {
     }
 
     function addSignature(){
-      if(!hudPrefs.auraFX||!state.owned[state.equipped])return;
+      if(!hudPrefs.auraFX||!state.owned[state.equipped]||
+         equippedAuraProfile.rarity<12)return;
       const profile=equippedAuraProfile,rank=profile.rank,theme=profile.theme;
       const lower=name.toLowerCase();
       // This is the aura's unmistakable 3D silhouette, rather than another
