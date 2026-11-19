@@ -119,7 +119,7 @@ const auraWordEpithets=[
 ];
 function auraDisplayName(a){
  if(!a)return "Unknown Aura";
- if(a.length<=3)return a[0];
+ if(a.length<=3||BIOME_REWARDS.some(b=>b.names.includes(a[0])))return a[0];
  const rank=a[5],theme=a[3],word=a[4],mode=(rank*7+theme*5+word*3)%8;
  const t=themes[theme],w=words[word],r=ranks[rank];
  const et=auraThemeEpithets[theme],ew=auraWordEpithets[word];
@@ -4215,7 +4215,7 @@ renderAura = () => {
         color:0xfff9e9,emissive:activeColor,emissiveIntensity:.55,
         metalness:.16,roughness:.25
       });
-      if(name==="INFINITY"||theme===9){
+      if(name==="INFINITY"||(theme===9&&profile.tier>=4)){
         auraSpectrumMaterials.push(glass,shine,glow);
       }
       function shape(geom,mat,x,y,z,fx=null){
