@@ -503,8 +503,8 @@ function build3DCity(){
    let nx=-dz/length,nz=dx/length;
    const x0=a.x+nx*w/2,z0=a.y+nz*w/2,x1=a.x-nx*w/2,z1=a.y-nz*w/2;
    const x2=b.x+nx*w/2,z2=b.y+nz*w/2,x3=b.x-nx*w/2,z3=b.y-nz*w/2;
-   const L=[x0,terrainHeight(x0,z0)+y,z0],R=[x1,terrainHeight(x1,z1)+y,z1];
-   const L2=[x2,terrainHeight(x2,z2)+y,z2],R2=[x3,terrainHeight(x3,z3)+y,z3];
+   const L=[x0,terrainHeight(x0,z0)+y+.65,z0],R=[x1,terrainHeight(x1,z1)+y+.65,z1];
+   const L2=[x2,terrainHeight(x2,z2)+y+.65,z2],R2=[x3,terrainHeight(x3,z3)+y+.65,z3];
    tileAt((a.x+b.x)/2,(a.y+b.y)/2).quad(L,R,R2,L2,col,extra);
  }
  for(let road of roads){let p=road.points;for(let i=0;i<p.length-1;i++){
