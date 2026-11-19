@@ -65,6 +65,7 @@ body:not(.compact-ui) #challengeStatus{display:block}
  <label class="settings-line"><input type="checkbox" id="settingTips"> Show controls and notices</label>
  <label class="settings-line"><input type="checkbox" id="settingParkour"> Show parkour tracker</label>
  <label class="settings-line"><input type="checkbox" id="settingAuraFX" checked> Detailed aura effects and poses</label>
+ <label class="settings-line"><input type="checkbox" id="settingPerformance"> Performance Mode (less lag)</label>
  <h3>GAMES & CHALLENGES</h3>
  <p>Find the towering glowing gateways marked ✦ (rune challenges) and P (sky parkour) on the world map.</p>
  <button id="settingsGamesMap" class="ghost" style="width:100%;padding:8px 10px">SHOW ALL GAMES ON THE MAP</button>
@@ -214,7 +215,8 @@ const hudPrefs={
     coords: !!stored.hudPrefs?.coords,
     tips: !!stored.hudPrefs?.tips,
     parkour: !!stored.hudPrefs?.parkour,
-    auraFX: stored.hudPrefs?.auraFX!==false
+    auraFX: stored.hudPrefs?.auraFX!==false,
+    performance: stored.hudPrefs?.performance??!!(navigator.deviceMemory&&navigator.deviceMemory<=4)
 };
 luckBoost = stored.luckBoost || 1;
 luckExpires = stored.luckExpires || 0;
@@ -320,11 +322,12 @@ function applyHudPrefs(){
     $("settingTips").checked=hudPrefs.tips;
     $("settingParkour").checked=hudPrefs.parkour;
     $("settingAuraFX").checked=hudPrefs.auraFX;
+    $("settingPerformance").checked=hudPrefs.performance;
 }
 const settingsFields=[["settingCompact","compact"],["settingCoords","coords"],
-    ["settingTips","tips"],["settingParkour","parkour"],["settingAuraFX","auraFX"]];
+    ["settingTips","tips"],["settingParkour","parkour"],["settingAuraFX","auraFX"],["settingPerformance","performance"]];
 for(const [id,key] of settingsFields){
-    $(id).addEventListener("change",()=>{hudPrefs[key]=$(id).checked;applyHudPrefs();save();if(key==="auraFX")renderAura();});
+    $(id).addEventListener("change",()=>{hudPrefs[key]=$(id).checked;applyHudPrefs();save();if(key==="auraFX")renderAura();if(key==="performance")applyPerformanceMode();});
 }
 applyHudPrefs();
 $("settingsButton").onclick=()=>{
@@ -487,11 +490,22 @@ const camera = new T.PerspectiveCamera(62, innerWidth / innerHeight, 0.1, 1400),
     });
 // Favor a stable frame rate on Chromebooks; full 1.5× pixel ratio is expensive.
 const lowPowerDevice=!!(navigator.deviceMemory&&navigator.deviceMemory<=4);
-let renderScale=Math.min(devicePixelRatio,lowPowerDevice?1:1.18);
+let renderScale=Math.min(devicePixelRatio,hudPrefs.performance?.85:lowPowerDevice?1:1.18);
 renderer.setPixelRatio(renderScale);
 renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = !lowPowerDevice;
+renderer.shadowMap.enabled = !lowPowerDevice&&!hudPrefs.performance;
 renderer.shadowMap.type = T.PCFSoftShadowMap;
+function applyPerformanceMode(){
+ const requested=hudPrefs.performance?.85:lowPowerDevice?1:1.18;
+ renderScale=Math.min(devicePixelRatio,requested);
+ renderer.setPixelRatio(renderScale);
+ renderer.setSize(innerWidth,innerHeight);
+ renderer.shadowMap.enabled=!lowPowerDevice&&!hudPrefs.performance;
+ renderer.shadowMap.needsUpdate=true;
+ // Rebuild only the equipped aura with the cheaper particle budget.
+ if(typeof renderAura==="function")renderAura();
+}
+
 renderer.outputEncoding = T.sRGBEncoding;
 renderer.toneMapping = T.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.92;
@@ -2739,7 +2753,7 @@ const biomeMotion=[];
 const biomePose=new T.Object3D();
 let biomeMotionFrame=0;
 function animateBiomeGeometry(t){
- if((biomeMotionFrame++%(lowPowerDevice?9:6))!==0)return;
+ if((biomeMotionFrame++%(lowPowerDevice||hudPrefs.performance?10:6))!==0)return;
  const changed=new Set();
  for(const o of biomeMotion){
   const wind=Math.sin(t*1.05+o.phase)*.052+Math.sin(t*.46+o.phase*.53)*.028;
@@ -3980,7 +3994,7 @@ renderAura = () => {
         const geometry=shape==="shard"?sparkShard:shape==="leaf"?sparkLeaf:sparkOrb;
         const rarityTier=equippedAuraProfile.tier;
         const particles=Math.min(count,hudPrefs.auraFX?
-           (lowPowerDevice?12+rarityTier*3:13+rarityTier*6):8);
+           (lowPowerDevice||hudPrefs.performance?11+rarityTier*3:13+rarityTier*6):8);
         for(let i=0;i<particles;i++){
             const palette=i%11===0?3:i%3===0?1:i%5===0?2:0;
             const o=mesh(geometry,sharedSparkMaterials[palette],aura);
