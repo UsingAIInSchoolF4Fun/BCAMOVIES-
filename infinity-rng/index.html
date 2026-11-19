@@ -1614,6 +1614,44 @@ function finishRiverBridges(){
 }
 const riverBridgeLanternMaterial=finishRiverBridges();
 
+// Moving waterwheels make the actual river crossings feel inhabited.
+const animatedWaterwheels=[];
+function addBridgeWaterwheels(){
+ const timber=new T.MeshStandardMaterial({color:0x956846,roughness:.85,map:mats.wood.map,bumpMap:mats.wood.map,bumpScale:.14});
+ const brass=new T.MeshStandardMaterial({color:0xc6a56e,roughness:.43,metalness:.34});
+ for(let i=0;i<Math.min(3,riverCrossings.length);i++){
+  const b=riverCrossings[i],side=i%2?1:-1;
+  const x=b.x-b.tz*side*(b.width*.5+4.7);
+  const z=b.z+b.tx*side*(b.width*.5+4.7),y=ground(x,z);
+  const root=new T.Group();root.position.set(x,y+2.7,z);
+  root.rotation.y=Math.atan2(b.tx,b.tz);scene.add(root);
+  const wheel=new T.Group();root.add(wheel);
+  const rim=mesh(new T.TorusGeometry(2.55,.33,8,36),timber,wheel);
+  rim.castShadow=false;
+  const rim2=mesh(new T.TorusGeometry(2.02,.13,7,36),brass,wheel);
+  rim2.castShadow=false;
+  sphere(.48,brass,wheel,0,0,0);
+  for(let j=0;j<10;j++){
+   const a=j*Math.PI/5,px=Math.cos(a)*2.2,py=Math.sin(a)*2.2;
+   const spoke=box(4.45,.16,.34,timber,wheel,0,0,0);
+   spoke.rotation.z=a;spoke.castShadow=false;
+   box(.68,.9,.7,brass,wheel,px,py,0).rotation.z=a;
+  }
+  cyl(.45,.55,3.1,timber,root,0,0,-1.45,8).rotation.x=Math.PI/2;
+  const water=torus(1.65,.1,scenicCyan,scene,x,y+.17,z);
+  water.castShadow=false;
+  animatedWaterwheels.push({wheel,water,phase:i});
+ }
+}
+addBridgeWaterwheels();
+function animateWaterwheels(t){
+ for(const o of animatedWaterwheels){
+  o.wheel.rotation.z=-t*.52+o.phase;
+  o.water.scale.setScalar(1+Math.sin(t*2.8+o.phase)*.12);
+ }
+}
+
+
 
 // Each biome now has an intentional architectural gateway with animated
 // cloth banners and a rotating magical crest. Roads pass under unobstructed.
@@ -3438,6 +3476,7 @@ function animate() {
     animateBiomeGeometry(t);
     animateRealmGateBanners(t);
     animateWaystations(t);
+    animateWaterwheels(t);
     animateCliffBeacons(t);
     riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
