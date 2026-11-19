@@ -908,36 +908,59 @@ function draw3Buffer(buf){if(!buf||!buf.count)return;let gl=webgl;gl.bindBuffer(
 function section3(x,z){return `${Math.floor(x/220)},${Math.floor(z/220)}`}
 function build3DCity(){
  let gl=webgl;
- let terrain=new Mesh3(),step=23;
- // Mountain slopes are real vertex heights, not flat ground with decorative objects.
+ let terrain=new Mesh3(),step=24;
+ // Road surface is part of a single continuous height-mapped island mesh.
+ // Roads are not overlapping floating strips: a junction is simply one asphalt surface.
  for(let z=-1200;z<1200;z+=step)for(let x=-1500;x<1500;x+=step){
-   const cx=x+step*.5,cz=z+step*.5,shore=coastDistance(cx,cz);
-   if(shore< -7)continue;
-   const v0=[x,terrainHeight(x,z),z],v1=[x+step,terrainHeight(x+step,z),z];
-   const v2=[x+step,terrainHeight(x+step,z+step),z+step],v3=[x,terrainHeight(x,z+step),z+step];
-   const color=terrainStyle(cx,cz,terrainHeight(cx,cz));
-   terrain.tri(v0,v1,v2,color);terrain.tri(v0,v2,v3,color);
+   const near=roadSurfaceAt(x+step*.5,z+step*.5);
+   const slices=near&&near.edge<42?2:1;
+   const delta=step/slices;
+   for(let iz=0;iz<slices;iz++)for(let ix=0;ix<slices;ix++){
+     const left=x+ix*delta,top=z+iz*delta,cx=left+delta*.5,cz=top+delta*.5;
+     if(coastDistance(cx,cz)<-8)continue;
+     const points=[
+       [left,terrainHeight(left,top),top],
+       [left+delta,terrainHeight(left+delta,top),top],
+       [left+delta,terrainHeight(left+delta,top+delta),top+delta],
+       [left,terrainHeight(left,top+delta),top+delta]
+     ];
+     const path=roadSurfaceAt(cx,cz);
+     const color=path&&path.edge<.6
+       ?path.seg.road.style==='mountain'?'#3b4b50':path.seg.road.style==='coastal'?'#3b4d56':'#364751'
+       :path&&path.edge<6?'#87968c':terrainStyle(cx,cz,terrainHeight(cx,cz));
+     terrain.tri(points[0],points[1],points[2],color);
+     terrain.tri(points[0],points[2],points[3],color);
+   }
  }
  g3.ground=upload3(terrain);
  const tiles=new Map();function tileAt(x,z){let key=section3(x,z);if(!tiles.has(key))tiles.set(key,{x:Math.floor(x/220)*220+110,z:Math.floor(z/220)*220+110,mesh:new Mesh3()});return tiles.get(key).mesh;}
- function ribbon(a,b,w,y,col,extra=0){
-   const dx=b.x-a.x,dz=b.y-a.y,length=Math.hypot(dx,dz);if(length<.05)return;
+ // Shared-vertex lane lines follow the carved roadbed instead of folding at corners.
+ function roadCrossSection(road,i,offset){
+   const p=road.points,here=p[i],before=p[Math.max(0,i-1)],after=p[Math.min(p.length-1,i+1)];
+   let dx=after.x-before.x,dz=after.y-before.y,length=Math.hypot(dx,dz)||1;
    let nx=-dz/length,nz=dx/length;
-   const x0=a.x+nx*w/2,z0=a.y+nz*w/2,x1=a.x-nx*w/2,z1=a.y-nz*w/2;
-   const x2=b.x+nx*w/2,z2=b.y+nz*w/2,x3=b.x-nx*w/2,z3=b.y-nz*w/2;
-   const L=[x0,terrainHeight(x0,z0)+y+.65,z0],R=[x1,terrainHeight(x1,z1)+y+.65,z1];
-   const L2=[x2,terrainHeight(x2,z2)+y+.65,z2],R2=[x3,terrainHeight(x3,z3)+y+.65,z3];
-   tileAt((a.x+b.x)/2,(a.y+b.y)/2).quad(L,R,R2,L2,col,extra);
+   return {x:here.x+nx*offset,y:here.y+nz*offset};
  }
- let roadOrder=0;for(let road of roads){let p=road.points,rise=(roadOrder++%7)*.022;for(let i=0;i<p.length-1;i++){
-    const a=p[i],b=p[i+1];if(Math.hypot(a.x-b.x,a.y-b.y)<.1)continue;
-    ribbon(a,b,road.width+9,.13+rise,road.style==='coastal'?'#c9b69b':road.style==='mountain'?'#8d9389':'#889ca4');
-    ribbon(a,b,road.width,.19+rise,road.style==='coastal'?'#394e59':road.style==='mountain'?'#465353':road.style==='boulevard'?'#405567':road.style==='neon'?'#423b5e':'#364854');
-    if(i%4===0)ribbon(a,b,1.1,.24+rise,road.style==='neon'?'#7fe9ed':road.style==='mountain'?'#d8e6de':'#f8dda8');
-    if(i%11===0){const dx=b.x-a.x,dz=b.y-a.y,len=Math.hypot(dx,dz)||1,nx=-dz/len,nz=dx/len;for(let side of [-1,1]){
-      const a1={x:a.x+nx*road.width*.34*side,y:a.y+nz*road.width*.34*side},b1={x:b.x+nx*road.width*.34*side,y:b.y+nz*road.width*.34*side};ribbon(a1,b1,.65,.265+rise,'#dce6dc');
-    }}
- }}
+ function stripe(road,i,offset,width,color,lift=.82){
+   let a=roadCrossSection(road,i,offset),b=roadCrossSection(road,i+1,offset);
+   if(Math.hypot(a.x-b.x,a.y-b.y)<.3)return;
+   let pa=roadCrossSection(road,i,offset-width/2),pb=roadCrossSection(road,i,offset+width/2);
+   let qa=roadCrossSection(road,i+1,offset-width/2),qb=roadCrossSection(road,i+1,offset+width/2);
+   const to3=v=>[v.x,terrainHeight(v.x,v.y)+lift,v.y];
+   tileAt((a.x+b.x)/2,(a.y+b.y)/2).quad(to3(pa),to3(pb),to3(qb),to3(qa),color,.12);
+ }
+ for(const road of roads){
+   const p=road.points;
+   for(let i=0;i<p.length-1;i++){
+     const len=Math.hypot(p[i+1].x-p[i].x,p[i+1].y-p[i].y);
+     if(len<.4)continue;
+     if(i%2===0){
+       stripe(road,i,road.width*.5-2.5,.66,road.style==='mountain'?'#f4e4cc':'#dce8e3');
+       stripe(road,i,-road.width*.5+2.5,.66,road.style==='mountain'?'#f4e4cc':'#dce8e3');
+     }
+     if(i%7<3)stripe(road,i,0,1.35,road.style==='mountain'?'#f7d7a1':'#e8d6af',.94);
+   }
+ }
  // Road reflectors along mountain and coastal curves.
  for(const road of roads){
   if(road.style!=='mountain'&&road.style!=='coastal')continue;
