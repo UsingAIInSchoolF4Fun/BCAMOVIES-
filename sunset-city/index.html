@@ -206,12 +206,12 @@ function rebuildRoadGrid(){
  for(let road of roads){
   const pts=road.points;
   let heights=pts.map(p=>rawTerrainHeight(p.x,p.y));
-  for(let pass=0;pass<3;pass++){
+  for(let pass=0;pass<5;pass++){
    let smooth=heights.map((h,i)=>{
     let sum=0,ws=0;
-    for(let j=Math.max(0,i-5);j<=Math.min(heights.length-1,i+5);j++){
+    for(let j=Math.max(0,i-13);j<=Math.min(heights.length-1,i+13);j++){
      const distance=Math.hypot(pts[j].x-pts[i].x,pts[j].y-pts[i].y);
-     let weight=Math.max(0,1-distance/75);
+     let weight=Math.max(0,1-distance/145);
      sum+=heights[j]*weight;ws+=weight;
     }
     return ws?sum/ws:h;
@@ -220,11 +220,11 @@ function rebuildRoadGrid(){
   // At steep switchbacks, cap grades so road remains driveable.
   for(let pass=0;pass<2;pass++){
    for(let i=1;i<pts.length;i++){
-    const ds=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y),d=ds*.22;
+    const ds=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y),d=ds*.16;
     heights[i]=clamp(heights[i],heights[i-1]-d,heights[i-1]+d);
    }
    for(let i=pts.length-2;i>=0;i--){
-    const ds=Math.hypot(pts[i].x-pts[i+1].x,pts[i].y-pts[i+1].y),d=ds*.22;
+    const ds=Math.hypot(pts[i].x-pts[i+1].x,pts[i].y-pts[i+1].y),d=ds*.16;
     heights[i]=clamp(heights[i],heights[i+1]-d,heights[i+1]+d);
    }
   }
@@ -234,7 +234,7 @@ function rebuildRoadGrid(){
    if(len2<.001)continue;
    let segment={a,b,len2,road,index:i,ha:heights[i],hb:heights[i+1],half:road.width/2};
    roadSegments.push(segment);
-   const reach=segment.half+75;
+   const reach=segment.half+105;
    const minX=Math.floor((Math.min(a.x,b.x)-reach)/ROAD_CELL),maxX=Math.floor((Math.max(a.x,b.x)+reach)/ROAD_CELL);
    const minY=Math.floor((Math.min(a.y,b.y)-reach)/ROAD_CELL),maxY=Math.floor((Math.max(a.y,b.y)+reach)/ROAD_CELL);
    for(let ix=minX;ix<=maxX;ix++)for(let iy=minY;iy<=maxY;iy++){
@@ -258,8 +258,8 @@ function roadSurfaceAt(x,y){
   const dist=Math.hypot(x-cx,y-cy),edge=dist-seg.half;
   if(!best||edge<best.edge)best={edge,dist,t,seg,cx,cy};
   // Average adjacent road elevations at junctions to prevent disconnected bridges.
-  if(edge<25){
-   let w=(1-clamp(Math.max(0,edge)/25,0,1));
+  if(edge<72){
+   let w=(1-clamp(Math.max(0,edge)/72,0,1));
    w=w*w*(3-2*w);
    const h=lerp(seg.ha,seg.hb,t);
    weighted+=h*w;total+=w;
