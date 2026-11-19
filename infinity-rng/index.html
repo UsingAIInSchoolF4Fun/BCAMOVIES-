@@ -3359,7 +3359,10 @@ document.body.appendChild(mapPanel);
 const mapCtx=mapPanel.getContext("2d");
 function toggleWorldMap(){mapPanel.style.display=mapPanel.style.display==="none"?"block":"none";}
 document.getElementById("mapButton").onclick=toggleWorldMap;
-document.addEventListener("keydown",e=>{if(e.code==="KeyM"&&!e.repeat)toggleWorldMap();});
+document.addEventListener("keydown",e=>{
+ if(e.target?.matches?.("input,textarea,select,[contenteditable]"))return;
+ if(e.code==="KeyM"&&!e.repeat)toggleWorldMap();
+});
 function drawWorldMap(){
  const c=mapCtx,w=360,edge=27,size=306;
  c.clearRect(0,0,w,w);c.fillStyle="#16172e";c.fillRect(0,0,w,w);
@@ -4008,10 +4011,10 @@ let yaw = 0,
     walkPhase = 0,
     onGround = true;
 window.addEventListener("keydown", e => {
+    if(e.target?.matches?.("input,textarea,select,[contenteditable]"))return;
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
     keys[e.code] = true;
     if(e.code==="KeyE"&&!e.repeat)document.getElementById("sprintButton").click();
-
 });
 window.addEventListener("keyup", e => keys[e.code] = false);
 let pointerLast = null,
