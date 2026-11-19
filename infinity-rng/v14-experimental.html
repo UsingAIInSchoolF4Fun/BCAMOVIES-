@@ -840,7 +840,7 @@ function buildMountainHorizon(){
  // Flowing mist across mountain slopes (animated on the GPU, not moved walls).
  const mistMaterial=new T.ShaderMaterial({
   uniforms:{uTime:{value:0},uTint:{value:new T.Color(0xd4c7ed)}},
-  transparent:true,depthWrite:false,side:T.DoubleSide,fog:true,
+  transparent:true,depthWrite:false,side:T.DoubleSide,fog:false,
   vertexShader:"varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
   fragmentShader:"uniform float uTime;uniform vec3 uTint;varying vec2 vUv;void main(){float x=vUv.x*11.0-uTime*.027;float noise=sin(x*2.3+sin(vUv.y*7.0))*sin(x*.9-vUv.y*4.0);float edge=smoothstep(0.0,.11,vUv.y)*(1.0-smoothstep(.84,1.0,vUv.y));float fade=smoothstep(0.0,.06,vUv.x)*(1.0-smoothstep(.94,1.0,vUv.x));float alpha=(.065+.055*noise)*edge*fade;gl_FragColor=vec4(uTint,max(0.0,alpha));}"
  });
