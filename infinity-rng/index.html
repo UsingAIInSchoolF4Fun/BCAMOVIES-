@@ -633,7 +633,7 @@ function height(x, z) {
     }
     return y
 }
-const authoredRoutes=[{"name":"Forest Trail","theme":"forest","width":9,"points":[[0,78],[4,99],[24,132],[61,189],[105,230]]},{"name":"Forest Temple","theme":"forest","width":7,"points":[[18,79],[26,105],[22,159],[20,213],[20,250]]},{"name":"Frost Citadel","theme":"frost","width":8,"points":[[-77,17],[-87,27],[-146,39],[-196,49],[-235,50]]},{"name":"Frost Tower","theme":"frost","width":7,"points":[[-233,54],[-286,45],[-317,23],[-350,10]]},{"name":"Snow Road","theme":"frost","width":8,"points":[[-44,-9],[-111,-21],[-181,-42],[-248,-64]]},{"name":"Ruins Road","theme":"desert","width":7,"points":[[-185,-44],[-227,-60],[-260,-60],[-285,-102]]},{"name":"Astral Road","theme":"astral","width":8,"points":[[-62,-68],[-92,-95],[-155,-153],[-209,-205],[-245,-230]]},{"name":"Astral Tower","theme":"astral","width":7,"points":[[-15,-44],[-14,-99],[3,-161],[37,-225],[30,-270],[-14,-320],[-55,-350]]},{"name":"Crystal Road","theme":"crystal","width":9,"points":[[79,8],[93,17],[150,28],[201,36],[260,30]]},{"name":"Crystal Gardens","theme":"crystal","width":7,"points":[[153,29],[202,81],[255,103],[285,120]]},{"name":"Desert Road","theme":"desert","width":9,"points":[[58,58],[77,78],[119,119],[166,160],[207,216],[255,280]]},{"name":"Ember Citadel","theme":"ember","width":7,"points":[[78,-44],[105,-32],[176,-32],[230,-35]]},{"name":"Volcano Road","theme":"ember","width":9,"points":[[49,-69],[98,-105],[157,-145],[216,-183],[285,-211],[318,-210]]},{"name":"Forest Watchtower","theme":"forest","width":7,"points":[[120,229],[179,269],[235,309],[310,345]]}];
+const authoredRoutes=[{"name":"Forest Trail","theme":"forest","width":9,"points":[[0,78],[4,99],[24,132],[61,189],[105,230]]},{"name":"Forest Temple","theme":"forest","width":7,"points":[[18,79],[26,105],[22,159],[20,213],[20,250]]},{"name":"Frost Citadel","theme":"frost","width":8,"points":[[-77,17],[-87,27],[-146,39],[-196,49],[-235,50]]},{"name":"Frost Tower","theme":"frost","width":7,"points":[[-233,54],[-286,45],[-317,23],[-350,10]]},{"name":"Snow Road","theme":"frost","width":8,"points":[[-72,-32],[-111,-21],[-181,-42],[-248,-64]]},{"name":"Ruins Road","theme":"desert","width":7,"points":[[-185,-44],[-227,-60],[-260,-60],[-285,-102]]},{"name":"Astral Road","theme":"astral","width":8,"points":[[-62,-68],[-92,-95],[-155,-153],[-209,-205],[-245,-230]]},{"name":"Astral Tower","theme":"astral","width":7,"points":[[-15,-44],[-14,-99],[3,-161],[37,-225],[30,-270],[-14,-320],[-55,-350]]},{"name":"Crystal Road","theme":"crystal","width":9,"points":[[79,8],[93,17],[150,28],[201,36],[260,30]]},{"name":"Crystal Gardens","theme":"crystal","width":7,"points":[[153,29],[202,81],[255,103],[285,120]]},{"name":"Desert Road","theme":"desert","width":9,"points":[[58,58],[77,78],[119,119],[166,160],[207,216],[255,280]]},{"name":"Ember Citadel","theme":"ember","width":7,"points":[[78,-44],[105,-32],[176,-32],[230,-35]]},{"name":"Volcano Road","theme":"ember","width":9,"points":[[49,-69],[98,-105],[157,-145],[216,-183],[285,-211],[318,-210]]},{"name":"Forest Watchtower","theme":"forest","width":7,"points":[[120,229],[179,269],[235,309],[310,345]]}];
 // Extra waypoints complete the route network; endpoints share existing paths
 // so players can travel to the real landmark entrances and side destinations.
 authoredRoutes.push(
@@ -643,11 +643,12 @@ authoredRoutes.push(
  {name:"Temple Approach",theme:"forest",width:6.5,points:[[22,159],[34,202],[20,250]]},
  {name:"Western Ruins",theme:"desert",width:7,points:[[-260,-60],[-283,-83],[-300,-100]]},
  {name:"Astral Sanctuary",theme:"astral",width:7,points:[[-209,-205],[-245,-230],[-289,-258],[-325,-280]]},
- {name:"Ember Junction",theme:"ember",width:7,points:[[40,-25],[30,-39]]},
+ {name:"Ember Junction",theme:"ember",width:7,points:[[78,-44],[63,-62],[49,-69]]},
  {name:"Crystal Terrace",theme:"crystal",width:7,points:[[255,103],[285,120],[308,151],[320,178]]},
  {name:"Sunstone Market",theme:"desert",width:7,points:[[255,280],[282,275],[303,265]]},
  {name:"Oasis Crossing",theme:"desert",width:7,points:[[255,280],[306,298],[357,304]]},
- {name:"Village Square",theme:"forest",width:7,points:[[105,230],[105,254],[124,276]]}
+ {name:"Village Square",theme:"forest",width:7,points:[[105,230],[105,254],[124,276]]},
+ {name:"Flight Training",theme:"astral",width:7.5,points:[[-72,-45],[-106,-64],[-137,-81]]}
 );
 const pathSegments=[];
 for(const route of authoredRoutes){for(let i=1;i<route.points.length;i++)pathSegments.push([...route.points[i-1],...route.points[i]]);}
@@ -1589,6 +1590,19 @@ function buildSpawnHub(){
   const a=i*Math.PI/8,r=9.4;
   const m=mesh(new T.OctahedronGeometry(.23+(i%3)*.08,0),i%3?glow:cyan,root,Math.cos(a)*r,8+(i%3)*.9,Math.sin(a)*r-4);
   m.castShadow=false;animations.motes.push({mesh:m,phase:i*.91,x:m.position.x,y:m.position.y,z:m.position.z});
+ }
+ // Actual colliders for decorative architecture, not just the shops.
+ // Paired arches, columns, garden plinths and waterfall escarpments have
+ // physical footprints matching their scaled display positions.
+ for(const archX of [-20.5,20.5])for(const side of [-1,1])
+  registerCollider((archX+side*7.8)*hubScale,-27*hubScale,1.38*hubScale,14);
+ for(const side of [-1,1]){
+  for(const xx of [-9,9])for(const zz of [-1,21])
+   registerCollider((side*45+xx)*hubScale,zz*hubScale,1.22*hubScale,10);
+  registerCollider(side*34*hubScale,20*hubScale,4.5*hubScale,5);
+  registerCollider(side*61*hubScale,-42*hubScale,8.7*hubScale,12);
+  for(const zz of [0,10,22])
+   registerCollider(side*54*hubScale,zz*hubScale,1.15*hubScale,8.5);
  }
  // Performance: tiny props do not need to cast dynamically calculated shadows.
  root.traverse(o=>{if(o.isMesh&&o.geometry&&o.geometry.boundingSphere===null)o.geometry.computeBoundingSphere();
@@ -3149,7 +3163,8 @@ function drawWorldMap(){
   [0,0,"HUB","#e1a0ff"],[-235,50,"FROST","#d9ecff"],
   [105,230,"FOREST","#9bdfa7"],[255,280,"DESERT","#ffd391"],
   [260,30,"CRYSTAL","#d4a9ff"],[230,-35,"EMBER","#f59e7d"],
-  [318,-295,"VOLCANO","#ff846b"],[45,-240,"ASTRAL","#ada3ff"]
+  [318,-295,"VOLCANO","#ff846b"],[45,-240,"ASTRAL","#ada3ff"],
+  [-137,-81,"GLIDE","#ffecaa"]
  ];
  c.font="bold 9px Arial";c.textAlign="center";
  for(const p of places){
