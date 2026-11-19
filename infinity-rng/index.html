@@ -1694,6 +1694,75 @@ function animateRealmGateBanners(t){
  }
 }
 
+
+// Purposeful animated waystations - one landmark per major trail. Each uses
+// mirrored roof posts, a stone dais and a rotating regional emblem.
+const animatedWaystations=[];
+const stationPalettes={
+ forest:[0x538e69,0xa7e9aa],frost:[0x6aa8c7,0xe4faff],
+ crystal:[0x734da8,0xdca5ff],desert:[0xb89164,0xffdc98],
+ ember:[0x785260,0xffa16c],astral:[0x7166ae,0xc7b6ff]
+};
+function buildWaystation(routeName,u,side=1){
+ const route=authoredRoutes.find(r=>r.name===routeName);
+ if(!route)return;
+ const curve=new T.CatmullRomCurve3(route.points.map(p=>new T.Vector3(p[0],0,p[1])),false,"centripetal",.45);
+ const p=curve.getPoint(u),t=curve.getTangent(u),norm=Math.hypot(t.x,t.z)||1;
+ const nx=-t.z/norm,nz=t.x/norm;
+ let x=p.x+nx*side*19,z=p.z+nz*side*19;
+ if(!clearForScenery(x,z,7)||worldColliders.some(o=>Math.hypot(x-o.x,z-o.z)<o.r+7)){
+  x=p.x-nx*side*19;z=p.z-nz*side*19;
+ }
+ if(!clearForScenery(x,z,7)||worldColliders.some(o=>Math.hypot(x-o.x,z-o.z)<o.r+7))return;
+ const g=new T.Group();g.position.set(x,ground(x,z),z);
+ g.rotation.y=Math.atan2(t.x,t.z);scene.add(g);
+ const pal=stationPalettes[route.theme];
+ const stone=new T.MeshStandardMaterial({color:pal[0],roughness:.9,map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.15});
+ const shine=new T.MeshStandardMaterial({color:pal[1],roughness:.35,emissive:pal[1],emissiveIntensity:.6});
+ const timber=new T.MeshStandardMaterial({color:0x775442,roughness:.86,map:mats.wood.map});
+ cyl(7.2,7.6,.28,stone,g,0,.16,0,16);
+ cyl(5.8,6,.26,mats.stone,g,0,.39,0,16);
+ for(const sideX of [-1,1]){
+  for(const depth of [-3.1,3.1]){
+   cyl(.37,.54,7.4,timber,g,sideX*4.5,4.1,depth,8);
+   box(.9,.45,1.15,shine,g,sideX*4.5,7.95,depth);
+  }
+  const eave=box(1.9,.4,10.2,timber,g,sideX*3,8.05,0);
+  eave.rotation.z=-sideX*.27;
+  box(.7,.6,9.7,shine,g,sideX*4.7,8.32,0).rotation.z=-sideX*.28;
+ }
+ box(10.5,.45,.7,timber,g,0,8.2,0);
+ const roof=mesh(new T.ConeGeometry(7.9,3.6,4),stone,g,0,9.2,0);
+ roof.rotation.y=Math.PI/4;roof.scale.z=.85;roof.castShadow=false;
+ cyl(1.9,2.3,1.2,stone,g,0,1.15,0,10);
+ cyl(1.5,1.7,.4,shine,g,0,1.9,0,10);
+ const emblem=new T.Group();g.add(emblem);emblem.position.y=4.4;
+ const disc=mesh(new T.TorusGeometry(2.05,.19,8,36),shine,emblem,0,0,0);
+ const core=mesh(new T.OctahedronGeometry(.87,0),shine,emblem,0,0,0);
+ core.scale.y=1.35;
+ for(let i=0;i<5;i++){
+  const a=i*Math.PI*2/5;
+  sphere(.29,shine,emblem,Math.cos(a)*2.05,Math.sin(a)*2.05,0).castShadow=false;
+ }
+ registerCollider(x,z,2.1,6.5);
+ animatedWaystations.push({emblem,disc,core,roof,phase:x*.03+z*.011,shine});
+}
+buildWaystation("Forest Trail",.68,1);
+buildWaystation("Frost Citadel",.58,-1);
+buildWaystation("Crystal Road",.65,1);
+buildWaystation("Desert Road",.68,-1);
+buildWaystation("Ember Citadel",.63,1);
+buildWaystation("Astral Road",.6,-1);
+function animateWaystations(t){
+ for(const st of animatedWaystations){
+  st.emblem.rotation.y=t*.32+st.phase;
+  st.emblem.rotation.z=Math.sin(t*.66+st.phase)*.09;
+  st.emblem.position.y=4.4+Math.sin(t*1.8+st.phase)*.17;
+  st.core.rotation.y=-t*.62;
+  st.shine.emissiveIntensity=.57+Math.sin(t*2.4+st.phase)*.18;
+ }
+}
+
 // Instancing keeps dozens of route lights inexpensive on school Chromebooks.
 (function buildWayLights(){
  const count=routePosts.length;
@@ -3368,6 +3437,7 @@ function animate() {
     skyDomeMaterial.uniforms.uTime.value=t;
     animateBiomeGeometry(t);
     animateRealmGateBanners(t);
+    animateWaystations(t);
     animateCliffBeacons(t);
     riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
