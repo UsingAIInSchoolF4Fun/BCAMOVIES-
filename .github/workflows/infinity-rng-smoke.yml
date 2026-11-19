@@ -30,7 +30,7 @@ jobs:
               args:['--no-sandbox','--disable-dev-shm-usage','--enable-webgl','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']
             });
             let failed=false;
-            for(const pageName of ['v14-experimental.html']){
+            for(const pageName of ['index.html']){
               const page=await browser.newPage({viewport:{width:1250,height:850}});
               const errors=[],logs=[];
               page.on('pageerror',e=>errors.push('PAGEERROR: '+String(e.stack||e)));
@@ -48,7 +48,7 @@ jobs:
                 console.log('CHECK '+pageName+' '+JSON.stringify(status));
                 if(!status.loadingClass?.includes('hidden')||status.canvasCount<2){failed=true;console.log('FAIL '+pageName+' loading is not complete');}
               }catch(e){failed=true;console.log('NAV ERROR '+pageName+': '+(e.stack||e));}
-              if(pageName==='v14-experimental.html'&&errors.length===0){
+              if(pageName==='index.html'&&errors.length===0){
                 try{
                   const position=await page.evaluate(()=>{
                     player.position.set(0,ground(0,185)+44,185);
@@ -71,6 +71,49 @@ jobs:
                   }))));
                 }catch(e){failed=true;console.log('FAIL FLIGHT TEST '+String(e.stack||e));}
               }
+              if(pageName==='index.html'&&errors.length===0){
+                try{
+                  await page.click('#settingsButton');
+                  const before=await page.evaluate(()=>({
+                    settingsOpen:document.querySelector('#settingsPanel').classList.contains('open'),
+                    compact:document.body.classList.contains('compact-ui'),
+                    owned:Object.keys(state.owned).length,
+                    catalog:A.length
+                  }));
+                  console.log('SETTINGS BEFORE '+JSON.stringify(before));
+                  if(!before.settingsOpen||!before.compact){failed=true;console.log('FAIL Settings not open or compact UI disabled');}
+                  await page.fill('#codeInput','HOMOPHOBIC');
+                  await page.click('#redeemCodeButton');
+                  const success=await page.evaluate(()=>({
+                    owned:Object.keys(state.owned).length,total:A.length,
+                    redeemed:!!state.redeemedCodes.HOMOPHOBIC,
+                    rare:state.owned.INFINITY,
+                    label:document.getElementById('codeStatus').textContent,
+                    saved:!!JSON.parse(localStorage.getItem('infinity-rng-save-v1')).redeemedCodes?.HOMOPHOBIC
+                  }));
+                  console.log('REDEMPTION RESULT '+JSON.stringify(success));
+                  if(success.owned!==success.total||success.total!==2060||!success.redeemed||!success.saved||success.rare<1){
+                    failed=true;console.log('FAIL Unlock all auras not saved');
+                  }
+                  await page.fill('#codeInput','HOMOPHOBIC');
+                  await page.click('#redeemCodeButton');
+                  const second=await page.locator('#codeStatus').innerText();
+                  console.log('SECOND REDEMPTION '+second);
+                  if(!second.includes('Already redeemed')){failed=true;console.log('FAIL One-time restriction');}
+                  await page.click('#closeSettings');
+                  await page.click('#inventoryButton');
+                  const inv=await page.evaluate(()=>({
+                    visible:document.querySelectorAll('#items button').length,
+                    total:document.getElementById('inventoryCount').textContent
+                  }));
+                  console.log('PAGED INVENTORY '+JSON.stringify(inv));
+                  if(inv.visible>80||inv.visible<1){failed=true;console.log('FAIL inventory pagination');}
+                  await page.fill('#inventorySearch','INFINITY');
+                  console.log('SEARCH RESULTS '+await page.locator('#inventoryCount').innerText());
+                  await page.click('#closeInventory');
+                }catch(e){failed=true;console.log('FAIL CODE/SETTINGS TEST '+String(e.stack||e));}
+              }
+              if(errors.length){failed=true;console.log('FAIL Browser runtime errors: '+errors.length);}
               for(const e of errors.slice(0,15))console.log(e);
               for(const e of logs.slice(0,25))console.log(e.slice(0,1500));
               await page.close();
