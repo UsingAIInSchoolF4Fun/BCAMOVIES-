@@ -2194,12 +2194,23 @@ function buildWaystation(routeName,u,side=1){
   x=p.x-nx*side*19;z=p.z-nz*side*19;
  }
  if(!clearForScenery(x,z,7)||worldColliders.some(o=>Math.hypot(x-o.x,z-o.z)<o.r+7))return;
- const g=new T.Group();g.position.set(x,ground(x,z),z);
+ // Use the highest ground point within the footprint for a level platform,
+ // and a stone foundation down to the lowest point for no floating edges.
+ const samples=[ground(x,z)];
+ for(let i=0;i<12;i++){
+  const a=i*Math.PI/6;
+  samples.push(ground(x+Math.cos(a)*7.25,z+Math.sin(a)*7.25));
+ }
+ const foundationTop=Math.max(...samples)+.12;
+ const foundationBottom=Math.min(...samples)-1.1;
+ const g=new T.Group();g.position.set(x,foundationTop,z);
  g.rotation.y=Math.atan2(t.x,t.z);scene.add(g);
  const pal=stationPalettes[route.theme];
  const stone=new T.MeshStandardMaterial({color:pal[0],roughness:.9,map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.15});
  const shine=new T.MeshStandardMaterial({color:pal[1],roughness:.35,emissive:pal[1],emissiveIntensity:.6});
  const timber=new T.MeshStandardMaterial({color:0x775442,roughness:.86,map:mats.wood.map});
+ const plinthDepth=Math.max(.7,foundationTop-foundationBottom);
+ cyl(7.8,8.0,plinthDepth,stone,scene,x,foundationTop-plinthDepth*.5,z,16);
  cyl(7.2,7.6,.28,stone,g,0,.16,0,16);
  cyl(5.8,6,.26,mats.stone,g,0,.39,0,16);
  for(const sideX of [-1,1]){
@@ -2229,7 +2240,7 @@ function buildWaystation(routeName,u,side=1){
   sphere(.29,shine,emblem,Math.cos(a)*2.05,Math.sin(a)*2.05,0).castShadow=false;
  }
  registerCollider(x,z,2.1,6.5);
- animatedWaystations.push({x,z,emblem,disc,core,roof,phase:x*.03+z*.011,shine});
+ animatedWaystations.push({x,z,walkTop:foundationTop+.52,emblem,disc,core,roof,phase:x*.03+z*.011,shine});
 }
 buildWaystation("Forest Trail",.68,1);
 buildWaystation("Frost Citadel",.58,-1);
@@ -2239,7 +2250,7 @@ buildWaystation("Ember Citadel",.63,1);
 buildWaystation("Astral Road",.6,-1);
 function waystationWalkHeight(x,z){
  for(const st of animatedWaystations){
-  if(Math.hypot(x-st.x,z-st.z)<6.1)return ground(st.x,st.z)+.52;
+  if(Math.hypot(x-st.x,z-st.z)<6.1)return st.walkTop;
  }
  return -Infinity;
 }
@@ -2342,9 +2353,20 @@ function buildSunstoneDesert(){
  const turquoise=new T.MeshStandardMaterial({color:0x55cbd0,emissive:0x1a909e,emissiveIntensity:.85});
  const plant=new T.MeshStandardMaterial({color:0x417e61,roughness:.95});
  const oasisWater=new T.MeshStandardMaterial({color:0x297ba4,metalness:.22,roughness:.17,transparent:true,opacity:.87});
- function part(x,z){const g=new T.Group();g.position.set(x,ground(x,z),z);scene.add(g);return g}
+ function part(x,z,radius=14){
+  const sample=[ground(x,z)];
+  for(let i=0;i<16;i++){
+   const a=i*Math.PI/8;
+   sample.push(ground(x+radius*Math.cos(a),z+radius*Math.sin(a)));
+  }
+  const upper=Math.max(...sample)+.12,lower=Math.min(...sample)-1.25;
+  const depth=Math.max(.75,upper-lower);
+  cyl(radius+.5,radius+.8,depth,shadow,scene,x,upper-depth*.5,z,20);
+  const group=new T.Group();group.position.set(x,upper,z);scene.add(group);
+  return group;
+ }
  // Monumental sandstone trading hall, walled and anchored to the landscape.
- const hall=part(303,265);
+ const hall=part(303,265,21);
  registerCollider(303,265,15.7,19);
  box(32,1.4,25,shadow,hall,0,.7,0);
  box(28,12.5,21,sand,hall,0,7.65,0);
@@ -2374,7 +2396,7 @@ function buildSunstoneDesert(){
  topGem.scale.y=1.6;
  registerCollider(303,265,14,16);
  // Circular sandstone pavilion with clean radial symmetry.
- const rotunda=part(216,298);
+ const rotunda=part(216,298,13.3);
  cyl(14,15,1.5,shadow,rotunda,0,.75,0,16);
  for(let i=0;i<10;i++){
   const a=i*Math.PI/5,x=Math.sin(a)*11,z=Math.cos(a)*11;
@@ -2387,7 +2409,7 @@ function buildSunstoneDesert(){
  const center=mesh(new T.OctahedronGeometry(2.3,0),turquoise,rotunda,0,16.5,0);
  center.scale.y=1.6;
  // Enclosed oasis / water garden - deliberately set into a stone basin.
- const oasis=part(357,304);
+ const oasis=part(357,304,13.5);
  cyl(13.6,13.6,1.25,shadow,oasis,0,.58,0,32);
  cyl(11.5,11.5,.18,oasisWater,oasis,0,1.28,0,32);
  const ring=torus(12.3,.42,gold,oasis,0,1.34,0);ring.rotation.x=Math.PI/2;
@@ -2398,7 +2420,7 @@ function buildSunstoneDesert(){
   const crown=sphere(3.1,plant,oasis,x,localGround+7,z);crown.scale.set(1.4,.38,1.2);
  }
  // Matched boundary torches, symmetric architecture around a named arrival plaza.
- const plaza=part(256,279);
+ const plaza=part(256,279,11.5);
  cyl(11.3,11.8,.4,sunlit,plaza,0,.21,0,24);
  const circle=torus(10.7,.17,gold,plaza,0,.48,0);circle.rotation.x=Math.PI/2;
  for(const side of [-1,1]){
