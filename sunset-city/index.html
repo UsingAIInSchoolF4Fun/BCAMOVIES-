@@ -861,20 +861,42 @@ function vehicle3(mesh,v,kind='traffic'){
 function render3D(){if(!g3.ready)return;
  const gl=webgl;
  const w=canvas.width,h=canvas.height;gl.viewport(0,0,w,h);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
- let playing=mode==='playing'||mode==='pause'||mode==='over';let target=car||{x:80,y:20,a:-.4,speed:0},anchorA=playing?target.a:now*.035;
- let cg=g3.camera,angleDelta=Math.atan2(Math.sin(anchorA-cg.heading),Math.cos(anchorA-cg.heading));cg.heading+=angleDelta*(playing?.09:.012);
- let span=playing?(92+Math.min(33,Math.abs(target.speed)*.08)):165,ht=playing?49:110;
- let xGoal=target.x-Math.sin(cg.heading)*span,zGoal=target.y+Math.cos(cg.heading)*span,yGoal=Math.max(terrainHeight(target.x,target.y)+ht,terrainHeight(xGoal,zGoal)+19);
- cg.x=lerp(cg.x,xGoal,playing?.16:.055);cg.y=lerp(cg.y,yGoal,playing?.16:.055);cg.z=lerp(cg.z,zGoal,playing?.16:.055);
- let fwdX=playing?target.x+Math.sin(cg.heading)*28:target.x,fwdZ=playing?target.y-Math.cos(cg.heading)*28:target.y;
- gl.uniformMatrix4fv(g3.loc.vp,false,new Float32Array(mul3(perspective3(.94,w/h,.25,950),look3([cg.x,cg.y,cg.z],[fwdX,terrainHeight(fwdX,fwdZ)+4,fwdZ]))));gl.uniform3f(g3.loc.eye,cg.x,cg.y,cg.z);gl.uniform1f(g3.loc.tick,now);
+ let playing=mode==='playing'||mode==='pause'||mode==='over';
+ const showroom=mode==='garage';
+ const preview=showroom?{
+   x:120*CITY_COMPACT,y:175*CITY_COMPACT,a:now*.24+.7,speed:0,
+   template:CARS.find(c=>c.id===garageFocus)||CARS[0],
+   color:save.paint[garageFocus]||(CARS.find(c=>c.id===garageFocus)||CARS[0]).color,
+   health:100,nitro:100,lean:0,pitch:0,bump:0,wheelSpin:0
+ }:null;
+ const scenic={x:(-465+Math.sin(now*.13)*85)*CITY_COMPACT,y:(-330+Math.cos(now*.13)*60)*CITY_COMPACT,a:1.0+now*.08,speed:0};
+ let target=playing?(car||scenic):showroom?preview:scenic;
+ let anchorA=playing?target.a:showroom?now*.23+1.0:now*.07+.55;
+ let cg=g3.camera,angleDelta=Math.atan2(Math.sin(anchorA-cg.heading),Math.cos(anchorA-cg.heading));
+ cg.heading+=angleDelta*(playing?.095:showroom?.058:.019);
+ let span=playing?(59+Math.min(12,Math.abs(target.speed)*.055)):showroom?73:115;
+ let ht=playing?27:showroom?39:69;
+ let xGoal=target.x-Math.sin(cg.heading)*span,zGoal=target.y+Math.cos(cg.heading)*span;
+ let yGoal=Math.max(terrainHeight(target.x,target.y)+ht,terrainHeight(xGoal,zGoal)+(playing?13:20));
+ let smooth=playing?.19:showroom?.10:.036;
+ cg.x=lerp(cg.x,xGoal,smooth);cg.y=lerp(cg.y,yGoal,smooth);cg.z=lerp(cg.z,zGoal,smooth);
+ let fwdX=target.x+Math.sin(cg.heading)*(playing?21:showroom?0:38),fwdZ=target.y-Math.cos(cg.heading)*(playing?21:showroom?0:38);
+ gl.uniformMatrix4fv(g3.loc.vp,false,new Float32Array(mul3(perspective3(.79,w/h,.2,820),look3([cg.x,cg.y,cg.z],[fwdX,terrainHeight(fwdX,fwdZ)+(playing?3:showroom?4:18),fwdZ]))));
+ gl.uniform3f(g3.loc.eye,cg.x,cg.y,cg.z);gl.uniform1f(g3.loc.tick,now);
  // Water is redrawn around the camera, with no invisible world boundary.
  let ocean=new Mesh3();ocean.box(cg.x,-.46,cg.z,2600,.34,2600,'#1c7397');
  for(let i=0;i<50;i++){let ix=(i*173+Math.floor(cg.x/400)*53)%1000-500,iz=(i*379+Math.floor(cg.z/400)*83)%1000-500;let wx=cg.x+ix,wz=cg.z+iz;if(coastDistance(wx,wz)<-10){ocean.box(wx,.015+Math.sin(now*1.8+i)*.06,wz,18+(i%4)*5,.027,.4,i%3?'#4e9dbb':'#74b9c9',.23,.2)}}
  draw3Immediate(ocean);
  draw3Buffer(g3.ground);
  let cells=0;for(let cell of g3.tiles.values()){if(Math.abs(cell.x-target.x)>470||Math.abs(cell.z-target.y)>470)continue;draw3Buffer(cell.draw);cells++}g3.stats.visible=cells;
- let dynamic=new Mesh3();if(car){for(let t of traffic){if(Math.hypot(t.x-target.x,t.y-target.y)>390)continue;vehicle3(dynamic,t)}for(let c of cops){if(Math.hypot(c.x-target.x,c.y-target.y)>390)continue;vehicle3(dynamic,c,'cop')}vehicle3(dynamic,car,'me');for(let p of pickups){if(p.claimed||Math.hypot(p.x-target.x,p.y-target.y)>320)continue;let rise=3+Math.sin(now*4+p.t)*1.0;dynamic.cylinder(p.x,terrainHeight(p.x,p.y)+rise,p.y,3.5,1.1,9,'#ffd887',.8);dynamic.box(p.x,terrainHeight(p.x,p.y)+rise+2,p.y,1.2,.3,1.2,'#fff7b4',.0,.7)}for(let p of particles){if(Math.hypot(p.x-target.x,p.y-target.y)>200)continue;dynamic.box(p.x,terrainHeight(p.x,p.y)+.9+p.size*.1,p.y,p.size,p.size,p.size,p.col,0,.4)}}
+ let dynamic=new Mesh3();if(playing&&car){for(let t of traffic){if(Math.hypot(t.x-target.x,t.y-target.y)>390)continue;vehicle3(dynamic,t)}for(let c of cops){if(Math.hypot(c.x-target.x,c.y-target.y)>390)continue;vehicle3(dynamic,c,'cop')}vehicle3(dynamic,car,'me');for(let p of pickups){if(p.claimed||Math.hypot(p.x-target.x,p.y-target.y)>320)continue;let rise=3+Math.sin(now*4+p.t)*1.0;dynamic.cylinder(p.x,terrainHeight(p.x,p.y)+rise,p.y,3.5,1.1,9,'#ffd887',.8);dynamic.box(p.x,terrainHeight(p.x,p.y)+rise+2,p.y,1.2,.3,1.2,'#fff7b4',.0,.7)}for(let p of particles){if(Math.hypot(p.x-target.x,p.y-target.y)>200)continue;dynamic.box(p.x,terrainHeight(p.x,p.y)+.9+p.size*.1,p.y,p.size,p.size,p.size,p.col,0,.4)}}
+ if(showroom&&preview){
+  // The backdrop displays the exact 3D chassis of the car highlighted in the shop.
+  vehicle3(dynamic,preview,'me');
+  const platformY=terrainHeight(preview.x,preview.y);
+  dynamic.cylinder(preview.x,platformY+.12,preview.y,28,.24,28,'#385465');
+  dynamic.cylinder(preview.x,platformY+.23,preview.y,25,.18,28,'#41c6be',.5);
+ }
  draw3Immediate(dynamic);
 }
 function draw3Immediate(mesh){if(!mesh.d.length)return;const gl=webgl;gl.bindBuffer(gl.ARRAY_BUFFER,g3.buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(mesh.d),gl.DYNAMIC_DRAW);draw3Buffer({buffer:g3.buf,count:mesh.d.length/10})}
@@ -884,8 +906,9 @@ function renderSoftware3D(){
  resize();const g=ctx,W=view.w,H=view.h,d=view.dpr;
  g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,W,H);
  const sky=g.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#204d78');sky.addColorStop(.34,'#9cb1c0');sky.addColorStop(.5,'#80b9c3');sky.addColorStop(1,'#165879');g.fillStyle=sky;g.fillRect(0,0,W,H);
- let target=car||{x:80,y:20,a:-.3,speed:0};let ang=target.a,co=Math.cos(ang),si=Math.sin(ang),focal=Math.min(W*.88,H*.92),eyeY=terrainHeight(target.x,target.y)+46;
- function proj(x,y,z){let xx=x-target.x,zz=z-target.y,depth=xx*si-zz*co+78;
+ let showing=mode==='garage',showPreview=showing?{x:120*CITY_COMPACT,y:175*CITY_COMPACT,a:now*.24,template:CARS.find(c=>c.id===garageFocus)||CARS[0],color:save.paint[garageFocus]||(CARS.find(c=>c.id===garageFocus)||CARS[0]).color}:null;
+ let live=mode==='playing'||mode==='pause'||mode==='over';let target=live?(car||{x:80,y:20,a:0,speed:0}):showing?showPreview:{x:-465*CITY_COMPACT+Math.sin(now*.08)*75,y:-330*CITY_COMPACT,a:.65+now*.02,speed:0};let ang=target.a,co=Math.cos(ang),si=Math.sin(ang),focal=Math.min(W*1.12,H*1.22),eyeY=terrainHeight(target.x,target.y)+(live?29:showing?33:58);
+ function proj(x,y,z){let xx=x-target.x,zz=z-target.y,depth=xx*si-zz*co+(live?52:showing?64:100);
   if(depth<13)return null;let s=focal/depth;return [W/2+(xx*co+zz*si)*s,H*.16+(eyeY-y)*s,depth,s];}
  function polygon(pts,color){let points=[];for(let p of pts){let q=proj(...p);if(!q)return;points.push(q)}g.fillStyle=color;g.beginPath();g.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);g.closePath();g.fill();}
  function outline(pts,color,width=1){let points=[];for(let p of pts){let q=proj(...p);if(!q)return;points.push(q)}g.strokeStyle=color;g.lineWidth=width;g.beginPath();g.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);g.closePath();g.stroke();}
@@ -903,7 +926,7 @@ function renderSoftware3D(){
  let objects=[];for(let b of structures){let dx=b.x-target.x,dz=b.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<720&&Math.hypot(dx,dz)<780)objects.push({type:'b',obj:b,depth});}
  for(let t of trees){let dx=t.x-target.x,dz=t.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<600&&Math.hypot(dx,dz)<620)objects.push({type:'t',obj:t,depth});}
  for(let v of [...traffic,...cops]){let dx=v.x-target.x,dz=v.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<570&&Math.hypot(dx,dz)<610)objects.push({type:v.type?'cop':'traffic',obj:v,depth});}
- if(car)objects.push({type:'player',obj:car,depth:0});
+ if(live&&car)objects.push({type:'player',obj:car,depth:0});if(showing&&showPreview)objects.push({type:'player',obj:showPreview,depth:0});
  objects.sort((a,b)=>b.depth-a.depth);
  function building(b){let co=Math.cos(b.rot),sn=Math.sin(b.rot),h=b.height||(b.kind==='villa'?9:b.kind==='tower'?64:24),base=terrainHeight(b.x,b.y),w=b.w/2,dd=b.h/2;
   let corners=[[-w,-dd],[w,-dd],[w,dd],[-w,dd]].map(v=>[b.x+v[0]*co-v[1]*sn,b.y+v[0]*sn+v[1]*co]),faces=[];
