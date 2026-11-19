@@ -2595,6 +2595,47 @@ for (let i = 0; i < 32; i++) {
     })
 }
 
+
+// Small authored flocks animate above the landmarks. Consistent birds glide
+// in smooth elliptical routes with visible wingbeats, rather than random props.
+const animatedFlocks=[];
+function addScenicFlock(cx,cz,alt,radius,color,count,speed){
+ const wingShape=new T.Shape();
+ wingShape.moveTo(0,0);wingShape.lineTo(.68,.30);
+ wingShape.lineTo(1.75,.17);wingShape.lineTo(2.6,-.13);
+ wingShape.lineTo(1.3,-.28);wingShape.lineTo(.55,-.13);wingShape.closePath();
+ const wingGeom=new T.ShapeGeometry(wingShape);
+ const mat=new T.MeshBasicMaterial({color,side:T.DoubleSide});
+ const bodyMat=new T.MeshBasicMaterial({color:0xede0ce});
+ for(let i=0;i<count;i++){
+  const bird=new T.Group();scene.add(bird);
+  const left=new T.Group(),right=new T.Group();
+  left.rotation.y=.04;right.rotation.y=-.04;bird.add(left,right);
+  mesh(wingGeom,mat,left,.16,0,0).castShadow=false;
+  const mirror=mesh(wingGeom,mat,right,-.16,0,0);mirror.scale.x=-1;mirror.castShadow=false;
+  const body=mesh(new T.ConeGeometry(.14,.82,5),bodyMat,bird,0,0,.12);
+  body.rotation.x=Math.PI/2;body.castShadow=false;
+  bird.scale.setScalar(.72+(i%4)*.095);
+  animatedFlocks.push({bird,left,right,cx,cz,alt,radius,speed,
+    phase:i/count*Math.PI*2,delay:i*.78,seed:i});
+ }
+}
+addScenicFlock(102,305,22,26,0xf3d7ea,5,.23);
+addScenicFlock(-321,88,31,34,0xd7eafb,4,.19);
+addScenicFlock(296,150,29,31,0xdfb4ff,4,.21);
+addScenicFlock(289,284,28,31,0xffdab3,4,.22);
+function animateScenicFlocks(t){
+ for(const f of animatedFlocks){
+  const a=t*f.speed+f.phase,xx=f.cx+Math.cos(a)*f.radius;
+  const zz=f.cz+Math.sin(a)*f.radius*.72;
+  f.bird.position.set(xx,ground(xx,zz)+f.alt+Math.sin(t*.8+f.phase)*1.25,zz);
+  f.bird.rotation.y=-a+Math.PI*.5;
+  f.bird.rotation.z=Math.sin(t*.72+f.phase)*.06;
+  const flap=Math.sin(t*(5.2+f.seed*.13)+f.delay)*.38;
+  f.left.rotation.z=flap;f.right.rotation.z=-flap;
+ }
+}
+
 // Concept-inspired landmark silhouettes, placed as intentional compositions.
 const conceptGold=new T.MeshStandardMaterial({color:0xf2bc68,metalness:.6,roughness:.32,emissive:0x7a4818,emissiveIntensity:.25});
 const conceptViolet=new T.MeshStandardMaterial({color:0xb36bff,emissive:0x6826d9,emissiveIntensity:.85});
@@ -3512,6 +3553,7 @@ function animate() {
     animateRealmGateBanners(t);
     animateWaystations(t);
     animateWaterwheels(t);
+    animateScenicFlocks(t);
     animateCliffBeacons(t);
     riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
