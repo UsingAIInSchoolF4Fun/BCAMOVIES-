@@ -1179,20 +1179,24 @@ function district(x,z,kind){
   // Two orderly glacier towers and a colonnaded frost gate.
   for(const side of [-1,1]){
    const dx=side*21,dy=localY(dx,-9);
+   registerCollider(x+dx,z-9,4.3,19);
    cyl(3.4,4.2,12,slate,g,dx,dy+6,-9,10);
    cyl(3.8,3.8,1.1,snow,g,dx,dy+12.4,-9,10);
    const cap=mesh(new T.ConeGeometry(4.2,6,8),snow,g,dx,dy+15.7,-9);
    for(let j=0;j<3;j++){
     const zz=-25+j*11,yy=localY(side*23,zz);
+    registerCollider(x+side*23,z+zz,1.9+j*.35,11);
     spire(g,side*23,yy,zz,2.0+j*.3,6+j*2,scenicCyan);
    }
   }
   const archGroup=scenicAt(x,z-19);arch(archGroup,0,0,12,12,snow);
+  for(const side of [-1,1])registerCollider(x+side*6,z-19,1.45,13);
   for(let side of [-1,1])lantern(g,side*7,-13,localY(side*7,-13));
  }else if(kind==="crystal"){
   // Paired crystal gardens frame an uncluttered main avenue.
   for(const side of [-1,1])for(let row=0;row<4;row++){
    const dx=side*(18+row*7),dz=-18+row*11,yy=localY(dx,dz);
+   registerCollider(x+dx,z+dz,3.6,11);
    const bed=cyl(4.5,5,.55,slate,g,dx,yy+.2,dz,9);
    const sizes=[6,9,5,7];
    spire(g,dx,yy,dz,2.2,sizes[row],row%2?scenicPink:scenicViolet);
@@ -1200,16 +1204,20 @@ function district(x,z,kind){
    spire(g,dx+side*2.1,yy,dz-2.2,.9,sizes[row]*.44,scenicViolet);
   }
   const entrance=scenicAt(x,z-24);arch(entrance,0,0,13,14,slate);
+  for(const side of [-1,1])registerCollider(x+side*6.5,z-24,1.3,14);
  }else if(kind==="ember"){
   // Solid fort entrance and two clearly recognizable lava kilns.
   const entrance=scenicAt(x,z-20);arch(entrance,0,0,14,15,slate);
+  for(const side of [-1,1])registerCollider(x+side*7,z-20,1.4,15);
   for(const side of [-1,1]){
    const dx=side*23,dy=localY(dx,4);
+   registerCollider(x+dx,z+4,5.2,15);
    cyl(5,5.6,9,slate,g,dx,dy+4.5,4,10);
    cyl(5.1,5.1,.3,bronze,g,dx,dy+9.1,4,10);
    const fire=mesh(new T.ConeGeometry(3.7,6,7),hot,g,dx,dy+12,4);
    for(let i=0;i<4;i++){
     const dz=-16+i*11,yy=localY(side*16,dz);
+    registerCollider(x+side*16,z+dz,.76,3.2);
     cyl(.55,.72,2.6,slate,g,side*16,yy+1.3,dz,8);
     sphere(.5,hot,g,side*16,yy+2.8,dz);
    }
@@ -1217,23 +1225,28 @@ function district(x,z,kind){
  }else if(kind==="ruins"){
   // Symmetrical desert sanctuary, not a spray of random spires.
   const gate=scenicAt(x,z-20);arch(gate,0,0,10,12,sand);
+  for(const side of [-1,1])registerCollider(x+side*5,z-20,1.4,12);
   for(const side of [-1,1])for(let row=0;row<4;row++){
    const dx=side*16,dz=-20+row*13,yy=localY(dx,dz);
+   registerCollider(x+dx,z+dz,1.65,9);
    cyl(1.3,1.6,8,sand,g,dx,yy+4,dz,10);
    cyl(1.9,1.9,.7,bronze,g,dx,yy+8.3,dz,10);
   }
   for(const side of [-1,1]){
    const dx=side*25,dz=10,yy=localY(dx,dz);
+   registerCollider(x+dx,z+dz,3,4);
    box(3,2,15,sand,g,dx,yy+1,dz);
    spire(g,dx,yy+2,dz,1.7,3,bronze);
   }
  }else if(kind==="forest"){
   // Forest meeting garden, framed by timber pergolas and flower beds.
   const entrance=scenicAt(x,z-24);arch(entrance,0,0,12,11,scenicMoss);
+  for(const side of [-1,1])registerCollider(x+side*6,z-24,1.45,12);
   for(const side of [-1,1]){
    const dx=side*17;
    for(const dz of [-13,0,13]){
     const yy=localY(dx,dz);
+    registerCollider(x+dx,z+dz,.68,6);
     cyl(.45,.6,5,mats.wood,g,dx,yy+2.5,dz,8);
     sphere(1.35,scenicMoss,g,dx,yy+5.5,dz);
     lantern(g,dx+side*3,dz,localY(dx+side*3,dz));
@@ -1999,6 +2012,10 @@ function buildWaystation(routeName,u,side=1){
  for(const sideX of [-1,1]){
   for(const depth of [-3.1,3.1]){
    cyl(.37,.54,7.4,timber,g,sideX*4.5,4.1,depth,8);
+   // Match each physical porch column to the rotated waystation.
+   const yawStation=Math.atan2(t.x,t.z);
+   registerCollider(x+Math.cos(yawStation)*sideX*4.5+Math.sin(yawStation)*depth,
+                    z-Math.sin(yawStation)*sideX*4.5+Math.cos(yawStation)*depth,.59,8);
    box(.9,.45,1.15,shine,g,sideX*4.5,7.95,depth);
   }
   const eave=box(1.9,.4,10.2,timber,g,sideX*3,8.05,0);
@@ -2135,6 +2152,7 @@ function buildSunstoneDesert(){
  function part(x,z){const g=new T.Group();g.position.set(x,ground(x,z),z);scene.add(g);return g}
  // Monumental sandstone trading hall, walled and anchored to the landscape.
  const hall=part(303,265);
+ registerCollider(303,265,15.7,19);
  box(32,1.4,25,shadow,hall,0,.7,0);
  box(28,12.5,21,sand,hall,0,7.65,0);
  for(const side of [-1,1]){
@@ -2168,6 +2186,7 @@ function buildSunstoneDesert(){
  for(let i=0;i<10;i++){
   const a=i*Math.PI/5,x=Math.sin(a)*11,z=Math.cos(a)*11;
   cyl(.7,.9,9,sand,rotunda,x,5.3,z,9);
+  registerCollider(216+x,298+z,.98,11);
   cyl(1.35,1.4,.6,gold,rotunda,x,10.2,z,9);
  }
  cyl(13,13,1,sunlit,rotunda,0,11,0,16);
