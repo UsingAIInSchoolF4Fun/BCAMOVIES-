@@ -626,6 +626,21 @@ function height(x, z) {
     return y
 }
 const authoredRoutes=[{"name":"Forest Trail","theme":"forest","width":9,"points":[[0,46],[4,89],[24,132],[61,189],[105,230]]},{"name":"Forest Temple","theme":"forest","width":7,"points":[[12,51],[26,105],[22,159],[20,213],[20,250]]},{"name":"Frost Citadel","theme":"frost","width":8,"points":[[-43,12],[-87,27],[-146,39],[-196,49],[-235,50]]},{"name":"Frost Tower","theme":"frost","width":7,"points":[[-233,54],[-286,45],[-317,23],[-350,10]]},{"name":"Snow Road","theme":"frost","width":8,"points":[[-44,-9],[-111,-21],[-181,-42],[-248,-64]]},{"name":"Ruins Road","theme":"desert","width":7,"points":[[-185,-44],[-227,-60],[-260,-60],[-285,-102]]},{"name":"Astral Road","theme":"astral","width":8,"points":[[-33,-37],[-92,-95],[-155,-153],[-209,-205],[-245,-230]]},{"name":"Astral Tower","theme":"astral","width":7,"points":[[-15,-44],[-14,-99],[3,-161],[37,-225],[30,-270],[-14,-320],[-55,-350]]},{"name":"Crystal Road","theme":"crystal","width":9,"points":[[44,5],[93,17],[150,28],[201,36],[260,30]]},{"name":"Crystal Gardens","theme":"crystal","width":7,"points":[[153,29],[202,81],[255,103],[285,120]]},{"name":"Desert Road","theme":"desert","width":9,"points":[[37,34],[77,78],[119,119],[166,160],[207,216],[255,280]]},{"name":"Ember Citadel","theme":"ember","width":7,"points":[[40,-25],[105,-32],[176,-32],[230,-35]]},{"name":"Volcano Road","theme":"ember","width":9,"points":[[30,-39],[98,-105],[157,-145],[216,-183],[285,-211],[318,-210]]},{"name":"Forest Watchtower","theme":"forest","width":7,"points":[[120,229],[179,269],[235,309],[310,345]]}];
+// Extra waypoints complete the route network; endpoints share existing paths
+// so players can travel to the real landmark entrances and side destinations.
+authoredRoutes.push(
+ {name:"Woodland Loop",theme:"forest",width:7,points:[[24,132],[76,158],[138,185],[105,230]]},
+ {name:"Ancient Grove",theme:"forest",width:7,points:[[105,230],[50,272],[-8,300],[-100,289],[-195,274],[-285,240]]},
+ {name:"Frost Grove",theme:"frost",width:7,points:[[-146,39],[-179,87],[-229,119],[-296,125]]},
+ {name:"Temple Approach",theme:"forest",width:6.5,points:[[22,159],[34,202],[20,250]]},
+ {name:"Western Ruins",theme:"desert",width:7,points:[[-260,-60],[-283,-83],[-300,-100]]},
+ {name:"Astral Sanctuary",theme:"astral",width:7,points:[[-209,-205],[-245,-230],[-289,-258],[-325,-280]]},
+ {name:"Ember Junction",theme:"ember",width:7,points:[[40,-25],[30,-39]]},
+ {name:"Crystal Terrace",theme:"crystal",width:7,points:[[255,103],[285,120],[308,151],[320,178]]},
+ {name:"Sunstone Market",theme:"desert",width:7,points:[[255,280],[282,275],[303,265]]},
+ {name:"Oasis Crossing",theme:"desert",width:7,points:[[255,280],[306,298],[357,304]]},
+ {name:"Village Square",theme:"forest",width:7,points:[[105,230],[105,254],[124,276]]}
+);
 const pathSegments=[];
 for(const route of authoredRoutes){for(let i=1;i<route.points.length;i++)pathSegments.push([...route.points[i-1],...route.points[i]]);}
 function pathDistance(x, z) {
@@ -1437,6 +1452,7 @@ const routePosts=[];
 // Wider stone shoulders and thin colored edge-inlays define the route without
 // the visual gaps caused by the old two-vertex-wide ribbons.
 const roadSpatialIndex=new Map(),ROAD_CELL=22;
+const riverCrossings=[];
 function roadCellKey(x,z){return Math.floor(x/ROAD_CELL)+","+Math.floor(z/ROAD_CELL);}
 function recordRoadSample(x,z,width){
  const key=roadCellKey(x,z);
@@ -1444,6 +1460,13 @@ function recordRoadSample(x,z,width){
  roadSpatialIndex.get(key).push({x,z,width});
 }
 function roadWalkHeight(x,z){
+ for(const bridge of riverCrossings){
+  const dx=x-bridge.x,dz=z-bridge.z;
+  const along=dx*bridge.tx+dz*bridge.tz;
+  const across=-dx*bridge.tz+dz*bridge.tx;
+  if(Math.abs(along)<bridge.length*.5&&Math.abs(across)<bridge.width*.5-.35)
+    return ground(x,z)+.38;
+ }
  const cx=Math.floor(x/ROAD_CELL),cz=Math.floor(z/ROAD_CELL);
  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){
   const samples=roadSpatialIndex.get((cx+i)+","+(cz+j));
@@ -1525,6 +1548,64 @@ function buildRoad(route,id){
  for(let e=0;e<2;e++)make(edgeV[e],edgeUV[e],edgeIdx[e],lineMat);
 }
 authoredRoutes.forEach(buildRoad);
+
+// Deliberate footbridges appear only where a real path crosses the world river.
+function finishRiverBridges(){
+ const wood=new T.MeshStandardMaterial({color:0xc39566,roughness:.9,map:mats.wood.map,bumpMap:mats.wood.map,bumpScale:.16});
+ const rail=new T.MeshStandardMaterial({color:0xe0b67e,metalness:.32,roughness:.55});
+ const stone=new T.MeshStandardMaterial({color:0x7a7896,map:mats.stone.map,bumpMap:mats.stone.map,roughness:.91});
+ const lantern=new T.MeshStandardMaterial({color:0xffcc86,emissive:0xff9b40,emissiveIntensity:1.2});
+ for(const route of authoredRoutes){
+  const spline=new T.CatmullRomCurve3(route.points.map(p=>new T.Vector3(p[0],0,p[1])),false,"centripetal",.45);
+  const steps=Math.ceil(spline.getLength()/3.5);
+  let previous=null;
+  for(let i=0;i<=steps;i++){
+   const u=i/steps,p=spline.getPoint(u);
+   const riverZ=65+24*Math.sin(p.x*.014)+12*Math.sin(p.x*.035);
+   const diff=p.z-riverZ;
+   if(previous&&previous.diff*diff<=0&&Math.abs(p.x)<380){
+    const crossing=spline.getPoint((i-.5)/steps),tangent=spline.getTangent(u);
+    const len=Math.hypot(tangent.x,tangent.z)||1,tx=tangent.x/len,tz=tangent.z/len;
+    if(riverCrossings.some(v=>Math.hypot(v.x-crossing.x,v.z-crossing.z)<18))break;
+    const bridge={x:crossing.x,z:crossing.z,tx,tz,width:route.width,length:23};
+    riverCrossings.push(bridge);
+    // The deck follows the actual ground below; top sits only 0.38 above it.
+    const width=route.width+1.1,half=bridge.length*.5;
+    for(let j=0;j<14;j++){
+     const along=-half+(j+.5)*bridge.length/14;
+     const px=crossing.x+tx*along,pz=crossing.z+tz*along;
+     const yy=ground(px,pz);
+     const plank=box(width,.18,bridge.length/14-.055,wood,scene,px,yy+.29,pz);
+     plank.rotation.y=Math.atan2(tx,tz);
+     plank.castShadow=false;
+     if(j%3===0){
+      for(const side of [-1,1]){
+       const sx=px-tz*side*(width*.5+.35),sz=pz+tx*side*(width*.5+.35),sy=ground(sx,sz);
+       cyl(.21,.27,2.3,stone,scene,sx,sy+1.28,sz,7);
+       sphere(.27,lantern,scene,sx,sy+2.5,sz).castShadow=false;
+      }
+     }
+    }
+    for(const side of [-1,1]){
+     // Small rail pieces follow the local terrain instead of floating.
+     for(let j=0;j<11;j++){
+      const along=-half+(j+.5)*bridge.length/11;
+      const px=crossing.x+tx*along-tz*side*(width*.5+.4);
+      const pz=crossing.z+tz*along+tx*side*(width*.5+.4);
+      const yy=ground(px,pz);
+      const b=box(.3,.25,bridge.length/11+.06,rail,scene,px,yy+2.2,pz);
+      b.rotation.y=Math.atan2(tx,tz);b.castShadow=false;
+     }
+    }
+    break;
+   }
+   previous={diff};
+  }
+ }
+ return lantern;
+}
+const riverBridgeLanternMaterial=finishRiverBridges();
+
 
 // Each biome now has an intentional architectural gateway with animated
 // cloth banners and a rotating magical crest. Roads pass under unobstructed.
@@ -2442,19 +2523,7 @@ function authoredRiver(){
  geo.setAttribute("position",new T.Float32BufferAttribute(positions,3));
  geo.setAttribute("uv",new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();
  const river=mesh(geo,riverFlowMaterial);river.castShadow=false;
- // Short fords stay level with the ground and are actually traversable.
- for(const x of [-240,-75,105,260]){
-  const z=65+24*Math.sin(x*.014)+12*Math.sin(x*.035);
-  for(let i=0;i<9;i++){
-   const zz=z+(i-4)*2.8,yy=ground(x,zz);
-   box(11.7,.38,2.55,mats.stone,scene,x,yy+.12,zz).castShadow=false;
-   if(i%2===0){
-    const leftY=ground(x-7.0,zz),rightY=ground(x+7.0,zz);
-    sphere(.64,worldStone,scene,x-7,leftY+.38,zz);
-    sphere(.64,worldStone,scene,x+7,rightY+.38,zz);
-   }
-  }
- }
+ // Bridges are now built precisely where the finished paths cross the river.
  return river;
 }
 function groundedCascade(cx,cz,width=9,length=31){
@@ -3210,6 +3279,7 @@ function animate() {
     skyDomeMaterial.uniforms.uTime.value=t;
     animateBiomeGeometry(t);
     animateRealmGateBanners(t);
+    riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
     for(const m of biomeAtmosphere)m.uniforms.uTime.value=t;
     for(const fx of environmentFX)fx.uniforms.uTime.value=t;
