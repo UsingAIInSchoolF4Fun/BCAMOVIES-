@@ -225,6 +225,34 @@ jobs:
                   }
                 }catch(e){failed=true;console.log('FAIL LANDMARK/NAMING TEST '+String(e.stack||e));}
               }
+              if(pageName==='index.html'&&errors.length===0){
+                try{
+                  const sky=await page.evaluate(()=>{
+                    if(gliding)finishGlide();
+                    state.pendingLuck=1;
+                    const site=trialSites.find(s=>s.name==='Crystal Spires');
+                    player.position.set(site.x,ground(site.x,site.z)+1.5,site.z);
+                    keys.KeyF=true;updateSkyTrials(1);keys.KeyF=false;updateSkyTrials(1);
+                    const started=activeSkyTrial?.site===site,stages=[];
+                    for(let i=0;i<site.platforms.length;i++){
+                      const step=site.platforms[i];
+                      player.position.set(step.x,step.top+.35,step.z);
+                      updateSkyTrials(2+i);stages.push(activeSkyTrial?.stage??10);
+                    }
+                    const done=!activeSkyTrial,wins=state.skyWins[site.id]||0;
+                    const boost=state.pendingLuck,best=state.skyBest[site.id];
+                    const cooldown=state.skyCooldowns[site.id]-Date.now();
+                    return {started,stages,done,wins,boost,best,cooldown,siteId:site.id,
+                      independent:trialSites.every(s=>s.platforms.length===10)};
+                  });
+                  console.log('SKY PARKOUR TEST '+JSON.stringify(sky));
+                  if(!sky.started||!sky.done||sky.wins!==1||sky.boost!==2||
+                     !sky.independent||sky.stages.length!==10||sky.cooldown<600000||
+                     sky.stages.join(',')!=='1,2,3,4,5,6,7,8,9,10'){
+                    failed=true;console.log('FAIL independent sky parkour completion/reward');
+                  }
+                }catch(e){failed=true;console.log('FAIL SKY PARKOUR TEST '+String(e.stack||e));}
+              }
               if(errors.length){failed=true;console.log('FAIL Browser runtime errors: '+errors.length);}
               for(const e of errors.slice(0,15))console.log(e);
               for(const e of logs.slice(0,25))console.log(e.slice(0,1500));
