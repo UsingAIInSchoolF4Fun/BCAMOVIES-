@@ -1253,28 +1253,39 @@ function render3D(){if(!g3.ready)return;
 function draw3Immediate(mesh){if(!mesh.d.length)return;const gl=webgl;gl.bindBuffer(gl.ARRAY_BUFFER,g3.buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(mesh.d),gl.DYNAMIC_DRAW);draw3Buffer({buffer:g3.buf,count:mesh.d.length/10})}
 
 // Perspective 3D-style software renderer for school Chromebooks that block WebGL.
+// A world-anchored height cache avoids regenerating the same mountains and roads every frame.
+const softwareElevationCache=new Map();
+function softwareHeight(x,z){
+ const key=Math.round(x*8)+','+Math.round(z*8);
+ let height=softwareElevationCache.get(key);
+ if(height!==undefined)return height;
+ height=terrainHeight(x,z);
+ if(softwareElevationCache.size>48000)softwareElevationCache.clear();
+ softwareElevationCache.set(key,height);
+ return height;
+}
 function renderSoftware3D(){
  resize();const g=ctx,W=view.w,H=view.h,d=view.dpr;
  g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,W,H);
  const sky=g.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#204d78');sky.addColorStop(.34,'#9cb1c0');sky.addColorStop(.5,'#80b9c3');sky.addColorStop(1,'#165879');g.fillStyle=sky;g.fillRect(0,0,W,H);
  let showing=mode==='garage',showPreview=showing?{x:120*CITY_COMPACT,y:175*CITY_COMPACT,a:now*.24,template:CARS.find(c=>c.id===garageFocus)||CARS[0],color:save.paint[garageFocus]||(CARS.find(c=>c.id===garageFocus)||CARS[0]).color}:null;
- let live=mode==='playing'||mode==='pause'||mode==='over';let target=live?(car||{x:80,y:20,a:0,speed:0}):showing?showPreview:{x:-465*CITY_COMPACT+Math.sin(now*.08)*75,y:-330*CITY_COMPACT,a:.65+now*.02,speed:0};let ang=target.a,co=Math.cos(ang),si=Math.sin(ang),focal=Math.min(W*1.12,H*1.22),eyeY=terrainHeight(target.x,target.y)+(live?(cameraMode?45:29):showing?33:58);
+ let live=mode==='playing'||mode==='pause'||mode==='over';let target=live?(car||{x:80,y:20,a:0,speed:0}):showing?showPreview:{x:-465*CITY_COMPACT+Math.sin(now*.08)*75,y:-330*CITY_COMPACT,a:.65+now*.02,speed:0};let ang=target.a,co=Math.cos(ang),si=Math.sin(ang),focal=Math.min(W*1.12,H*1.22),eyeY=softwareHeight(target.x,target.y)+(live?(cameraMode?45:29):showing?33:58);
  function proj(x,y,z){let xx=x-target.x,zz=z-target.y,depth=xx*si-zz*co+(live?(cameraMode?82:52):showing?64:100);
   if(depth<13)return null;let s=focal/depth;return [W/2+(xx*co+zz*si)*s,H*.16+(eyeY-y)*s,depth,s];}
  function polygon(pts,color){let points=[];for(let p of pts){let q=proj(...p);if(!q)return;points.push(q)}g.fillStyle=color;g.beginPath();g.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);g.closePath();g.fill();}
  function outline(pts,color,width=1){let points=[];for(let p of pts){let q=proj(...p);if(!q)return;points.push(q)}g.strokeStyle=color;g.lineWidth=width;g.beginPath();g.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);g.closePath();g.stroke();}
  function shade(h,f){if(h[0]!=='#')return h;let x=h.slice(1);if(x.length===3)x=x.split('').map(a=>a+a).join('');return '#'+[0,2,4].map(i=>Math.max(0,Math.min(255,Math.floor(parseInt(x.slice(i,i+2),16)*f))).toString(16).padStart(2,'0')).join('');}
  // The island is a continuous surface, with open ocean beyond the irregular coast.
- const cells=[];let step=90;for(let dx=-810;dx<=810;dx+=step)for(let dz=-810;dz<=810;dz+=step){let x=target.x+dx,z=target.y+dz,center=coastDistance(x,z);if(center<-40)continue;let depth=dx*si-dz*co;if(depth<-70||depth>1100)continue;cells.push({x,z,depth,center})}
+ const cells=[];let step=90,anchorX=Math.round(target.x/step)*step,anchorZ=Math.round(target.y/step)*step;for(let dx=-810;dx<=810;dx+=step)for(let dz=-810;dz<=810;dz+=step){let x=anchorX+dx,z=anchorZ+dz,center=coastDistance(x,z);if(center<-40)continue;let depth=dx*si-dz*co;if(depth<-70||depth>1100)continue;cells.push({x,z,depth,center})}
  cells.sort((a,b)=>b.depth-a.depth);
- for(let cell of cells){let x=cell.x,z=cell.z,s=step*.51;let ht=terrainHeight(x,z),fill=terrainStyle(x,z,ht);polygon([[x-s,terrainHeight(x-s,z-s),z-s],[x+s,terrainHeight(x+s,z-s),z-s],[x+s,terrainHeight(x+s,z+s),z+s],[x-s,terrainHeight(x-s,z+s),z+s]],fill)}
+ for(let cell of cells){let x=cell.x,z=cell.z,s=step*.51;let ht=softwareHeight(x,z),fill=terrainStyle(x,z,ht);polygon([[x-s,softwareHeight(x-s,z-s),z-s],[x+s,softwareHeight(x+s,z-s),z-s],[x+s,softwareHeight(x+s,z+s),z+s],[x-s,softwareHeight(x-s,z+s),z+s]],fill)}
  // School Chromebook fallback: continuous roadside quads with shared endpoints.
  // The previous per-segment perpendiculars folded over on sharp switchbacks.
  function roadEdge(road,index,offset){
   const ps=road.points,p=ps[index],q=ps[Math.max(0,index-1)],r=ps[Math.min(ps.length-1,index+1)];
   const dx=r.x-q.x,dz=r.y-q.y,len=Math.hypot(dx,dz)||1,nx=-dz/len,nz=dx/len;
   const x=p.x+nx*offset,z=p.y+nz*offset;
-  return [x,terrainHeight(x,z)+.55,z];
+  return [x,softwareHeight(x,z)+.55,z];
  }
  function roadPatch(road,i,j,half,color){
   const a=roadEdge(road,i,-half),b=roadEdge(road,i,half);
@@ -1297,7 +1308,7 @@ function renderSoftware3D(){
  for(let v of [...traffic,...cops]){let dx=v.x-target.x,dz=v.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<570&&Math.hypot(dx,dz)<610)objects.push({type:v.type?'cop':'traffic',obj:v,depth});}
  if(live&&car)objects.push({type:'player',obj:car,depth:0});if(showing&&showPreview)objects.push({type:'player',obj:showPreview,depth:0});
  objects.sort((a,b)=>b.depth-a.depth);
- function building(b){let co=Math.cos(b.rot),sn=Math.sin(b.rot),h=b.height||(b.kind==='villa'?9:b.kind==='tower'?64:24),base=terrainHeight(b.x,b.y),w=b.w/2,dd=b.h/2;
+ function building(b){let co=Math.cos(b.rot),sn=Math.sin(b.rot),h=b.height||(b.kind==='villa'?9:b.kind==='tower'?64:24),base=softwareHeight(b.x,b.y),w=b.w/2,dd=b.h/2;
   let corners=[[-w,-dd],[w,-dd],[w,dd],[-w,dd]].map(v=>[b.x+v[0]*co-v[1]*sn,b.y+v[0]*sn+v[1]*co]),faces=[];
   for(let i=0;i<4;i++){let a=corners[i],bb=corners[(i+1)%4],mid=[(a[0]+bb[0])/2,(a[1]+bb[1])/2],depth=(mid[0]-target.x)*si-(mid[1]-target.y)*co;faces.push({depth,pts:[[a[0],base,a[1]],[bb[0],base,bb[1]],[bb[0],base+h,bb[1]],[a[0],base+h,a[1]]],color:shade(b.color,i%2?.86:.66)});}
   faces.sort((a,b)=>b.depth-a.depth);for(let f of faces)polygon(f.pts,f.color);
@@ -1310,7 +1321,7 @@ function renderSoftware3D(){
   }
  }
  function tree(t){
- const base=terrainHeight(t.x,t.y),h=(t.kind==='fir'?22:t.kind==='pine'?18:t.kind==='palm'?11:13)*t.s;
+ const base=softwareHeight(t.x,t.y),h=(t.kind==='fir'?22:t.kind==='pine'?18:t.kind==='palm'?11:13)*t.s;
  const foot=proj(t.x,base,t.y),top=proj(t.x,base+h,t.y);if(!foot||!top)return;
  const sz=Math.min(46,foot[3]*t.s*4.7);
  if(t.kind==='rock'){g.fillStyle='#8a928c';g.beginPath();g.ellipse(foot[0],foot[1],sz*.9,sz*.56,-.24,0,TAU);g.fill();return;}
@@ -1324,7 +1335,7 @@ function renderSoftware3D(){
 }
 function vehicle(v,type){
   const style=type==='player'?v.template.style:type==='cop'?(v.type==='heavy'?'armored':'sedan'):(v.shape||'sedan');
-  const x=v.x,z=v.y,a=v.a,co=Math.cos(a),si=Math.sin(a),ground=terrainHeight(x,z);
+  const x=v.x,z=v.y,a=v.a,co=Math.cos(a),si=Math.sin(a),ground=softwareHeight(x,z);
   const width=type==='player'?v.template.width:style==='armored'?12:style==='hatch'?8.3:9.5;
   const length=type==='player'?v.template.length:style==='armored'?23:style==='hatch'?15:19;
   const body=type==='player'?v.color:type==='cop'?'#dceaf0':v.color;
