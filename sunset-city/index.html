@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V6.1 — COMPACT CITY & BALANCED POLICE</title>
+<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V7 — MOUNTAIN ISLAND PURSUIT</title>
 <style>
 :root{--ink:#0c1a2b;--panel:#101f30f2;--line:#ffffff29;--cyan:#63e6e5;--orange:#ffb36b;--muted:#a8bbc9;--green:#89f4ac}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#081b2b;color:#fff;font-family:Inter,Arial,Helvetica,sans-serif;user-select:none;touch-action:none}
@@ -28,7 +28,7 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 <body>
 <canvas id="game" aria-label="3D third-person police chase driving game"></canvas><div id="tint"></div>
 <div id="hud">
-  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V6.1 3D</small></div><div class="hudMid">
+  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V7 MOUNTAIN ISLAND</small></div><div class="hudMid">
    <div class="pill"><label>SURVIVAL</label><strong id="survive">00:00</strong></div><div class="pill cash"><label>RUN EARNINGS</label><strong id="earn">$0</strong></div><div class="pill heat"><label>HEAT LEVEL</label><strong id="stars">★☆☆☆☆</strong></div></div></div>
   <div id="hudLeft"><div class="meter"><div class="meterhead"><span>CAR INTEGRITY</span><span id="healthText">100%</span></div><div class="track"><div class="fill" id="healthbar"></div></div></div><div class="meter"><div class="meterhead"><span>NITRO</span><span id="boostText">100%</span></div><div class="track"><div class="fill boost" id="boostbar"></div></div></div><div class="tips"><b>W/S</b> accelerate / brake<br><b>A/D</b> steer &nbsp; <b>SHIFT</b> boost<br><b>SPACE</b> handbrake drift<br><b>ESC</b> pause<br><b>WATER</b> amphibious driving</div></div>
   <button id="escapeBtn" type="button">Ⅱ PAUSE</button>
@@ -65,8 +65,8 @@ let mode='home',paused=false,keys={},now=0,last=0,runningSeconds=0,earned=0,comb
 let car=null,cops=[],traffic=[],particles=[],pickups=[],camera={x:0,y:0,zoom:1};let runInfo={nearMisses:0,drifts:0,rammed:0};
 const view={w:innerWidth,h:innerHeight,dpr:1};
 function resize(){view.dpr=Math.min(1.6,window.devicePixelRatio||1);view.w=innerWidth;view.h=innerHeight;let w=Math.round(view.w*view.dpr),h=Math.round(view.h*view.dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;if(webgl)webgl.viewport(0,0,w,h);} }
-const CITY_COMPACT=.80; // Tighter island layout, while keeping vehicles and road widths full size.
-const STATIC={canvas:null,bounds:{minX:-1250,minY:-1100,maxX:1250,maxY:1100},scale:1};
+const CITY_COMPACT=1.18; // Expanded island, 47.5% larger than V6.1.
+const STATIC={canvas:null,bounds:{minX:-1500,minY:-1200,maxX:1500,maxY:1200},scale:1};
 let roads=[],roadSamples=[],structures=[],trees=[],streetProps=[],parkingLots=[];
 const landmarks=[
  {name:'CENTRAL PLAZA',x:40,y:32,type:'plaza'},
@@ -76,7 +76,10 @@ const landmarks=[
  {name:'CITY HOSPITAL',x:335,y:135,type:'hospital'},
  {name:'PALM PARK',x:-255,y:390,type:'park'},
  {name:'NEON DISTRICT',x:-320,y:-350,type:'neon'},
- {name:'OCEAN AIRFIELD',x:40,y:-630,type:'airfield'}
+ {name:'OCEAN AIRFIELD',x:40,y:-630,type:'airfield'},
+ {name:'EAGLE RIDGE',x:-495,y:-480,type:'mountain'},
+ {name:'CANYON OVERLOOK',x:565,y:330,type:'mountain'},
+ {name:'PINE TRAILHEAD',x:-275,y:450,type:'mountain'}
 ].map(p=>({...p,x:p.x*CITY_COMPACT,y:p.y*CITY_COMPACT}));
 const DISTRICTS=[
  {name:'MIDTOWN',x:0,y:0,r:350,colors:['#718594','#d0aaa0','#6f788e','#637f89','#bfada4'],roof:'#405569'},
@@ -88,6 +91,27 @@ const DISTRICTS=[
 function shorelineRadius(a){return CITY_COMPACT*(850+42*Math.sin(3*a+.25)+24*Math.cos(7*a-.7)+23*Math.sin(11*a+.9)+15*Math.cos(16*a))}
 function coastDistance(x,y){let xx=x/1.23,yy=y/.92,a=Math.atan2(yy,xx);return shorelineRadius(a)-Math.hypot(xx,yy)}
 function isWater(x,y){return coastDistance(x,y)<0}
+const MOUNTAINS=[
+ {x:-495*CITY_COMPACT,z:-480*CITY_COMPACT,sx:220*CITY_COMPACT,sz:185*CITY_COMPACT,h:142},
+ {x:565*CITY_COMPACT,z:330*CITY_COMPACT,sx:205*CITY_COMPACT,sz:240*CITY_COMPACT,h:124},
+ {x:-275*CITY_COMPACT,z:450*CITY_COMPACT,sx:155*CITY_COMPACT,sz:175*CITY_COMPACT,h:72},
+ {x:760*CITY_COMPACT,z:-175*CITY_COMPACT,sx:160*CITY_COMPACT,sz:210*CITY_COMPACT,h:82}
+];
+// Shared elevation model for roads, cars, scenery and mountains.
+function terrainHeight(x,z){
+ const shore=coastDistance(x,z);if(shore<=0)return -.3;
+ let h=1.6+1.9*Math.sin(x*.011)*Math.cos(z*.013)+1.3*Math.sin((x+z)*.018);
+ for(const m of MOUNTAINS){const dx=(x-m.x)/m.sx,dz=(z-m.z)/m.sz;h+=m.h*Math.exp(-2*(dx*dx+dz*dz));}
+ return Math.max(0,h)*Math.min(1,shore/95);
+}
+function terrainStyle(x,z,h){
+ if(coastDistance(x,z)<42)return '#d3ba8d';
+ if(h>92)return '#9aa5a0';
+ if(h>58)return '#7a8a76';
+ if(h>26)return '#64856b';
+ return '#5b9978';
+}
+function slopeAt(x,z,angle){const d=10,fx=Math.sin(angle),fz=-Math.cos(angle);return (terrainHeight(x+fx*d,z+fz*d)-terrainHeight(x-fx*d,z-fz*d))/(2*d);}
 function pathIsland(g,inset=0){let count=300;g.beginPath();for(let i=0;i<=count;i++){let a=(i/count)*TAU,R=shorelineRadius(a)-inset,x=Math.cos(a)*R*1.23,y=Math.sin(a)*R*.92;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}g.closePath();}
 function makeRoad(id,points,width=27,style='urban'){roads.push({id,points,width,style});for(let i=0;i<points.length-1;i++){let a=points[i],b=points[i+1],d=Math.hypot(b.x-a.x,b.y-a.y),n=Math.max(1,Math.floor(d/20));for(let j=0;j<n;j++){let t=j/n,pt={x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),a:Math.atan2(b.y-a.y,b.x-a.x),id};if(coastDistance(pt.x,pt.y)>36)roadSamples.push(pt)}}}
 function line(points){return points.map(p=>({x:p[0],y:p[1]}))}
@@ -99,27 +123,27 @@ function addBuilding(x,y,w,h,rot=0,kind='office',zone=null){const d=zone||DISTRI
 function insideBuilding(x,y,r=0){for(const b of structures){if(Math.hypot(x-b.x,y-b.y)>b.rad+r)continue;let cs=Math.cos(b.rot),sn=Math.sin(b.rot),dx=x-b.x,dy=y-b.y;let lx=dx*cs+dy*sn,ly=-dx*sn+dy*cs,ax=Math.abs(lx)-b.w*.5,ay=Math.abs(ly)-b.h*.5;if(Math.max(ax,ay)<r&&Math.hypot(Math.max(0,ax),Math.max(0,ay))<r+0.1)return true}return false}
 function buildWorld(){
   roads=[];roadSamples=[];structures=[];trees=[];streetProps=[];parkingLots=[];
-  ringRoad('island_loop',0,0,660,545,36,'coastal');
-  ringRoad('inner_circuit',-15,25,360,300,31,'boulevard');
-  ringRoad('city_roundabout',45,20,81,81,29,'roundabout');
-  ringRoad('marina_roundabout',-420,390,68,68,23,'roundabout');
-  ringRoad('stadium_roundabout',520,-290,82,71,28,'roundabout');
-  curveRoad('north_freeway',[[-880,-460],[-670,-460],[-390,-515],[-100,-480],[150,-500],[410,-565],[780,-555]],35,'highway');
-  curveRoad('central_avenue',[[-880,-30],[-580,-35],[-350,-50],[-100,-44],[95,-42],[365,-65],[670,-75],[865,-83]],36,'boulevard');
-  curveRoad('south_avenue',[[-890,365],[-620,290],[-370,260],[-60,285],[260,325],[510,345],[720,400]],32,'urban');
-  curveRoad('east_arc',[[350,-650],[375,-370],[335,-145],[355,100],[400,350],[390,635]],30,'urban');
-  curveRoad('west_arc',[[-485,-615],[-475,-365],[-435,-125],[-450,130],[-410,375],[-340,595]],27,'urban');
-  curveRoad('city_axis',[[-70,-630],[-92,-365],[-80,-135],[-68,70],[-45,240],[30,520],[140,665]],32,'highway');
-  curveRoad('diagonal_boulevard',[[-650,510],[-475,405],[-285,260],[-70,90],[150,-110],[425,-335],[670,-500]],29,'boulevard');
-  curveRoad('neon_route',[[-725,-200],[-590,-245],[-350,-235],[-160,-335],[60,-330],[245,-275],[470,-170],[660,-20]],24,'neon');
-  curveRoad('palm_road',[[-675,495],[-550,425],[-365,520],[-160,530],[90,530],[295,470],[510,450]],23,'urban');
-  curveRoad('beachfront',[[-790,-330],[-760,-145],[-750,120],[-700,260],[-610,410],[-440,545],[-190,600],[85,610],[280,615],[470,565]],21,'coastal');
-  curveRoad('harbor_link',[[640,520],[550,465],[350,420],[240,550],[130,615],[0,665]],23,'industrial');
-  curveRoad('airport_access',[[0,-695],[20,-610],[85,-520],[140,-410],[210,-340]],22,'industrial');
-  curveRoad('cliff_road',[[580,-650],[690,-525],[735,-340],[750,-135],[690,80],[615,225]],20,'coastal');
-  curveRoad('pier_road',[[-770,-185],[-905,-195],[-1060,-220]],23,'coastal');
-  for(let x of [-225,160,545])curveRoad('cross_v_'+x,[[x,-450],[x-22,-300],[x+12,-170],[x,0],[x+20,155],[x,300]],20,'urban');
-  for(let y of [-180,170,485])curveRoad('cross_h_'+y,[[-400,y],[-250,y+15],[-100,y-10],[85,y+10],[280,y],[475,y+10]],20,'urban');
+  // Readable road hierarchy: coastal beltway, arterial grid, mountain roads.
+  ringRoad('COAST BELTWAY',0,0,710,575,34,'coastal');
+  ringRoad('INNER RING',0,0,380,315,30,'boulevard');
+  ringRoad('CENTRAL ROUNDABOUT',40,25,84,84,27,'roundabout');
+  ringRoad('HARBOR CIRCLE',420,425,72,72,23,'roundabout');
+  ringRoad('GOLD COAST CIRCLE',525,-315,78,75,23,'roundabout');
+  for(const y of [-490,-245,0,245,490]){
+    curveRoad('EAST-WEST AVENUE '+y,[[-790,y],[-390,y+10],[0,y],[390,y-12],[790,y]],y===0?35:28,y===0?'boulevard':'urban');
+  }
+  for(const x of [-600,-300,0,300,600]){
+    curveRoad('NORTH-SOUTH AVENUE '+x,[[x,-710],[x+12,-365],[x,0],[x-15,345],[x,690]],x===0?34:26,x===0?'highway':'urban');
+  }
+  curveRoad('DIAGONAL CONNECTOR',[[-710,505],[-475,390],[-235,200],[0,0],[245,-215],[480,-410],[690,-550]],30,'boulevard');
+  curveRoad('NEON CONNECTOR',[[-630,-330],[-410,-350],[-295,-270],[-110,-220],[75,-245],[300,-315],[475,-350]],25,'neon');
+  curveRoad('BAYFRONT DRIVE',[[-770,160],[-740,330],[-620,520],[-400,625],[-90,675],[260,645],[560,570]],24,'coastal');
+  curveRoad('AIRFIELD ROAD',[[-125,-700],[0,-630],[125,-520],[160,-380]],25,'industrial');
+  curveRoad('HARBOR FREIGHT ROUTE',[[700,510],[570,480],[430,440],[275,490],[190,610]],25,'industrial');
+  curveRoad('EAGLE RIDGE SWITCHBACK',[[-750,-210],[-680,-335],[-575,-380],[-425,-375],[-360,-455],[-500,-525],[-645,-540],[-595,-650],[-430,-635],[-300,-530],[-170,-445]],21,'mountain');
+  curveRoad('CANYON PASS',[[670,60],[770,160],[680,270],[510,285],[425,390],[570,455],[735,425],[785,555]],22,'mountain');
+  curveRoad('PINE TRAIL',[[-490,590],[-405,490],[-260,515],[-175,445],[-280,345],[-395,340]],20,'mountain');
+  curveRoad('CLIFFSIDE DRIVE',[[785,-605],[835,-480],[870,-280],[820,-100],[750,100],[720,240]],23,'coastal');
   // Landmark footprints are intentionally different in shape, location, and layout.
   addBuilding(515*CITY_COMPACT,-437*CITY_COMPACT,119,82,.16,'stadium',DISTRICTS[4]);
   addBuilding(303*CITY_COMPACT,130*CITY_COMPACT,90,55,.1,'hospital',DISTRICTS[0]);
