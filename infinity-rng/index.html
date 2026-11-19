@@ -3700,6 +3700,7 @@ const aura = new T.Group();
 player.add(aura);
 const auraParts = [];
 const auraDynamicTextures=[];
+const auraSpectrumMaterials=[];
 // Compact camera-facing equipped aura tag above the character.
 const auraTagCanvas=document.createElement("canvas");auraTagCanvas.width=512;auraTagCanvas.height=128;
 const auraTagCtx=auraTagCanvas.getContext("2d");
@@ -3776,6 +3777,19 @@ auraGround.visible=false;
 function easeAura(current,target,dt,speed=5){
  return current+(target-current)*(1-Math.exp(-Math.max(0,dt)*speed));
 }
+function animateAuraSpectrum(t){
+ if(!auraSpectrumMaterials.length)return;
+ const seeds=[0,.35,.67];
+ for(let i=0;i<auraSpectrumMaterials.length;i++){
+  const material=auraSpectrumMaterials[i],hue=(t*.055+seeds[i])%1;
+  material.color.setHSL(hue,.87,i===2?.63:.62);
+  if(material.emissive)material.emissive.copy(material.color);
+ }
+ if(state.equipped==="INFINITY"){
+  auraLight.color.setHSL((t*.055+.22)%1,.9,.65);
+  auraGroundMat.color.copy(auraLight.color);
+ }
+}
 function updateAuraPose(t,dt,moving,onGround,gliding,stride){
  const p=equippedAuraProfile,active=!!state.owned[state.equipped];
  const float=active&&p.hover&&hudPrefs.auraFX&&!gliding;
@@ -3846,6 +3860,7 @@ renderAura = () => {
         })
     }
     auraParts.length=0;
+    auraSpectrumMaterials.length=0;
     for(const texture of auraDynamicTextures)texture.dispose();
     auraDynamicTextures.length=0;
     const data = A[auraLookup.get(state.equipped) ?? 0],
@@ -3861,8 +3876,14 @@ renderAura = () => {
     auraLight.intensity=state.owned[state.equipped]?
         Math.min(5.5,2.25+level*.28):0;
     auraLight.distance=8.5+Math.min(3,level*.2);
-    const accentColor=new T.Color(activeColor).offsetHSL(.095,.08,.19).getHex();
-    const secondaryColor=new T.Color(activeColor).offsetHSL(-.085,.07,.12).getHex();
+    const accentColor=name==="INFINITY"?0xac7bff:
+       name==="Eternity"?0x89e5ff:
+       new T.Color(activeColor).offsetHSL(.095,.08,.19).getHex();
+    const secondaryColor=name==="INFINITY"?0x60ebff:
+       name==="Eternity"?0xffd8f4:
+       new T.Color(activeColor).offsetHSL(-.085,.07,.12).getHex();
+    auraGroundInner.color.setHex(secondaryColor);
+    auraGroundInner.emissive.setHex(accentColor);
     // Use visibly colored solid geometry instead of additive-only light effects.
     // The objects retain their hue in daylight and against bright terrain.
     const additive=(color,opacity=.88)=>new T.MeshStandardMaterial({
@@ -4108,6 +4129,9 @@ renderAura = () => {
         color:0xfff9e9,emissive:activeColor,emissiveIntensity:.55,
         metalness:.16,roughness:.25
       });
+      if(name==="INFINITY"||theme===9){
+        auraSpectrumMaterials.push(glass,shine,glow);
+      }
       function shape(geom,mat,x,y,z,fx=null){
         const object=mesh(geom,mat,sig,x,y,z);
         object.castShadow=false;
@@ -4908,19 +4932,44 @@ function animate() {
     if(Math.floor(t*3)%3===0){const remaining=Math.ceil((volcano.cycle-elapsed)/1000),mm=Math.floor(remaining/60),ss=String(remaining%60).padStart(2,"0");volcanoLabel.textContent=erupting?"VOLCANO ERUPTING! Avoid the lava!":"VOLCANO · eruption in "+mm+":"+ss+(volcanoZoneActive?" · CRATER":"");}
     let stride = moving ? Math.sin(t * ((keys.ShiftLeft || keys.ShiftRight) ? 17 : 11)) * .65 : 0;
     updateAuraPose(t,dt,moving,onGround,gliding,stride);
+    if(frameN%2===0)animateAuraSpectrum(t);
     auraParts.forEach(o => {
         let kind = o.userData.fx,
             i = o.userData.i || 0;
         if (kind === "particle" || kind === "leaf") {
-            let a = i * 2.39996 + t * (.5 + rand(i, 10) * .65),
-                r = (o.userData.spread || 1) * (.55 + rand(i, 4) * .65);
-            // Orbit outside the character's body, with a calm layered spiral.
-            const safeR=Math.max(1.2,r+0.55);
-            const y=1.1+(i%7)*.42+Math.sin(t*.85+i*1.7)*.18;
+            const pose=equippedAuraProfile.pose,seed=o.userData.phase||0;
+            let a=i*2.39996+t*(.36+rand(i,10)*.45),
+                r=(o.userData.spread||1)*(.55+rand(i,4)*.65);
+            let safeR=Math.max(1.2,r+.45),
+                y=1.0+(i%8)*.4+Math.sin(t*.85+seed)*.16;
+            if(pose==="power"){
+                // Ember and storm energy erupts upward in successive bursts.
+                const lift=((t*1.13+seed*.16)%1);
+                y=.28+lift*4.25;
+                safeR=1.15+lift*.6+(i%3)*.12;
+                a=i*2.4+t*.16;
+            }else if(pose==="channel"){
+                // Frost and crystals drift downward around the caster's hands.
+                const fall=((t*.34+seed*.15)%1);
+                y=4.6-fall*4.25;
+                safeR=1.48+(i%3)*.16;
+                a=i*2.4-t*.23;
+            }else if(pose==="drift"){
+                a=i*2.39996+t*.35;
+                safeR=1.35+Math.sin(t*.55+i)*.28;
+            }else if(pose==="ascend"){
+                a=i*2.39996+t*(i%2===0?.76:-.65);
+                safeR=1.7+(i%3)*.28;
+                y=.5+((i%9)*.44)+Math.sin(t*1.5+i)*.24;
+            }else if(pose==="meditate"){
+                a=i*2.4+t*.31;
+                y=1.1+(i%7)*.45+Math.sin(t*.7+i)*.22;
+                safeR=1.55+(i%3)*.14;
+            }
             o.position.set(Math.cos(a)*safeR,y,Math.sin(a)*safeR);
-            o.rotation.y = t * 1.8 + i;
-            o.rotation.z = Math.sin(t + i) * .4;
-            o.scale.setScalar(.7 + Math.sin(t * 3 + i) * .25)
+            o.rotation.y=t*1.25+i;
+            o.rotation.z=Math.sin(t+i)*.48;
+            o.scale.setScalar(.76+Math.sin(t*2.4+i)*.18);
         } else if (kind === "ring") {
             o.rotation.z += dt * (.2 + i * .02);
             o.rotation.y += dt * .18;
