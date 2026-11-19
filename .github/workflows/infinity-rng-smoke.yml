@@ -138,6 +138,45 @@ jobs:
                   await page.click('#closeInventory');
                 }catch(e){failed=true;console.log('FAIL CODE/SETTINGS TEST '+String(e.stack||e));}
               }
+              if(pageName==='index.html'&&errors.length===0){
+                try{
+                  const auras=await page.evaluate(()=>{
+                    const inspect=(name)=>{
+                      state.equipped=name;renderAura();
+                      for(let k=0;k<5;k++)updateAuraPose(12+k*.17,.1,false,true,false,0);
+                      return {name,color:auraColor(A[auraLookup.get(name)]),
+                        visual:equippedAuraProfile.pose,hover:equippedAuraProfile.hover,
+                        bodyLift:rig.position.y,fxCount:auraParts.length,
+                        signatures:auraParts.filter(x=>x.userData?.fx==='signature').length,
+                        auraVisible:!!auraTag.visible,
+                        auraFXGround:auraGround.visible};
+                    };
+                    const out={
+                      dust:inspect('Dust'),
+                      frost:inspect('Frost Dust'),
+                      ember:inspect('Ember Dust'),
+                      astral:inspect('Astral Sovereign'),
+                      infinity:inspect('INFINITY')
+                    };
+                    document.getElementById('settingsButton').click();
+                    document.getElementById('settingAuraFX').click();
+                    out.lite={active:hudPrefs.auraFX,count:auraParts.length,
+                      pose:equippedAuraProfile.pose};
+                    document.getElementById('settingAuraFX').click();
+                    document.getElementById('closeSettings').click();
+                    return out;
+                  });
+                  console.log('AURA VISUAL/POSE TEST '+JSON.stringify(auras));
+                  if(auras.frost.color===auras.ember.color||
+                     auras.frost.signatures<1||auras.ember.signatures<1||
+                     auras.astral.signatures<1||!auras.astral.hover||
+                     auras.astral.bodyLift<=.12||auras.infinity.signatures<1||
+                     auras.lite.active!==false||auras.lite.count>=auras.infinity.fxCount||
+                     !auras.infinity.auraVisible){
+                    failed=true;console.log('FAIL aura themes, motion, levitation or reduced effects setting');
+                  }
+                }catch(e){failed=true;console.log('FAIL AURA TEST '+String(e.stack||e));}
+              }
               if(errors.length){failed=true;console.log('FAIL Browser runtime errors: '+errors.length);}
               for(const e of errors.slice(0,15))console.log(e);
               for(const e of logs.slice(0,25))console.log(e.slice(0,1500));
