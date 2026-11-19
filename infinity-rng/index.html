@@ -2592,6 +2592,81 @@ softRockRidge(-320,-285,105,6,worldSnow,1.2);
 softRockRidge(-340,65,85,5,worldSnow,2.2);
 softRockRidge(265,95,75,5,worldStone,.5);
 softRockRidge(325,-300,85,5,worldStone,1.5);
+
+// Hand-sculpted cliffs with layered silhouettes. Every base vertex samples the
+// actual terrain; their feet cannot float above a hill or sink through it.
+const cliffBeaconRigs=[];
+function builtRockButtress(x,z,radius,height,theme,seed){
+ if(!clearForScenery(x,z,6))return;
+ if(pathDistance(x,z)<radius+6)return;
+ const palette={
+  frost:[0x7894b2,0xdae9fa],forest:[0x44685c,0x7ea37e],
+  desert:[0xa07b60,0xe3bf90],crystal:[0x544971,0x9f85c4],
+  ember:[0x54444e,0x987071],astral:[0x525376,0xa097bb]
+ }[theme];
+ const rings=5,sides=14,positions=[],colors=[],uv=[],idx=[];
+ const lower=new T.Color(palette[0]),upper=new T.Color(palette[1]);
+ const steps=[
+  [1.06,-.32],[1.0,.12],[.94,.42],[.88,.7],
+  [.77,.96],[0,1.06]
+ ];
+ for(let j=0;j<=rings;j++){
+  const [a,yLift]=steps[j];
+  for(let k=0;k<=sides;k++){
+   const angle=k/sides*Math.PI*2;
+   const rough=1+.065*Math.sin(angle*5+seed)+.045*Math.cos(angle*9+seed*.7);
+   const xx=x+Math.cos(angle)*radius*a*rough,zz=z+Math.sin(angle)*radius*a*rough;
+   const surface=ground(xx,zz),yy=surface+height*yLift;
+   positions.push(xx,yy,zz);uv.push(k/sides*2,j/rings*1.7);
+   const shade=.82+.09*Math.cos(angle*4+seed),c=lower.clone().lerp(upper,j/rings*.86);
+   c.multiplyScalar(shade);colors.push(c.r,c.g,c.b);
+   if(j<rings&&k<sides){
+    const p=j*(sides+1)+k;
+    idx.push(p,p+1,p+sides+1,p+1,p+sides+2,p+sides+1);
+   }
+  }
+ }
+ const geo=new T.BufferGeometry();
+ geo.setAttribute("position",new T.Float32BufferAttribute(positions,3));
+ geo.setAttribute("color",new T.Float32BufferAttribute(colors,3));
+ geo.setAttribute("uv",new T.Float32BufferAttribute(uv,2));
+ geo.setIndex(idx);geo.computeVertexNormals();
+ const mat=new T.MeshStandardMaterial({
+  color:0xffffff,vertexColors:true,roughness:.91,
+  map:biomeTextures.rock,bumpMap:biomeTextures.rock,bumpScale:.3,
+  flatShading:true,side:T.DoubleSide
+ });
+ const cliff=mesh(geo,mat);cliff.castShadow=false;
+ registerCollider(x,z,radius*.74,height*1.1);
+ const accent=theme==="frost"?scenicIce:theme==="forest"?scenicMoss:theme==="desert"?scenicGold:
+   theme==="ember"?mats.lava:scenicViolet;
+ const h=ground(x,z)+height*1.05;
+ // A few strong features on the plateau, not unplanned scattered props.
+ if(theme==="crystal"||theme==="astral"||theme==="frost"){
+  const gem=mesh(new T.OctahedronGeometry(1.6,0),accent,scene,x,h+2,z);
+  gem.scale.set(.85,2.1,.8);
+  cliffBeaconRigs.push({gem,phase:seed});
+ }else{
+  const crown=cyl(radius*.41,radius*.48,.9,theme==="desert"?mats.sand:scenicMoss,scene,x,h-.45,z,10);
+  crown.castShadow=false;
+ }
+}
+for(const [x,z,r,h,theme,seed] of [
+ [-330,137,17,12,"frost",2],[-370,-198,22,13,"frost",4],
+ [-266,-167,18,11,"astral",7],[-140,-313,20,13,"astral",1],
+ [183,345,19,11,"forest",3],[227,379,22,12,"forest",6],
+ [334,123,21,15,"crystal",8],[189,124,16,11,"crystal",9],
+ [345,227,20,12,"desert",10],[206,340,19,11,"desert",11],
+ [220,-243,20,12,"ember",5],[379,-90,17,10,"ember",12]
+])builtRockButtress(x,z,r,h,theme,seed);
+function animateCliffBeacons(t){
+ for(const o of cliffBeaconRigs){
+  o.gem.rotation.y=t*.36+o.phase;
+  o.gem.rotation.z=Math.sin(t*.65+o.phase)*.06;
+  o.gem.position.y+=0; // Heights remain anchored; no floating rocks.
+ }
+}
+
 const launchTowers=[
  {x:-55,z:-45,h:65,c:0xffd589,a:.9,name:"Origin"},
  {x:-350,z:10,h:78,c:0x9cecff,a:1.2,name:"Frost"},
@@ -3293,6 +3368,7 @@ function animate() {
     skyDomeMaterial.uniforms.uTime.value=t;
     animateBiomeGeometry(t);
     animateRealmGateBanners(t);
+    animateCliffBeacons(t);
     riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
     for(const m of biomeAtmosphere)m.uniforms.uTime.value=t;
