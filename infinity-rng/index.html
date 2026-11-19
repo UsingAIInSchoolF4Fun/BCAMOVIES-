@@ -4552,7 +4552,7 @@ function landmarkFoundation(x,z,radius){
  return {top,bottom};
 }
 function buildGameLandmark(x,z,name,color,mode){
- const facade=mode==="sky"?"SKY PARKOUR":name.toUpperCase()+" RUNES";
+ const facade=mode==="sky"?"SKY PARKOUR · "+name.toUpperCase():name.toUpperCase()+" RUNES";
  const shapeMat=new T.MeshStandardMaterial({
   color:mode==="sky"?0x55526e:0x5f587c,
   roughness:.8,metalness:.08,map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.12
@@ -4583,9 +4583,9 @@ function buildGameLandmark(x,z,name,color,mode){
  }
  // Ringed upper gateway on the rear approach: a huge silhouette from far away.
  const arch=mesh(new T.TorusGeometry(9.5,.66,10,48,Math.PI),metal,root,0,12.25,-11.1);
- arch.rotation.z=0;arch.castShadow=false;
+ arch.rotation.x=0;arch.rotation.z=0;arch.castShadow=false;
  const lightArch=mesh(new T.TorusGeometry(9.1,.17,7,52,Math.PI),magic,root,0,12.25,-11.08);
- lightArch.castShadow=false;
+ lightArch.rotation.x=0;lightArch.castShadow=false;
  const crest=new T.Group();root.add(crest);
  crest.position.set(0,14.15,-11.1);
  const orb=mesh(new T.OctahedronGeometry(2.1,0),magic,crest);
@@ -4603,7 +4603,7 @@ function buildGameLandmark(x,z,name,color,mode){
   cyl(.55,.72,3.5,shapeMat,root,xx,1.9,19.5,9).castShadow=false;
   const torch=sphere(.63,magic,root,xx,4.06,19.5);torch.castShadow=false;
  }
- gameLandmarks.push({name,x,z,mode,root,crest,orb,orbit,magic,phase:x*.013+z*.027});
+ gameLandmarks.push({name,x,z,mode,top:levels.top+.26,root,crest,orb,orbit,magic,phase:x*.013+z*.027});
 }
 for(const trial of BIOME_REWARDS){
  buildGameLandmark(trial.x,trial.z,trial.name,trial.color,"runes");
@@ -4616,6 +4616,16 @@ const parkourLandmarks=[
  {name:"Forest Temple",x:20,z:250,color:0x8fe5ac}
 ];
 for(const trial of parkourLandmarks)buildGameLandmark(trial.x,trial.z,trial.name,trial.color,"sky");
+function gameArenaWalkHeight(x,z){
+ for(const g of gameLandmarks){
+  const r=Math.hypot(x-g.x,z-g.z);
+  if(r>18.0)continue;
+  if(g.mode==="sky"&&r<11.6)return Math.max(g.top,ground(g.x,g.z)+1.15);
+  if(g.mode==="runes"&&r<5.9)return Math.max(g.top,ground(g.x,g.z)+.69);
+  return g.top;
+ }
+ return -Infinity;
+}
 function animateGameLandmarks(t){
  for(const g of gameLandmarks){
   g.crest.rotation.y=t*.38+g.phase;
@@ -4941,7 +4951,7 @@ function animate() {
       const water=nx>-304&&nx<339&&Math.abs(nz-riverPathZ(nx))<8?
         riverWaterHeight(nx)-.65:-Infinity;
       const landingFloor=Math.max(ground(nx,nz),roadWalkHeight(nx,nz),
-        waystationWalkHeight(nx,nz),hubWalkHeight(nx,nz),water);
+        waystationWalkHeight(nx,nz),hubWalkHeight(nx,nz),gameArenaWalkHeight(nx,nz),water);
       if(!canStand(nx,nz,ny+.35)){
         // Deflect from buildings/trees instead of phasing through them.
         glideHeading+=steer!==0?steer*.42:1.05;
@@ -4984,6 +4994,7 @@ function animate() {
     floor=Math.max(floor,waystationWalkHeight(player.position.x,player.position.z));
     // The plaza and the broad staircase are real walkable collision surfaces.
     floor=Math.max(floor,hubWalkHeight(player.position.x,player.position.z));
+    floor=Math.max(floor,gameArenaWalkHeight(player.position.x,player.position.z));
     for(const tw of launchTowers){
       const dx=player.position.x-tw.x,dz=player.position.z-tw.z,r=Math.hypot(dx,dz);
       if(Math.abs(r-tw.rampRadius)>3.4)continue;
