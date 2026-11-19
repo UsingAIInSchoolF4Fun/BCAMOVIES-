@@ -1496,6 +1496,7 @@ const routePosts=[];
 // the visual gaps caused by the old two-vertex-wide ribbons.
 const roadSpatialIndex=new Map(),ROAD_CELL=22;
 const riverCrossings=[];
+function bridgeDeckTop(x,z){return Math.max(ground(x,z)+.43,riverWaterHeight(x)+1.45);}
 function roadCellKey(x,z){return Math.floor(x/ROAD_CELL)+","+Math.floor(z/ROAD_CELL);}
 function recordRoadSample(x,z,width){
  const key=roadCellKey(x,z);
@@ -1508,7 +1509,7 @@ function roadWalkHeight(x,z){
   const along=dx*bridge.tx+dz*bridge.tz;
   const across=-dx*bridge.tz+dz*bridge.tx;
   if(Math.abs(along)<bridge.length*.5&&Math.abs(across)<bridge.width*.5-.35)
-    return ground(x,z)+.38;
+    return bridgeDeckTop(x,z);
  }
  const cx=Math.floor(x/ROAD_CELL),cz=Math.floor(z/ROAD_CELL);
  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){
@@ -1600,44 +1601,33 @@ function finishRiverBridges(){
  const lantern=new T.MeshStandardMaterial({color:0xffcc86,emissive:0xff9b40,emissiveIntensity:1.2});
  for(const route of authoredRoutes){
   const spline=new T.CatmullRomCurve3(route.points.map(p=>new T.Vector3(p[0],0,p[1])),false,"centripetal",.45);
-  const steps=Math.ceil(spline.getLength()/3.5);
+  const steps=Math.ceil(spline.getLength()/3);
   let previous=null;
   for(let i=0;i<=steps;i++){
-   const u=i/steps,p=spline.getPoint(u);
-   const riverZ=65+24*Math.sin(p.x*.014)+12*Math.sin(p.x*.035);
-   const diff=p.z-riverZ;
-   if(previous&&previous.diff*diff<=0&&Math.abs(p.x)<380){
-    const crossing=spline.getPoint((i-.5)/steps),tangent=spline.getTangent(u);
+   const u=i/steps,p=spline.getPoint(u),diff=p.z-riverPathZ(p.x);
+   if(previous&&previous.diff*diff<=0&&p.x>-302&&p.x<336){
+    const crossing=spline.getPoint(Math.max(0,(i-.5)/steps)),tangent=spline.getTangent(u);
     const len=Math.hypot(tangent.x,tangent.z)||1,tx=tangent.x/len,tz=tangent.z/len;
-    if(riverCrossings.some(v=>Math.hypot(v.x-crossing.x,v.z-crossing.z)<18))break;
-    const bridge={x:crossing.x,z:crossing.z,tx,tz,width:route.width,length:23};
-    riverCrossings.push(bridge);
-    // The deck follows the actual ground below; top sits only 0.38 above it.
-    const width=route.width+1.1,half=bridge.length*.5;
-    for(let j=0;j<14;j++){
-     const along=-half+(j+.5)*bridge.length/14;
+    if(riverCrossings.some(v=>Math.hypot(v.x-crossing.x,v.z-crossing.z)<17))break;
+    const length=Math.min(42,Math.max(24,22/Math.max(.5,Math.abs(tz))));
+    const width=route.width+1.1,b={x:crossing.x,z:crossing.z,tx,tz,width:route.width,length};
+    riverCrossings.push(b);
+    const half=length*.5,planks=18,heading=Math.atan2(tx,tz);
+    for(let j=0;j<planks;j++){
+     const along=-half+(j+.5)*length/planks;
      const px=crossing.x+tx*along,pz=crossing.z+tz*along;
-     const yy=ground(px,pz);
-     const plank=box(width,.18,bridge.length/14-.055,wood,scene,px,yy+.29,pz);
-     plank.rotation.y=Math.atan2(tx,tz);
-     plank.castShadow=false;
-     if(j%3===0){
-      for(const side of [-1,1]){
-       const sx=px-tz*side*(width*.5+.35),sz=pz+tx*side*(width*.5+.35),sy=ground(sx,sz);
-       cyl(.21,.27,2.3,stone,scene,sx,sy+1.28,sz,7);
-       sphere(.27,lantern,scene,sx,sy+2.5,sz).castShadow=false;
-      }
+     const top=bridgeDeckTop(px,pz);
+     const board=box(width,.22,length/planks-.035,wood,scene,px,top-.11,pz);
+     board.rotation.y=heading;board.castShadow=false;
+     if(j%3===0)for(const side of [-1,1]){
+      const sx=px-tz*side*(width*.5+.25),sz=pz+tx*side*(width*.5+.25),sy=bridgeDeckTop(sx,sz);
+      cyl(.22,.27,2.3,stone,scene,sx,sy+1.15,sz,7).castShadow=false;
+      sphere(.26,lantern,scene,sx,sy+2.42,sz).castShadow=false;
      }
-    }
-    for(const side of [-1,1]){
-     // Small rail pieces follow the local terrain instead of floating.
-     for(let j=0;j<11;j++){
-      const along=-half+(j+.5)*bridge.length/11;
-      const px=crossing.x+tx*along-tz*side*(width*.5+.4);
-      const pz=crossing.z+tz*along+tx*side*(width*.5+.4);
-      const yy=ground(px,pz);
-      const b=box(.3,.25,bridge.length/11+.06,rail,scene,px,yy+2.2,pz);
-      b.rotation.y=Math.atan2(tx,tz);b.castShadow=false;
+     if(j%2===0)for(const side of [-1,1]){
+      const sx=px-tz*side*(width*.5+.25),sz=pz+tx*side*(width*.5+.25),sy=bridgeDeckTop(sx,sz);
+      const railing=box(.28,.25,length/planks*2+.02,rail,scene,sx,sy+2.18,sz);
+      railing.rotation.y=heading;railing.castShadow=false;
      }
     }
     break;
@@ -1658,7 +1648,7 @@ function addBridgeWaterwheels(){
   const b=riverCrossings[i],side=i%2?1:-1;
   const x=b.x-b.tz*side*(b.width*.5+4.7);
   const z=b.z+b.tx*side*(b.width*.5+4.7),y=ground(x,z);
-  const root=new T.Group();root.position.set(x,y+2.7,z);
+  const root=new T.Group();root.position.set(x,Math.max(y+2.7,riverWaterHeight(b.x)+1.55),z);
   root.rotation.y=Math.atan2(b.tx,b.tz);scene.add(root);
   const wheel=new T.Group();root.add(wheel);
   const rim=mesh(new T.TorusGeometry(2.55,.33,8,36),timber,wheel);
@@ -1673,7 +1663,7 @@ function addBridgeWaterwheels(){
    box(.68,.9,.7,brass,wheel,px,py,0).rotation.z=a;
   }
   cyl(.45,.55,3.1,timber,root,0,0,-1.45,8).rotation.x=Math.PI/2;
-  const water=torus(1.65,.1,scenicCyan,scene,x,y+.17,z);
+  const water=torus(1.65,.1,scenicCyan,scene,x,riverWaterHeight(b.x)+.13,z);
   water.castShadow=false;
   animatedWaterwheels.push({wheel,water,phase:i});
  }
