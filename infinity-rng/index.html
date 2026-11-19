@@ -208,7 +208,10 @@ const state = {
     redeemedCodes: stored.redeemedCodes && typeof stored.redeemedCodes === "object" ? stored.redeemedCodes : {},
     pendingLuck: stored.pendingLuck>=2?Math.min(5,stored.pendingLuck):1,
     trialCooldowns: stored.trialCooldowns && typeof stored.trialCooldowns==="object"?stored.trialCooldowns:{},
-    trialWins: stored.trialWins && typeof stored.trialWins==="object"?stored.trialWins:{}
+    trialWins: stored.trialWins && typeof stored.trialWins==="object"?stored.trialWins:{},
+    skyWins: stored.skyWins && typeof stored.skyWins==="object"?stored.skyWins:{},
+    skyCooldowns: stored.skyCooldowns && typeof stored.skyCooldowns==="object"?stored.skyCooldowns:{},
+    skyBest: stored.skyBest && typeof stored.skyBest==="object"?stored.skyBest:{}
 };
 const hudPrefs={
     compact: stored.hudPrefs?.compact!==false,
@@ -2894,6 +2897,8 @@ function canStand(x,z,y=0){
 for(const site of trialSites){
  const y=ground(site.x,site.z),altitude=y+13;
  site.top=altitude;site.cooldown=0;
+ site.id=site.name.toLowerCase().replace(/[^a-z0-9]+/g,"_");
+ site.platforms=[];
  const stone=mats.stoneDark.clone();
  stone.color.setHex(site.type===2?0x9e7772:0xffffff);
  stone.roughness=1;
@@ -2905,14 +2910,95 @@ for(const site of trialSites){
   const a=j*.38+.3,rad=8.8-j*.23,px=site.x+Math.cos(a)*rad,pz=site.z+Math.sin(a)*rad,top=y+1.6+j*1.35;
   box(5.4,.65,5.4,stone,scene,px,top-.33,pz);
   box(5.45,.12,5.45,trialMat,scene,px,top-.02,pz);
-  trialPlatforms.push({x:px,z:pz,top,w:5.4,d:5.4});
+  const stage={x:px,z:pz,top,w:5.4,d:5.4,index:j,site};
+  site.platforms.push(stage);trialPlatforms.push(stage);
+  // Glowing numbered stages make the required parkour sequence legible.
+  const rim=torus(2.15,.12,trialMat,scene,px,top+.13,pz);
+  rim.castShadow=false;stage.rim=rim;
  }
  cyl(5.6,6.2,1.1,stone,scene,site.x,altitude-.55,site.z,18);
  torus(5,.3,trialMat,scene,site.x,altitude+.1,site.z);
  for(let j=0;j<6;j++){let a=j*Math.PI/3;cyl(.6,.8,4,stone,scene,site.x+Math.cos(a)*6,altitude+1.6,site.z+Math.sin(a)*6)}
  const beacon=mesh(new T.OctahedronGeometry(2.1),trialMat,scene,site.x,altitude+4,site.z);beacon.scale.y=1.8;
- trialPlatforms.push({x:site.x,z:site.z,top:altitude,w:10,d:10});
+ const summit={x:site.x,z:site.z,top:altitude,w:10,d:10,index:9,site};
+ site.platforms.push(summit);trialPlatforms.push(summit);
 }
+// Five independent SKY PARKOUR games, no shared broken progress counter.
+// Start at the glowing landmark with F, then visit 10 platforms in order.
+let activeSkyTrial=null,skyInteractLatch=false,skyGameFrame=0;
+const skyGameHud=document.createElement("div");skyGameHud.id="skyGameHud";
+skyGameHud.style.cssText="display:none;position:fixed;right:11px;bottom:91px;z-index:8;pointer-events:none;background:#17112ce9;color:#fff;border:1px solid #d0a7ffaa;border-radius:13px;padding:10px 13px;width:min(273px,46vw);font:11px/1.5 Arial,sans-serif;box-shadow:0 7px 26px #0009";
+document.body.appendChild(skyGameHud);
+function beginSkyTrial(site){
+ activeSkyTrial={site,stage:0,started:Date.now(),ends:Date.now()+105000};
+ skyGameHud.style.display="block";
+ trialNotification("SKY PARKOUR · "+site.name.toUpperCase()+
+   "\nReach platforms 1–10 in order within 105 seconds!");
+}
+function finishSkyTrial(active){
+ const {site}=active,seconds=Math.max(0,Math.round((Date.now()-active.started)/1000));
+ state.skyWins[site.id]=(state.skyWins[site.id]||0)+1;
+ state.skyCooldowns[site.id]=Date.now()+12*60*1000;
+ state.skyBest[site.id]=Math.min(seconds,state.skyBest[site.id]||10000);
+ state.pendingLuck=Math.max(state.pendingLuck,2);
+ parkourCompleted=true;
+ activeSkyTrial=null;refreshLuck();save();updateHUD();
+ $("parkourHud").textContent="SKY PARKOUR COMPLETE · ×2 LUCK NEXT ROLL";
+ trialNotification("✦ SKY PARKOUR COMPLETE ✦\n"+site.name+" · "+seconds+
+    " seconds\n"+(state.skyBest[site.id]===seconds?"NEW PERSONAL BEST!\n":"")+
+    "+2× LUCK for your next roll!");
+}
+function updateSkyTrials(t){
+ const now=Date.now(),p=player.position;
+ const near=trialSites.map(s=>({site:s,d:Math.hypot(p.x-s.x,p.z-s.z)}))
+   .sort((a,b)=>a.d-b.d)[0];
+ const pressed=!!keys.KeyF&&!skyInteractLatch;
+ skyInteractLatch=!!keys.KeyF;
+ if(activeSkyTrial&&now>=activeSkyTrial.ends){
+  trialNotification("SKY PARKOUR · Time expired. Return to the entrance to retry.");
+  activeSkyTrial=null;
+ }
+ if(activeSkyTrial){
+  const active=activeSkyTrial,stage=active.site.platforms[active.stage];
+  if(stage&&Math.abs(p.x-stage.x)<stage.w*.5+.6&&
+     Math.abs(p.z-stage.z)<stage.d*.5+.6&&
+     Math.abs(p.y-stage.top)<1.5&&!gliding){
+    active.stage++;
+    if(active.stage>=active.site.platforms.length)finishSkyTrial(active);
+  }
+ }else if(pressed&&!gliding&&near.d<20&&!activeBiomeTrial){
+  const site=near.site,cooldown=state.skyCooldowns[site.id]||0;
+  if(now<cooldown)trialNotification(site.name+" course recharges in "+Math.ceil((cooldown-now)/60000)+" minutes.");
+  else beginSkyTrial(site);
+ }
+ // Animate current checkpoint rim only; most level decorations stay static.
+ if(++skyGameFrame%4===0){
+  for(const site of trialSites)for(const stage of site.platforms){
+    if(!stage.rim)continue;
+    const current=activeSkyTrial?.site===site&&activeSkyTrial?.stage===stage.index;
+    stage.rim.material=trialMat;
+    stage.rim.scale.setScalar(current?1.12+.05*Math.sin(t*3.8):1);
+  }
+ }
+ if(activeSkyTrial){
+  const a=activeSkyTrial,remain=Math.max(0,Math.ceil((a.ends-now)/1000));
+  skyGameHud.style.display="block";
+  skyGameHud.textContent="✦ "+a.site.name+" SKY PARKOUR · "+remain+"s\n"+
+    "STEP "+(a.stage+1)+" OF 10 · Climb to the next glowing platform.\n"+
+    "Reward: ×2 luck on next roll · Personal best "+
+    (state.skyBest[a.site.id]||"—")+"s";
+  skyGameHud.style.whiteSpace="pre-line";
+ }else if(near.d<32){
+  const cooldown=Math.max(0,(state.skyCooldowns[near.site.id]||0)-now);
+  skyGameHud.style.display="block";
+  skyGameHud.textContent="✦ "+near.site.name+" SKY PARKOUR\n"+
+    (cooldown?"Recharges in "+Math.ceil(cooldown/60000)+" min":
+      "Press F to start 10 glowing stages · 105 seconds")+"\n"+
+    "Reward: ×2 next roll · Best: "+(state.skyBest[near.site.id]||"—")+"s";
+  skyGameHud.style.whiteSpace="pre-line";
+ }else skyGameHud.style.display="none";
+}
+
 // Giant volcano with a broad wooden ramp and a dangerous timed lava eruption.
 const volcano={x:318,z:-295,r:66,height:64,cycle:300000,eruption:25000};
 function volcanoPassable(x,z,y=0){
@@ -5120,21 +5206,7 @@ function animate() {
         }
       }
     }
-    if (!parkourCompleted) {
-        for (const p of parkourPlatforms) {
-            if (p.index === parkourProgress && Math.abs(player.position.x - p.x) < p.w / 2 && Math.abs(player.position.z - p.z) < p.d / 2 && Math.abs(player.position.y - p.top) < 1.35) {
-                parkourProgress++;
-                $("parkourHud").textContent = "Skybridge Parkour · " + parkourProgress + "/" + parkourPlatforms.length;
-                if (parkourProgress === parkourPlatforms.length) {
-                    parkourCompleted = true;
-                    state.pendingLuck=Math.max(state.pendingLuck,2);
-                    refreshLuck();save();
-                    $("parkourHud").textContent = "PARKOUR COMPLETE · ×2 next roll!"
-                }
-                break
-            }
-        }
-    }
+    updateSkyTrials(t);
     // Reward physical parkour completion instead of entering a code.
     for(const site of trialSites){if(Math.hypot(player.position.x-site.x,player.position.z-site.z)<5.2&&Math.abs(player.position.y-site.top)<1.5)awardTrial(site)}
     const elapsed=(Date.now()-volcanoCycleStart)%volcano.cycle;
