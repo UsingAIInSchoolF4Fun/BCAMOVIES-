@@ -819,7 +819,10 @@ function height(x,z){
   const t=Math.max(0,Math.min(1,(r+feather-d)/feather));
   const smooth=t*t*(3-2*t);
   // Weight blending avoids visible seams when two landmark pads overlap.
-  const weight=smooth*smooth;
+  // Preserve a nearly level core underneath the building while keeping
+  // overlaps and the outer terrain transition continuous.
+  const inside=Math.max(0,(r-d)/r);
+  const weight=smooth*smooth*(1+150*Math.pow(inside,1.5));
   total+=weight;
   weightedLevel+=rawHeight(cx,cz)*weight;
  }
