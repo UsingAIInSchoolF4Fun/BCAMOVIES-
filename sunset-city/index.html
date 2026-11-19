@@ -123,7 +123,7 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 <div id="hud">
   <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V9 WILDLANDS</small></div><div class="hudMid">
    <div class="pill"><label>SURVIVAL</label><strong id="survive">00:00</strong></div><div class="pill cash"><label>RUN EARNINGS</label><strong id="earn">$0</strong></div><div class="pill heat"><label>HEAT LEVEL</label><strong id="stars">★☆☆☆☆</strong></div></div></div>
-  <div id="hudLeft"><div class="meter"><div class="meterhead"><span>CAR INTEGRITY</span><span id="healthText">100%</span></div><div class="track"><div class="fill" id="healthbar"></div></div></div><div class="meter"><div class="meterhead"><span>NITRO</span><span id="boostText">100%</span></div><div class="track"><div class="fill boost" id="boostbar"></div></div></div><div class="tips"><b>W/S</b> accelerate / brake<br><b>A/D</b> steer &nbsp; <b>SHIFT</b> boost<br><b>SPACE</b> handbrake drift<br><b>ESC</b> pause<br><b>MOUNTAINS</b> drive off-road<br><b>OCEAN</b> ends your run</div></div>
+  <div id="hudLeft"><div class="meter"><div class="meterhead"><span>CAR INTEGRITY</span><span id="healthText">100%</span></div><div class="track"><div class="fill" id="healthbar"></div></div></div><div class="meter"><div class="meterhead"><span>NITRO</span><span id="boostText">100%</span></div><div class="track"><div class="fill boost" id="boostbar"></div></div></div><div class="tips"><b>W/S</b> accelerate / brake<br><b>A/D</b> steer &nbsp; <b>SHIFT</b> boost<br><b>SPACE</b> handbrake drift<br><b>ESC</b> pause<br><b>M</b> island map · <b>C</b> camera<br><b>MOUNTAINS</b> earn ridge bonuses<br><b>OCEAN</b> ends your run</div></div>
   <button id="escapeBtn" type="button">Ⅱ PAUSE</button>
   <div id="hudBottom"><div class="minimap"><canvas id="radar" width="180" height="180"></canvas></div><div class="speedGroup"><div class="speednum" id="speed">0</div><small>KM/H</small><div class="gear" id="carName">STREET COMPACT</div><div class="gear" id="terrainStatus">3D PURSUIT</div><div class="progress"><i id="heatProgress"></i></div></div></div>
 </div>
@@ -154,7 +154,7 @@ let save=defaultSave();try{const data=JSON.parse(localStorage.getItem(SAVEKEY)||
 function persist(){try{localStorage.setItem(SAVEKEY,JSON.stringify(save))}catch(e){}}
 const UPGRADE_COST={engine:[1450,3500,7500],armor:[1200,3100,7100],nitro:[1300,3300,7200]};
 const UPGRADES={engine:{name:'ENGINE',desc:'More power'},armor:{name:'ARMOR',desc:'More health'},nitro:{name:'NITRO',desc:'Longer boosts'}};
-let mode='home',paused=false,keys={},now=0,last=0,runningSeconds=0,earned=0,combo=1,bannerEnd=0,wave=1,copTimer=0,trafficTimer=0,shake=0,waterTime=0,finishReason='',lastNearMiss=-100,scoreTick=0,hudTick=0,spikeTimer=0;
+let mode='home',paused=false,keys={},now=0,last=0,runningSeconds=0,earned=0,combo=1,bannerEnd=0,wave=1,copTimer=0,trafficTimer=0,shake=0,waterTime=0,finishReason='',lastNearMiss=-100,scoreTick=0,hudTick=0,spikeTimer=0,cameraMode=0,lastRidgeBonus=-100;
 let car=null,cops=[],traffic=[],particles=[],pickups=[],camera={x:0,y:0,zoom:1};let runInfo={nearMisses:0,drifts:0,rammed:0};
 const view={w:innerWidth,h:innerHeight,dpr:1};
 function resize(){view.dpr=Math.min(1.25,window.devicePixelRatio||1);view.w=innerWidth;view.h=innerHeight;let w=Math.round(view.w*view.dpr),h=Math.round(view.h*view.dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;if(webgl)webgl.viewport(0,0,w,h);} }
@@ -459,7 +459,7 @@ function spawnTraffic(n=17){
 }
 function spark(x,y,n=9,color='#ffc988',scale=1){if(particles.length>240)return;for(let i=0;i<n;i++){let a=rand(-Math.PI,Math.PI),v=rand(30,140)*scale;particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:rand(.2,.55),life:.55,col:color,size:rand(1.5,3.6)})}}
 function createPickups(){pickups=[];let used=[];for(let i=0;i<34;i++){let p=randomRoadSample(0,0,130,960);if(!p||used.some(o=>Math.hypot(o.x-p.x,o.y-p.y)<70))continue;pickups.push({x:p.x,y:p.y,claimed:false,t:Math.random()*TAU});used.push(p)}}
-function beginRun(){keys={};mode='playing';paused=false;runningSeconds=0;earned=0;combo=1;waterTime=0;copTimer=0;spikeTimer=0;scoreTick=0;wave=1;cops=[];traffic=[];particles=[];runInfo={nearMisses:0,drifts:0,rammed:0};car=spawnPlayer();spawnTraffic(17);createPickups();camera.x=car.x;camera.y=car.y;camera.zoom=1;for(let k=0;k<2;k++)spawnCop();$('overlay').classList.add('hidden');$('hud').classList.add('show');now=0;bannerEnd=0;last=performance.now();updateHud();showBanner('THE CHASE IS ON','Survive longer. Earn more. Upgrade your ride.',3)}
+function beginRun(){keys={};mode='playing';paused=false;runningSeconds=0;earned=0;combo=1;waterTime=0;copTimer=0;spikeTimer=0;scoreTick=0;lastRidgeBonus=-100;wave=1;cops=[];traffic=[];particles=[];runInfo={nearMisses:0,drifts:0,rammed:0};car=spawnPlayer();spawnTraffic(17);createPickups();camera.x=car.x;camera.y=car.y;camera.zoom=1;for(let k=0;k<2;k++)spawnCop();$('overlay').classList.add('hidden');$('hud').classList.add('show');now=0;bannerEnd=0;last=performance.now();updateHud();showBanner('THE CHASE IS ON','Survive longer. Earn more. Upgrade your ride.',3)}
 function finishRun(reason){if(mode!=='playing'&&mode!=='pause')return;mode='over';finishReason=reason;keys={};const amount=Math.floor(earned);save.wallet+=amount;save.runs++;save.total+=Math.floor(runningSeconds);save.best=Math.max(save.best,Math.floor(runningSeconds));persist();$('hud').classList.remove('show');renderResults()}
 function damage(amount){if(car.hitCooldown>0)return;car.health=Math.max(0,car.health-amount);car.hitCooldown=.55;shake=Math.max(shake,11);spark(car.x,car.y,17,'#f8d599',1.35);if(car.health<=0)finishRun('The police totaled your car.')}
 function carCollision(x,y,radius){for(let b of structures){if(Math.hypot(x-b.x,y-b.y)>b.rad+radius)continue;let cs=Math.cos(b.rot),sn=Math.sin(b.rot),dx=x-b.x,dy=y-b.y,lx=dx*cs+dy*sn,ly=-dx*sn+dy*cs;let ax=clamp(lx,-b.w*.5,b.w*.5),ay=clamp(ly,-b.h*.5,b.h*.5);if(Math.hypot(lx-ax,ly-ay)<radius)return b}return null}
@@ -597,7 +597,7 @@ function updateCops(dt){
   let error=Math.abs(Math.atan2(Math.sin(aim-c.a),Math.cos(aim-c.a)));
   c.a=angleTurn(c.a,aim,dt*(c.type==='heavy'?1.13:1.55));
   const cap=(wave>=4?123:89)+wave*8-(c.type==='heavy'?18:0);
-  let targetSpeed=cap*clamp(1-error/2.25,.27,1);
+  let targetSpeed=cap*clamp(1-error/2.25,.27,1)*(onRoad(c.x,c.y)?1:c.type==='heavy'?.51:.66)*clamp(1-Math.abs(slopeAt(c.x,c.y,c.a))*1.8,.48,1);
   if(distance<23)targetSpeed*=.65;
   if(c.stun>0)targetSpeed*=.22;
   if(!clear)targetSpeed*=.66;
@@ -656,6 +656,7 @@ function updatePlaying(dt){runningSeconds+=dt;now+=dt;updateCar(dt);if(mode!=='p
  let lvl=wave;let dollars=(14+lvl*7)*dt*(1+Math.min(1.5,runningSeconds/160));earned+=dollars;
  let newCombo=Math.min(4,1+Math.floor(runningSeconds/42));if(newCombo!==combo){combo=newCombo;showBanner(`EARNINGS ×${combo}`,`HEAT ${wave} · STAY ALIVE`,2)}
  let xlook=car.x+clamp(car.vx*.35,-105,105),ylook=car.y+clamp(car.vy*.35,-105,105);camera.x=lerp(camera.x,xlook,clamp(dt*3.7,0,1));camera.y=lerp(camera.y,ylook,clamp(dt*3.7,0,1));
+ if(terrainHeight(car.x,car.y)>85&&Math.abs(car.speed)>55&&runningSeconds-lastRidgeBonus>22){lastRidgeBonus=runningSeconds;earned+=260;showBanner('RIDGE RUNNER','+$260 · HIGH PASS SURVIVAL',1.8)}
  const targetZoom=clamp(1.02-Math.abs(car.speed)/1200,.74,1.05);camera.zoom=lerp(camera.zoom,targetZoom,clamp(dt*2.1,0,1));shake=Math.max(0,shake-dt*18);
  if(now>bannerEnd)$('runbanner').classList.remove('show');
  hudTick+=dt;if(hudTick>.08){hudTick=0;updateHud()}
@@ -947,8 +948,8 @@ function render3D(){if(!g3.ready)return;
  let anchorA=playing?target.a:showroom?now*.23+1.0:now*.07+.55;
  let cg=g3.camera,angleDelta=Math.atan2(Math.sin(anchorA-cg.heading),Math.cos(anchorA-cg.heading));
  cg.heading+=angleDelta*(playing?.095:showroom?.058:.019);
- let span=playing?(59+Math.min(12,Math.abs(target.speed)*.055)):showroom?73:115;
- let ht=playing?27:showroom?39:69;
+ let span=playing?((cameraMode?89:59)+Math.min(12,Math.abs(target.speed)*.055)):showroom?73:115;
+ let ht=playing?(cameraMode?43:27):showroom?39:69;
  let xGoal=target.x-Math.sin(cg.heading)*span,zGoal=target.y+Math.cos(cg.heading)*span;
  let yGoal=Math.max(terrainHeight(target.x,target.y)+ht,terrainHeight(xGoal,zGoal)+(playing?13:20));
  let smooth=playing?.19:showroom?.10:.036;
@@ -980,8 +981,8 @@ function renderSoftware3D(){
  g.setTransform(d,0,0,d,0,0);g.clearRect(0,0,W,H);
  const sky=g.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#204d78');sky.addColorStop(.34,'#9cb1c0');sky.addColorStop(.5,'#80b9c3');sky.addColorStop(1,'#165879');g.fillStyle=sky;g.fillRect(0,0,W,H);
  let showing=mode==='garage',showPreview=showing?{x:120*CITY_COMPACT,y:175*CITY_COMPACT,a:now*.24,template:CARS.find(c=>c.id===garageFocus)||CARS[0],color:save.paint[garageFocus]||(CARS.find(c=>c.id===garageFocus)||CARS[0]).color}:null;
- let live=mode==='playing'||mode==='pause'||mode==='over';let target=live?(car||{x:80,y:20,a:0,speed:0}):showing?showPreview:{x:-465*CITY_COMPACT+Math.sin(now*.08)*75,y:-330*CITY_COMPACT,a:.65+now*.02,speed:0};let ang=target.a,co=Math.cos(ang),si=Math.sin(ang),focal=Math.min(W*1.12,H*1.22),eyeY=terrainHeight(target.x,target.y)+(live?29:showing?33:58);
- function proj(x,y,z){let xx=x-target.x,zz=z-target.y,depth=xx*si-zz*co+(live?52:showing?64:100);
+ let live=mode==='playing'||mode==='pause'||mode==='over';let target=live?(car||{x:80,y:20,a:0,speed:0}):showing?showPreview:{x:-465*CITY_COMPACT+Math.sin(now*.08)*75,y:-330*CITY_COMPACT,a:.65+now*.02,speed:0};let ang=target.a,co=Math.cos(ang),si=Math.sin(ang),focal=Math.min(W*1.12,H*1.22),eyeY=terrainHeight(target.x,target.y)+(live?(cameraMode?45:29):showing?33:58);
+ function proj(x,y,z){let xx=x-target.x,zz=z-target.y,depth=xx*si-zz*co+(live?(cameraMode?82:52):showing?64:100);
   if(depth<13)return null;let s=focal/depth;return [W/2+(xx*co+zz*si)*s,H*.16+(eyeY-y)*s,depth,s];}
  function polygon(pts,color){let points=[];for(let p of pts){let q=proj(...p);if(!q)return;points.push(q)}g.fillStyle=color;g.beginPath();g.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);g.closePath();g.fill();}
  function outline(pts,color,width=1){let points=[];for(let p of pts){let q=proj(...p);if(!q)return;points.push(q)}g.strokeStyle=color;g.lineWidth=width;g.beginPath();g.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);g.closePath();g.stroke();}
@@ -1212,7 +1213,7 @@ function clickAction(e){const el=e.target.closest('[data-action]');if(!el)return
 }
 $('screen').addEventListener('click',clickAction);
 $('escapeBtn').addEventListener('click',togglePause);
-addEventListener('keydown',e=>{let k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright','shift','escape','w','a','s','d','m'].includes(k))e.preventDefault();if(k==='m'&&!e.repeat){if(mode==='atlas')leaveAtlas();else if(['home','playing','pause'].includes(mode))renderAtlas();return}if(k==='escape'&&!e.repeat){if(mode==='atlas')leaveAtlas();else togglePause();return}if(mode==='playing')keys[k]=true;});
+addEventListener('keydown',e=>{let k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright','shift','escape','w','a','s','d','m','c'].includes(k))e.preventDefault();if(k==='m'&&!e.repeat){if(mode==='atlas')leaveAtlas();else if(['home','playing','pause'].includes(mode))renderAtlas();return}if(k==='c'&&!e.repeat){cameraMode=1-cameraMode;if(mode==='playing')showBanner(cameraMode?'WIDE CAMERA':'CLOSE CAMERA',cameraMode?'SCENIC CHASE VIEW':'NEAR ROAD VIEW',1.2);return}if(k==='escape'&&!e.repeat){if(mode==='atlas')leaveAtlas();else togglePause();return}if(mode==='playing')keys[k]=true;});
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 addEventListener('blur',()=>{keys={};if(mode==='playing')togglePause()});
 for(let b of document.querySelectorAll('.touch')){const key=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture(e.pointerId);if(mode==='playing'){keys[key]=true;b.classList.add('on')}});for(let evt of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(evt,()=>{keys[key]=false;b.classList.remove('on')})}
