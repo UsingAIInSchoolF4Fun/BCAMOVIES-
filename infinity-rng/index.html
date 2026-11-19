@@ -1237,21 +1237,28 @@ function buildSpawnHub(){
  }
  animations.crystal=crystalRig;
  const magicalLight=new T.PointLight(0xb06dff,2.7,47,2);magicalLight.position.set(0,14,-4);root.add(magicalLight);
- // Animated water strips around fountain edges.
+ // Continuous waterfall curtain between the elevated crystal pedestal and
+ // the lower pool. Replaces 14 separate waterfall panels with visible gaps.
  const waterCanvas=document.createElement("canvas");waterCanvas.width=128;waterCanvas.height=256;
  const wc=waterCanvas.getContext("2d"),wg=wc.createLinearGradient(0,0,128,0);
- wg.addColorStop(0,"#1676ba");wg.addColorStop(.45,"#8bebff");wg.addColorStop(.66,"#4bb9ed");wg.addColorStop(1,"#0c538e");
+ wg.addColorStop(0,"#0d5688");wg.addColorStop(.28,"#3aa6d9");
+ wg.addColorStop(.52,"#8cecff");wg.addColorStop(.8,"#37a9de");wg.addColorStop(1,"#0f5b91");
  wc.fillStyle=wg;wc.fillRect(0,0,128,256);
- for(let i=0;i<65;i++){wc.fillStyle="rgba(224,254,255,"+(.15+(i%4)*.12)+")";wc.fillRect((i*47)%128,(i*37)%256,1+(i%3),12+(i%5)*5);}
- const fallingTex=new T.CanvasTexture(waterCanvas);fallingTex.encoding=T.sRGBEncoding;
- fallingTex.wrapS=fallingTex.wrapT=T.RepeatWrapping;fallingTex.repeat.set(1,2);
- const fallingMaterial=new T.MeshBasicMaterial({map:fallingTex,transparent:true,opacity:.88,side:T.DoubleSide,depthWrite:false});
- for(let i=0;i<14;i++){
-  const a=i*Math.PI*2/14;
-  const sheet=mesh(new T.PlaneGeometry(3.8,1.8),fallingMaterial,root,Math.sin(a)*10.6,2.56,Math.cos(a)*10.6-4);
-  sheet.rotation.y=a;sheet.castShadow=false;
+ for(let i=0;i<75;i++){
+  const x=(i*41)%128,y=(i*29)%256;
+  wc.fillStyle="rgba(239,252,255,"+(.12+(i%5)*.065)+")";
+  wc.fillRect(x,y,1+(i%3),16+(i%7)*4);
  }
- animations.waterfalls.push(fallingTex);
+ const fallingTex=new T.CanvasTexture(waterCanvas);fallingTex.encoding=T.sRGBEncoding;
+ fallingTex.wrapS=fallingTex.wrapT=T.RepeatWrapping;fallingTex.repeat.set(1,1.4);
+ const fallingMaterial=new T.MeshBasicMaterial({map:fallingTex,transparent:true,opacity:.84,side:T.DoubleSide,depthWrite:false});
+ const curtainTex=fallingTex.clone();curtainTex.repeat.set(9,1);curtainTex.needsUpdate=true;
+ const curtainMat=new T.MeshBasicMaterial({map:curtainTex,transparent:true,opacity:.85,side:T.DoubleSide,depthWrite:false});
+ const waterfallRing=mesh(new T.CylinderGeometry(7.45,7.45,1.66,72,1,true),curtainMat,root,0,4.31,-4);
+ waterfallRing.castShadow=false;waterfallRing.receiveShadow=false;
+ const foamRing=torus(7.6,.12,cyan,root,0,3.54,-4);
+ foamRing.castShadow=false;
+ animations.waterfalls.push(fallingTex,curtainTex);
  // Symmetrical stone archways behind the crystal with ivy and gold trim.
  function hubArch(cx,z,width=7.4){
   const height=8.6,localY=2.45;
@@ -1354,7 +1361,8 @@ function buildSpawnHub(){
  registerCollider(-43,-6,10.3,15);
  registerCollider(43,-6,10.3,15);
 
- // Rear waterfalls sit on their own real ground levels, never floating.
+ // Rear waterfalls are single, terrain-anchored water sheets over stone cliffs.
+ // Subdivided sheets add texture without isolated, flickering panels.
  for(const side of [-1,1]){
   const cx=side*45,cz=-39;
   const area=new T.Group();area.position.set(cx,ground(cx,cz)-base,cz);root.add(area);
@@ -1362,9 +1370,15 @@ function buildSpawnHub(){
   for(let i=0;i<5;i++){
    box(3.1,7+(i%3)*1.5,6.1,stone,area,(i-2)*3.1,4.1,-2.6);
   }
-  const fall=mesh(new T.PlaneGeometry(12.5,10),fallingMaterial,area,0,5,1.1);
-  fall.castShadow=false;
-  cyl(8,8,.14,darkWater,area,0,.1,5.8,20);
+  const fallGeom=new T.PlaneGeometry(12.6,8.5,12,20);
+  const vertex=fallGeom.attributes.position;
+  for(let i=0;i<vertex.count;i++)
+   vertex.setZ(i,Math.sin(vertex.getX(i)*1.2+vertex.getY(i)*2.5)*.13);
+  fallGeom.computeVertexNormals();
+  const fall=mesh(fallGeom,fallingMaterial,area,0,4.5,1.2);
+  fall.castShadow=false;fall.receiveShadow=false;
+  cyl(8,8,.14,darkWater,area,0,.1,5.8,24);
+  const mist=torus(5.7,.18,cyan,area,0,.25,5.3);mist.castShadow=false;
   for(let i=0;i<5;i++){
    const a=i*1.256;
    sphere(1.25,leaves,area,Math.cos(a)*10,1.7,Math.sin(a)*8);
