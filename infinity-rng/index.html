@@ -4118,27 +4118,28 @@ function animate() {
     }
 
     if(mapPanel.style.display!=="none"&&frameN%8===0)drawWorldMap();
-    // Improved camera smoothing
-    const target = new T.Vector3(
-        player.position.x + Math.sin(yaw) * Math.cos(pitch) * distance,
-        player.position.y + 2.15 + Math.sin(pitch) * distance,
-        player.position.z + Math.cos(yaw) * Math.cos(pitch) * distance
+    // V14 smooth walking orbit and cinematic flight chase camera.
+    const eye=new T.Vector3(player.position.x,player.position.y+(gliding?2.55:2.05),player.position.z);
+    const travelHeading=gliding?glideHeading+Math.PI:yaw;
+    const travelDistance=gliding?Math.max(15,Math.min(20,glideSpeed*.47)):distance;
+    const travelPitch=gliding?.24:pitch;
+    const target=new T.Vector3(
+      player.position.x+Math.sin(travelHeading)*Math.cos(travelPitch)*travelDistance,
+      player.position.y+(gliding?5.1:2.15)+Math.sin(travelPitch)*travelDistance,
+      player.position.z+Math.cos(travelHeading)*Math.cos(travelPitch)*travelDistance
     );
-    // Keep the third-person camera above the actual heightfield, including
-    // the ground between the player and the camera (prevents seeing through hills).
-    const eye = new T.Vector3(player.position.x,player.position.y+2.05,player.position.z);
-    for(let i=1;i<=16;i++){
-      const f=i/16,px=eye.x+(target.x-eye.x)*f,pz=eye.z+(target.z-eye.z)*f;
-      const floor=ground(px,pz)+1.15,rayY=eye.y+(target.y-eye.y)*f;
-      if(rayY<floor){const safe=Math.max(.12,(i-1)/16);
-        target.lerpVectors(eye,target,safe);
-        break;
-      }
+    for(let i=1;i<=18;i++){
+      const f=i/18,px=eye.x+(target.x-eye.x)*f,pz=eye.z+(target.z-eye.z)*f;
+      const floor=ground(px,pz)+(gliding?1.5:1.15),rayY=eye.y+(target.y-eye.y)*f;
+      if(rayY<floor){target.lerpVectors(eye,target,Math.max(.12,(i-1)/18));break;}
     }
     target.y=Math.max(target.y,ground(target.x,target.z)+1.45);
-    camera.position.lerp(target, 1 - Math.exp(-dt * 11));
+    camera.position.lerp(target,1-Math.exp(-dt*(gliding?4.4:11)));
     camera.position.y=Math.max(camera.position.y,ground(camera.position.x,camera.position.z)+1.45);
     camera.lookAt(eye);
+    const desiredFov=gliding?67+Math.max(0,glideSpeed-32)*.35:62;
+    camera.fov+=(desiredFov-camera.fov)*(1-Math.exp(-dt*2.5));
+    camera.updateProjectionMatrix();
     if (++frameN % 18 === 0) {
         refreshLuck();
         let remaining = Math.max(0, Math.ceil((luckExpires - Date.now()) / 1000));
