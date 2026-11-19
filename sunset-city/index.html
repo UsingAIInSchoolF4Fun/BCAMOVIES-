@@ -245,6 +245,39 @@ function rebuildRoadGrid(){
   }
  }
  roadGridReady=true;
+ // Harmonize roadbed heights where rural roads meet, cross and loop near one another.
+ // A single common elevation field prevents steep steps at junctions.
+ for(let pass=0;pass<7;pass++){
+  const updates=roads.map(road=>{
+   let heights=road.heights.slice();
+   for(let i=0;i<road.points.length;i++){
+    const p=road.points[i],surface=roadSurfaceAt(p.x,p.y);
+    if(surface)heights[i]=lerp(heights[i],surface.height,.67);
+   }
+   const last=heights.length-1;
+   if(last>0&&Math.hypot(road.points[0].x-road.points[last].x,road.points[0].y-road.points[last].y)<2){
+    heights[0]=heights[last]=(heights[0]+heights[last])*.5;
+   }
+   for(let smoothing=0;smoothing<2;smoothing++){
+    const old=heights.slice();
+    for(let i=1;i<last;i++)heights[i]=old[i]*.5+(old[i-1]+old[i+1])*.25;
+   }
+   for(let j=1;j<heights.length;j++){
+    const ds=Math.hypot(road.points[j].x-road.points[j-1].x,road.points[j].y-road.points[j-1].y);
+    heights[j]=clamp(heights[j],heights[j-1]-ds*.155,heights[j-1]+ds*.155);
+   }
+   for(let j=heights.length-2;j>=0;j--){
+    const ds=Math.hypot(road.points[j].x-road.points[j+1].x,road.points[j].y-road.points[j+1].y);
+    heights[j]=clamp(heights[j],heights[j+1]-ds*.155,heights[j+1]+ds*.155);
+   }
+   return heights;
+  });
+  for(let k=0;k<roads.length;k++)roads[k].heights=updates[k];
+  for(const segment of roadSegments){
+   segment.ha=segment.road.heights[segment.index];
+   segment.hb=segment.road.heights[segment.index+1];
+  }
+ }
 }
 function roadSurfaceAt(x,y){
  if(!roadGridReady)return null;
