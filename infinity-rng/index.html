@@ -1,6 +1,85 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V14.1</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V14.2</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V14.1</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton">Inventory</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="sprint-control"><button id="sprintButton">SPRINT: OFF (E)</button><button id="turnButton">TURN: MOUSE</button><button id="respawnButton" title="Return to spawn without losing progress">RESPAWN</button><button id="mapButton" title="Toggle the redesigned world map (M)">MAP (M)</button></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Equip any aura you've discovered. Duplicates are kept and counted.</p><div class="inventory-grid" id="items"></div><p class="notice">Progress saves locally on this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
+
+/* V14.2: focused gameplay HUD, with optional detail and true keyboard access */
+.top{left:12px;right:12px;top:11px;padding:9px 12px;gap:11px;max-width:none}
+.brand{font-size:clamp(14px,1.5vw,19px);white-space:nowrap}
+.stats{font-size:10px;line-height:1.35}
+.actions{gap:6px}
+.actions button{font-size:11px;padding:7px 10px;border-radius:9px;white-space:nowrap}
+.location{left:12px;top:70px;padding:7px 11px;font-size:11px}
+.location .eyebrow{display:none}
+.location b{font-size:13px}
+#challengeStatus,#coords,.hint,#mouseHint,.parkour-hud,.sprint-control{display:none}
+body.show-coords #coords,body.show-tips .hint,body.show-tips #mouseHint,body.show-tips #challengeStatus,body.show-parkour .parkour-hud{display:block}
+.bottom{bottom:10px;width:min(345px,calc(100vw - 20px));padding:9px 12px}
+.bottom .result{font-size:clamp(14px,2.1vw,20px);min-height:20px;margin:2px 0}
+.bottom .chance{font-size:10px}
+.bottom .buttons{margin:5px 0}
+.bottom .buttons button{padding:6px 11px;font-size:11px}
+.bottom .eyebrow{font-size:8px}
+.bottom .equipline{font-size:9px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bottom .progress{margin-top:4px}
+body:not(.compact-ui) .top{padding:13px 18px}
+body:not(.compact-ui) .brand{font-size:22px}
+body:not(.compact-ui) .bottom{width:min(390px,calc(100vw - 24px));padding:13px}
+body:not(.compact-ui) .bottom .result{font-size:clamp(19px,3vw,27px);min-height:28px}
+body:not(.compact-ui) .location{padding:12px 16px}
+body:not(.compact-ui) #challengeStatus{display:block}
+.side{z-index:7;top:64px;right:12px;max-height:calc(100dvh - 120px);width:min(375px,calc(100vw - 24px));padding:15px;box-shadow:0 16px 55px #000d}
+.side h2{font-size:19px;margin:0 0 6px}
+.side h3{font-size:12px;letter-spacing:.12em;color:#cab5fb;margin:16px 0 8px}
+.side button{font-size:12px;padding:8px 11px}
+.side input[type="text"]{width:100%;min-width:0;background:#0d1125;color:#f4ebff;border:1px solid #8465c6;border-radius:10px;padding:10px;font:inherit;font-size:13px}
+.settings-line{display:flex;align-items:center;gap:9px;margin:9px 0;color:#e1d8f4;font-size:12px}
+.settings-line input{accent-color:#a879ff;width:16px;height:16px}
+.settings-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.settings-actions button{width:100%;font-size:10px;padding:9px 3px}
+.settings-code{display:flex;gap:7px}
+.settings-code input{flex:1}
+.settings-code button{flex-shrink:0}
+#codeStatus{font-size:12px;min-height:18px;color:#c1f0d6;margin-top:7px}
+#inventorySearch{margin-top:7px}
+.inventory-grid{gap:6px;margin-top:9px}
+.inventory-grid .item{min-height:64px;padding:8px}
+.inventory-grid .item strong{font-size:12px}
+.inventory-grid .item small{font-size:10px;margin-top:4px}
+#inventoryMore{width:100%;margin:10px 0}
+#inventoryCount{font-size:11px;color:#c3b3e1}
+@media(max-width:720px){
+ .top{left:6px;right:6px;top:6px;padding:8px;gap:6px}
+ .brand{font-size:12px;white-space:normal}
+ .stats{font-size:9px}
+ .actions{gap:4px}
+ .actions button{padding:6px;font-size:10px}
+ .location{top:61px;left:6px;padding:6px 8px}
+ .bottom{bottom:6px}
+ .side{top:59px;right:6px;max-height:calc(100dvh - 92px)}
+}
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V14.2</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Climb the huge sanctuary parkour towers for luck boosts</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,060 auras to discover · cinematic rare reveals</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
+ <h2>⚙ Settings</h2>
+ <p>Keep your screen clean. Keyboard shortcuts still work.</p>
+ <h3>DISPLAY</h3>
+ <label class="settings-line"><input type="checkbox" id="settingCompact" checked> Compact HUD</label>
+ <label class="settings-line"><input type="checkbox" id="settingCoords"> Show coordinates</label>
+ <label class="settings-line"><input type="checkbox" id="settingTips"> Show controls and notices</label>
+ <label class="settings-line"><input type="checkbox" id="settingParkour"> Show parkour tracker</label>
+ <h3>GAME CONTROLS</h3>
+ <div class="settings-actions">
+   <button id="sprintButton">SPRINT: OFF (E)</button>
+   <button id="turnButton">TURN: MOUSE</button>
+   <button id="respawnButton" title="Return to the spawn plaza">RESPAWN</button>
+   <button id="settingsMapButton">WORLD MAP (M)</button>
+ </div>
+ <h3>CODES</h3>
+ <p>Redeem a code once on this browser. Codes are saved with your game progress.</p>
+ <form id="codesForm" class="settings-code">
+  <input id="codeInput" type="text" autocomplete="off" spellcheck="false" placeholder="Enter code" aria-label="Redeem code">
+  <button id="redeemCodeButton" type="submit">REDEEM</button>
+ </form>
+ <div id="codeStatus" aria-live="polite"></div>
+ <button id="closeSettings" class="ghost" style="width:100%;margin-top:12px">Close Settings</button>
+ </div><div class="toast panel" id="toast"></div><div class="overlay" id="reveal"><div class="burst"></div><div class="burst two"></div><div class="reveal" id="revealName"></div><div class="revealodds" id="revealOdds"></div><div class="revealhint">A NEW AURA HAS BEEN DISCOVERED</div></div></div>
 <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script><script>
 "use strict";
 const A = [
@@ -81,7 +160,14 @@ try {
 const state = {
     rolls: stored.rolls || 0,
     owned: stored.owned || {},
-    equipped: stored.equipped || "Dust"
+    equipped: stored.equipped || "Dust",
+    redeemedCodes: stored.redeemedCodes && typeof stored.redeemedCodes === "object" ? stored.redeemedCodes : {}
+};
+const hudPrefs={
+    compact: stored.hudPrefs?.compact!==false,
+    coords: !!stored.hudPrefs?.coords,
+    tips: !!stored.hudPrefs?.tips,
+    parkour: !!stored.hudPrefs?.parkour
 };
 luckBoost = stored.luckBoost || 1;
 luckExpires = stored.luckExpires || 0;
@@ -96,6 +182,7 @@ function save() {
     try {
         localStorage.setItem(saveKey, JSON.stringify({
             ...state,
+            hudPrefs,
             luckBoost,
             luckExpires,
             lavaSlowUntil
@@ -108,39 +195,104 @@ function updateHUD() {
     $("equipped").textContent = "EQUIPPED · " + (state.owned[state.equipped] ? state.equipped : "None")
 }
 
-function inventory() {
-    let root = $("items");
+let inventoryVisible=80;
+function inventory(){
+    const root=$("items"),query=$("inventorySearch").value.trim().toLowerCase();
+    if(!$("inventory").classList.contains("open"))return;
     root.replaceChildren();
-    let count = 0;
-    for (const a of A.filter(a => state.owned[a[0]]).sort((a, b) => displayOdds(b) - displayOdds(a))) {
-        const n = state.owned[a[0]] || 0;
-        if (!n) continue;
-        count++;
-        let b = document.createElement("button");
-        b.className = "item" + (state.equipped === a[0] ? " active" : "");
-        b.style.setProperty("--color", hex(auraColor(a)));
-        let strong = document.createElement("strong");
-        strong.textContent = a[0];
-        let small = document.createElement("small");
-        small.textContent = "1 in " + displayOdds(a).toLocaleString() + " · Owned: " + n + (state.equipped === a[0] ? " · EQUIPPED" : "");
-        b.append(strong, small);
-        b.onclick = () => {
-            state.equipped = a[0];
-            save();
-            updateHUD();
-            renderAura();
-            inventory()
+    const owned=A.filter(a=>state.owned[a[0]]&&a[0].toLowerCase().includes(query))
+        .sort((a,b)=>displayOdds(b)-displayOdds(a));
+    const displayed=owned.slice(0,inventoryVisible),fragment=document.createDocumentFragment();
+    for(const a of displayed){
+        const n=state.owned[a[0]],button=document.createElement("button");
+        button.className="item"+(state.equipped===a[0]?" active":"");
+        button.style.setProperty("--color",hex(auraColor(a)));
+        const strong=document.createElement("strong"),small=document.createElement("small");
+        strong.textContent=a[0];
+        small.textContent="1 in "+displayOdds(a).toLocaleString()+" · Owned: "+n+(state.equipped===a[0]?" · EQUIPPED":"");
+        button.append(strong,small);
+        button.onclick=()=>{
+            state.equipped=a[0];save();updateHUD();renderAura();inventory();
         };
-        root.appendChild(b)
+        fragment.appendChild(button);
     }
-    if (!count) root.innerHTML = '<div class="empty">No auras yet. Make your first roll!</div>'
+    root.appendChild(fragment);
+    if(!owned.length){
+        const empty=document.createElement("div");
+        empty.className="empty";empty.textContent=query?"No auras match your search.":"No auras yet. Make your first roll!";
+        root.appendChild(empty);
+    }
+    $("inventoryCount").textContent=owned.length.toLocaleString()+" matching · showing "+displayed.length.toLocaleString();
+    $("inventoryMore").style.display=displayed.length<owned.length?"block":"none";
 }
-$("inventoryButton").onclick = () => {
-    $("inventory").classList.toggle("open");
-    inventory()
+$("inventorySearch").addEventListener("input",()=>{inventoryVisible=80;inventory();});
+$("inventoryMore").onclick=()=>{inventoryVisible+=80;inventory();};
+function openInventory(){
+    $("settingsPanel").classList.remove("open");
+    $("inventory").classList.add("open");
+    inventoryVisible=80;inventory();
+}
+$("inventoryButton").onclick=()=>{
+    if($("inventory").classList.contains("open"))$("inventory").classList.remove("open");
+    else openInventory();
 };
-$("closeInventory").onclick = () => $("inventory").classList.remove("open");
+$("closeInventory").onclick=()=>$("inventory").classList.remove("open");
 
+function applyHudPrefs(){
+    document.body.classList.toggle("compact-ui",hudPrefs.compact);
+    document.body.classList.toggle("show-coords",hudPrefs.coords);
+    document.body.classList.toggle("show-tips",hudPrefs.tips);
+    document.body.classList.toggle("show-parkour",hudPrefs.parkour);
+    $("settingCompact").checked=hudPrefs.compact;
+    $("settingCoords").checked=hudPrefs.coords;
+    $("settingTips").checked=hudPrefs.tips;
+    $("settingParkour").checked=hudPrefs.parkour;
+}
+const settingsFields=[["settingCompact","compact"],["settingCoords","coords"],
+    ["settingTips","tips"],["settingParkour","parkour"]];
+for(const [id,key] of settingsFields){
+    $(id).addEventListener("change",()=>{hudPrefs[key]=$(id).checked;applyHudPrefs();save();});
+}
+applyHudPrefs();
+$("settingsButton").onclick=()=>{
+    $("inventory").classList.remove("open");
+    $("settingsPanel").classList.toggle("open");
+    if($("settingsPanel").classList.contains("open")){
+        if(document.pointerLockElement)document.exitPointerLock();
+        $("codeStatus").textContent=state.redeemedCodes.HOMOPHOBIC?"HOMOPHOBIC was already redeemed on this save.":"";
+    }
+};
+$("closeSettings").onclick=()=>$("settingsPanel").classList.remove("open");
+$("settingsMapButton").onclick=()=>{
+    $("settingsPanel").classList.remove("open");
+    $("mapButton").click();
+};
+document.addEventListener("keydown",e=>{
+    if(e.code==="Escape"){
+        $("settingsPanel").classList.remove("open");$("inventory").classList.remove("open");
+    }
+});
+$("codesForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const code=$("codeInput").value.trim().toUpperCase();
+    const status=$("codeStatus");
+    if(!code){status.textContent="Enter a code first.";return;}
+    if(code!=="HOMOPHOBIC"){status.textContent="That code is not valid.";return;}
+    if(state.redeemedCodes[code]){
+        status.textContent="Already redeemed! This code works only once per save.";return;
+    }
+    // Unlock the complete shared aura catalog; keep existing duplicate counts.
+    for(const aura of A){
+        const name=aura[0];
+        state.owned[name]=Math.max(1,Number(state.owned[name])||0);
+    }
+    state.redeemedCodes[code]=true;
+    if(!state.owned[state.equipped])state.equipped="Dust";
+    save();updateHUD();renderAura();
+    inventoryVisible=80;
+    $("codeInput").value="";
+    status.textContent="Success! All "+A.length.toLocaleString()+" auras unlocked. Open Auras to equip them.";
+});
 function randomAura() {
     refreshLuck();
     const r = Math.random(),
@@ -234,7 +386,7 @@ if (!window.THREE) {
 }
 window.addEventListener("error",e=>{
  const l=document.getElementById("loading");
- if(l){const message=e.message||"Unknown error";l.innerHTML="<strong>V14.1 BROWSER ERROR</strong><div style='font-size:12px;white-space:pre-wrap;text-align:left;max-width:80vw;max-height:50vh;overflow:auto;margin:8px 0'>"+
+ if(l){const message=e.message||"Unknown error";l.innerHTML="<strong>V14.2 BROWSER ERROR</strong><div style='font-size:12px;white-space:pre-wrap;text-align:left;max-width:80vw;max-height:50vh;overflow:auto;margin:8px 0'>"+
  [message, "at "+(e.filename||"inline script")+":"+(e.lineno||"?")+":"+(e.colno||"?"), e.error&&e.error.stack?e.error.stack:""].join("\n").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))+
  "</div><a style='color:#bcfaff' href='./'>Play stable version</a>";l.classList.remove("hidden");}
 });
@@ -2338,7 +2490,7 @@ const glowMats = [0xffc96a, 0x6ad8ff, 0xb78bff, 0x69ffc0, 0xff765d].map(c => new
 
 // Removed global vegetation scatter.
 const trialSites=[{x:75,z:65,name:"Crystal Spires",type:0},{x:-235,z:50,name:"Frozen Citadel",type:1},{x:230,z:-35,name:"Ember Fortress",type:2},{x:45,z:-240,name:"Astral Sanctuary",type:3},{x:20,z:250,name:"Forest Temple",type:4}];
-// V14.1 authored landscape: five distinct scenic compositions, not random scatter.
+// V14.2 authored landscape: five distinct scenic compositions, not random scatter.
 
 // V13 authored biome landscaping. Dense but orderly clusters with generous
 // trails, authored landmarks and no floating props. All uses instanced geometry.
@@ -2950,7 +3102,7 @@ const worldSnow=new T.MeshStandardMaterial({color:0xa5cde3,roughness:.75,flatSha
 const worldLava=new T.MeshStandardMaterial({color:0xff6124,emissive:0xff3408,emissiveIntensity:1.8,roughness:.5});
 // Terrain-integrated rivers and soft scenic hills (no detached chunks).
 const worldBridges=[];
-// V14.1 WATER REPAIR: a continuous river surface with stable depth and
+// V14.2 WATER REPAIR: a continuous river surface with stable depth and
 // subtle UV flow. Previously each bank sampled a different height so the
 // river twisted into broken triangles and intersected the terrain.
 function riverPathZ(x){return 65+24*Math.sin(x*.014)+12*Math.sin(x*.035);}
