@@ -1268,12 +1268,30 @@ function renderSoftware3D(){
  const cells=[];let step=90;for(let dx=-810;dx<=810;dx+=step)for(let dz=-810;dz<=810;dz+=step){let x=target.x+dx,z=target.y+dz,center=coastDistance(x,z);if(center<-40)continue;let depth=dx*si-dz*co;if(depth<-70||depth>1100)continue;cells.push({x,z,depth,center})}
  cells.sort((a,b)=>b.depth-a.depth);
  for(let cell of cells){let x=cell.x,z=cell.z,s=step*.51;let ht=terrainHeight(x,z),fill=terrainStyle(x,z,ht);polygon([[x-s,terrainHeight(x-s,z-s),z-s],[x+s,terrainHeight(x+s,z-s),z-s],[x+s,terrainHeight(x+s,z+s),z+s],[x-s,terrainHeight(x-s,z+s),z+s]],fill)}
- // Roads are extruded on top of the ground, rather than drawn as a flat screenshot.
- for(let road of roads){let p=road.points;for(let i=0;i<p.length-1;i+=2){let a=p[i],b=p[Math.min(i+2,p.length-1)],mx=(a.x+b.x)/2,mz=(a.y+b.y)/2,dx=b.x-a.x,dz=b.y-a.y,len=Math.hypot(dx,dz)||1;
-  if(Math.hypot(mx-target.x,mz-target.y)>540)continue;let nx=-dz/len,nz=dx/len,w=road.width/2;
-  polygon([[a.x-nx*w,terrainHeight(a.x-nx*w,a.y-nz*w)+.3,a.y-nz*w],[a.x+nx*w,terrainHeight(a.x+nx*w,a.y+nz*w)+.3,a.y+nz*w],[b.x+nx*w,terrainHeight(b.x+nx*w,b.y+nz*w)+.3,b.y+nz*w],[b.x-nx*w,terrainHeight(b.x-nx*w,b.y-nz*w)+.3,b.y-nz*w]],'#3e5160');
-  if(i%10===0)polygon([[a.x-nx*.35,terrainHeight(a.x-nx*.35,a.y-nz*.35)+.34,a.y-nz*.35],[a.x+nx*.35,terrainHeight(a.x+nx*.35,a.y+nz*.35)+.34,a.y+nz*.35],[b.x+nx*.35,terrainHeight(b.x+nx*.35,b.y+nz*.35)+.34,b.y+nz*.35],[b.x-nx*.35,terrainHeight(b.x-nx*.35,b.y-nz*.35)+.34,b.y-nz*.35]],'#e7cea1');
- }}
+ // School Chromebook fallback: continuous roadside quads with shared endpoints.
+ // The previous per-segment perpendiculars folded over on sharp switchbacks.
+ function roadEdge(road,index,offset){
+  const ps=road.points,p=ps[index],q=ps[Math.max(0,index-1)],r=ps[Math.min(ps.length-1,index+1)];
+  const dx=r.x-q.x,dz=r.y-q.y,len=Math.hypot(dx,dz)||1,nx=-dz/len,nz=dx/len;
+  const x=p.x+nx*offset,z=p.y+nz*offset;
+  return [x,terrainHeight(x,z)+.55,z];
+ }
+ function roadPatch(road,i,j,half,color){
+  const a=roadEdge(road,i,-half),b=roadEdge(road,i,half);
+  const c=roadEdge(road,j,half),d=roadEdge(road,j,-half);
+  polygon([a,b,c,d],color);
+ }
+ for(const road of roads){
+  const p=road.points;
+  for(let i=0;i<p.length-1;i+=2){
+   const j=Math.min(i+2,p.length-1),mid=p[Math.min(i+1,p.length-1)];
+   if(Math.hypot(mid.x-target.x,mid.y-target.y)>440)continue;
+   if(Math.hypot(p[j].x-p[i].x,p[j].y-p[i].y)<.4)continue;
+   roadPatch(road,i,j,road.width*.5+3,road.style==='mountain'?'#91998d':'#93a09c');
+   roadPatch(road,i,j,road.width*.5,road.style==='mountain'?'#384b4f':'#3b4e58');
+   if(i%10<2)roadPatch(road,i,j,.7,road.style==='mountain'?'#f4d6ac':'#e8e5d2');
+  }
+ }
  let objects=[];for(let b of structures){let dx=b.x-target.x,dz=b.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<720&&Math.hypot(dx,dz)<780)objects.push({type:'b',obj:b,depth});}
  for(let t of trees){let dx=t.x-target.x,dz=t.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<600&&Math.hypot(dx,dz)<620)objects.push({type:'t',obj:t,depth});}
  for(let v of [...traffic,...cops]){let dx=v.x-target.x,dz=v.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<570&&Math.hypot(dx,dz)<610)objects.push({type:v.type?'cop':'traffic',obj:v,depth});}
