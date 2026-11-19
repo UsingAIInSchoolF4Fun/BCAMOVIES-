@@ -3871,6 +3871,7 @@ function updateAuraPose(t,dt,moving,onGround,gliding,stride){
   auraGroundMat.opacity=.40+.15*Math.sin(t*2.2);
  }
  const displayPose=gliding?"flight":active&&hudPrefs.auraFX?p.pose:"ready";
+ const poseStrength=active?Math.min(1,.28+p.tier*.16):0;
  // Pose coordinates are targets rather than instant snaps. The shoulder
  // groups pivot properly, and feet remain grounded in the physics engine.
  const ax=[stride,-stride],az=[0,0],lx=[-stride,stride],lz=[0,0];
@@ -3900,6 +3901,10 @@ function updateAuraPose(t,dt,moving,onGround,gliding,stride){
    lx[0]=.33;lx[1]=.33;torsoTilt=-.12;
  }
  for(let i=0;i<2;i++){
+  if(!moving&&!gliding){
+    ax[i]*=poseStrength;az[i]*=poseStrength;
+    lx[i]*=poseStrength;lz[i]*=poseStrength;
+  }
   arms[i].rotation.x=easeAura(arms[i].rotation.x,ax[i],dt,7);
   arms[i].rotation.z=easeAura(arms[i].rotation.z,az[i],dt,7);
   legs[i].rotation.x=easeAura(legs[i].rotation.x,lx[i],dt,7);
@@ -3909,17 +3914,20 @@ function updateAuraPose(t,dt,moving,onGround,gliding,stride){
  cape.rotation.x=easeAura(cape.rotation.x,-.15+.055*Math.sin(t*3)+(moving?-.22:float?-.32:0),dt,6);
 }
 renderAura = () => {
-    while (aura.children.length) {
-        let o = aura.children[0];
-        aura.remove(o);
-        o.traverse(v => {
-            if (v.geometry) v.geometry.dispose();
-            if (v.material) {
-                let arr = Array.isArray(v.material) ? v.material : [v.material];
-                arr.forEach(m => m.dispose())
-            }
-        })
+    // Sharing particle geometries/materials keeps the GPU light; dispose
+    // each resource exactly once when changing equipment to avoid churn.
+    const oldGeometries=new Set(),oldMaterials=new Set();
+    while(aura.children.length){
+      const node=aura.children[0];aura.remove(node);
+      node.traverse(v=>{
+        if(v.geometry)oldGeometries.add(v.geometry);
+        if(v.material){
+          for(const m of Array.isArray(v.material)?v.material:[v.material])oldMaterials.add(m);
+        }
+      });
     }
+    for(const geom of oldGeometries)geom.dispose();
+    for(const mat of oldMaterials)mat.dispose();
     auraParts.length=0;
     auraSpectrumMaterials.length=0;
     for(const texture of auraDynamicTextures)texture.dispose();
@@ -3970,7 +3978,9 @@ renderAura = () => {
         // Shared geometry and four intentionally related colors instead of
         // hundreds of one-off materials, ideal for Chromebook rendering.
         const geometry=shape==="shard"?sparkShard:shape==="leaf"?sparkLeaf:sparkOrb;
-        const particles=Math.min(count,hudPrefs.auraFX?(lowPowerDevice?30:48):12);
+        const rarityTier=equippedAuraProfile.tier;
+        const particles=Math.min(count,hudPrefs.auraFX?
+           (lowPowerDevice?12+rarityTier*3:13+rarityTier*6):8);
         for(let i=0;i<particles;i++){
             const palette=i%11===0?3:i%3===0?1:i%5===0?2:0;
             const o=mesh(geometry,sharedSparkMaterials[palette],aura);
@@ -4320,6 +4330,11 @@ renderAura = () => {
       }
     }
 
+    if(!hudPrefs.auraFX){
+        orbitParticles(8,"orb",.95);
+        ring(1.05,1.1,.13);
+        return;
+    }
     switch (name) {
         case "Dust":
             orbitParticles(24, "orb", .85);
@@ -5125,12 +5140,15 @@ function animate() {
     let stride = moving ? Math.sin(t * ((keys.ShiftLeft || keys.ShiftRight) ? 17 : 11)) * .65 : 0;
     updateAuraPose(t,dt,moving,onGround,gliding,stride);
     if(frameN%2===0)animateAuraSpectrum(t);
-    auraParts.forEach(o => {
+    // Rarity controls the tempo and scope of each effect: slow common dust,
+    // layered uncommon glow, energetic legendary auras, and fast mythic runes.
+    const auraTier=equippedAuraProfile.tier;
+    if(frameN%(lowPowerDevice?2:1)===0)auraParts.forEach(o => {
         let kind = o.userData.fx,
             i = o.userData.i || 0;
         if (kind === "particle" || kind === "leaf") {
             const pose=equippedAuraProfile.pose,seed=o.userData.phase||0;
-            let a=i*2.39996+t*(.36+rand(i,10)*.45),
+            let a=i*2.39996+t*(.23+auraTier*.07+rand(i,10)*.24),
                 r=(o.userData.spread||1)*(.55+rand(i,4)*.65);
             let safeR=Math.max(1.2,r+.45),
                 y=1.0+(i%8)*.4+Math.sin(t*.85+seed)*.16;
@@ -5163,7 +5181,7 @@ function animate() {
             o.rotation.z=Math.sin(t+i)*.48;
             o.scale.setScalar(.76+Math.sin(t*2.4+i)*.18);
         } else if (kind === "ring") {
-            o.rotation.z += dt * (.2 + i * .02);
+            o.rotation.z += dt * (.12 + auraTier*.075 + i*.018);
             o.rotation.y += dt * .18;
             o.scale.setScalar(1 + Math.sin(t * 2 + i) * .05)
         } else if (kind === "spike") {
@@ -5172,7 +5190,7 @@ function animate() {
             o.rotation.y += dt * 1.4;
             o.material.opacity = .4 + Math.abs(Math.sin(t * 9 + i)) * .6
         } else if(kind==="signature"){
-            o.rotation.y=Math.sin(t*.42)*.19;
+            o.rotation.y=Math.sin(t*(.27+auraTier*.09))*(.08+auraTier*.03);
             o.position.y=Math.sin(t*1.2)*.085;
         } else if(kind==="facet"){
             const base=o.userData.homeY||o.position.y;
@@ -5201,6 +5219,16 @@ function animate() {
             o.position.y = Math.sin(t * 1.6 + i) * .12;
         }
     });
+    // Higher rarity unlocks orbit/hover dynamics and a breathing halo.
+    if(hudPrefs.auraFX&&auraTier>=3&&!gliding){
+      aura.rotation.y=Math.sin(t*(.32+auraTier*.085))*.10;
+      aura.scale.setScalar(1+Math.sin(t*(.8+auraTier*.18))*(.012+auraTier*.006));
+      auraLight.intensity=Math.min(5.8,2.25+Math.min(11,auraTier*1.1)*.28)
+         *(1+Math.sin(t*(1+auraTier*.7))*.045);
+    }else{
+      aura.rotation.y*=.92;
+      aura.scale.setScalar(1);
+    }
     // Keep decorative aura geometry outside the avatar's central body.
     // Emblems remain themed but are positioned behind/above the torso.
         auraLight.intensity *= 1;
