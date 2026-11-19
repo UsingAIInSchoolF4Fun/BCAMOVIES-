@@ -116,6 +116,8 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 .atlasLegend b{font-size:17px;color:#82eac9;min-width:20px}.atlasWarning{margin-top:18px;background:#5f322c55;border:1px solid #fcb27b66;border-radius:9px;padding:12px;line-height:1.4;color:#ffc8aa;font-weight:800;font-size:10px;letter-spacing:.5px}
 .atlasLegend small{display:block;margin-top:14px;font-size:10px;color:#91afc2}
 @media(max-width:800px){.atlasLayout{grid-template-columns:1fr}.atlasLegend{display:none}.atlasHead{align-items:start}.atlasHead .btn{min-height:39px;padding:8px 12px;font-size:10px}#atlasCanvas{max-height:65vh}}
+
+#tint{background:radial-gradient(ellipse at 77% 19%,#ffb97c20,transparent 42%),radial-gradient(ellipse at 9% 72%,#3cc3bd0e,transparent 42%),linear-gradient(180deg,#ffcb9909,transparent 46%,#05152e55)}
 </style>
 </head>
 <body>
@@ -717,6 +719,17 @@ class Mesh3{
  tri(a,b,c,color,em=0){let u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]],n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],m=Math.hypot(...n)||1,co=color3(color);n=n.map(q=>q/m);this.v(a,n,co,em);this.v(b,n,co,em);this.v(c,n,co,em)}
  quad(a,b,c,d,color,em=0){this.tri(a,b,c,color,em);this.tri(a,c,d,color,em)}
  box(x,y,z,w,h,d,color,angle=0,em=0){if(w<=0||h<=0||d<=0)return;let ca=Math.cos(angle),sa=Math.sin(angle),pts=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]].map(v=>[x+(v[0]*w*ca+v[2]*d*sa)/2,y+v[1]*h/2,z+(-v[0]*w*sa+v[2]*d*ca)/2]);for(let a of [[0,1,2,3],[5,4,7,6],[1,5,6,2],[4,0,3,7],[3,2,6,7],[4,5,1,0]])this.quad(pts[a[0]],pts[a[1]],pts[a[2]],pts[a[3]],color,em)}
+ boulder(x,y,z,r){
+  const top=[x-r*.17,y+r*.66,z+r*.10],bottom=[x,y-r*.12,z],n=7;
+  for(let i=0;i<n;i++){
+   const a=i*TAU/n,b=(i+1)*TAU/n;
+   const ra=r*(.87+.17*Math.sin(i*13+r)),rb=r*(.87+.17*Math.sin((i+1)*13+r));
+   const p=[x+ra*Math.cos(a),y+r*.12+Math.sin(a*2)*r*.10,z+ra*Math.sin(a)];
+   const q=[x+rb*Math.cos(b),y+r*.12+Math.sin(b*2)*r*.10,z+rb*Math.sin(b)];
+   this.tri(p,q,top,i%3===0?'#9ba69f':i%2?'#727f78':'#87918b');
+   this.tri(q,p,bottom,i%2?'#6b736d':'#848d86');
+  }
+ }
  cone(x,y,z,r,h,n,color,em=0){for(let i=0;i<n;i++){let a=TAU*i/n,b=TAU*(i+1)/n;this.tri([x+r*Math.cos(a),y-h/2,z+r*Math.sin(a)],[x+r*Math.cos(b),y-h/2,z+r*Math.sin(b)],[x,y+h/2,z],color,em)}}
  cylinder(x,y,z,r,h,n,color,em=0){for(let i=0;i<n;i++){let a=TAU*i/n,b=TAU*(i+1)/n,p=[x+r*Math.cos(a),y-h/2,z+r*Math.sin(a)],q=[x+r*Math.cos(b),y-h/2,z+r*Math.sin(b)],p2=[p[0],y+h/2,p[2]],q2=[q[0],y+h/2,q[2]];this.quad(p,q,q2,p2,color,em);this.tri([x,y+h/2,z],p2,q2,color,em)}}
 }
@@ -725,7 +738,7 @@ function draw3Buffer(buf){if(!buf||!buf.count)return;let gl=webgl;gl.bindBuffer(
 function section3(x,z){return `${Math.floor(x/220)},${Math.floor(z/220)}`}
 function build3DCity(){
  let gl=webgl;
- let terrain=new Mesh3(),step=30;
+ let terrain=new Mesh3(),step=23;
  // Mountain slopes are real vertex heights, not flat ground with decorative objects.
  for(let z=-1200;z<1200;z+=step)for(let x=-1500;x<1500;x+=step){
    const cx=x+step*.5,cz=z+step*.5,shore=coastDistance(cx,cz);
@@ -815,11 +828,7 @@ function build3DCity(){
  // Coniferous forests and alpine boulders use low-cost geometry.
  for(const t of trees){
   const m=tileAt(t.x,t.y),base=terrainHeight(t.x,t.y),k=t.kind,scale=t.s;
-  if(k==='rock'){
-   const rough=hash(t.x*3+t.y*7),w=(5+rough*7)*scale;
-   m.box(t.x,base+w*.23,t.y,w,w*.48,w*.77,rough>.45?'#929c92':'#7e8985',rough*.7);
-   continue;
-  }
+  if(k==='rock'){const rough=hash(t.x*3+t.y*7),radius=(3.7+rough*5.6)*scale;m.boulder(t.x,base+radius*.10,t.y,radius);continue;}
   if(k==='garden'){m.cylinder(t.x,base+.5,t.y,5.5,1,6,'#4d8d6b');continue}
   const height=(k==='palm'?12:k==='fir'?22:k==='pine'?18:12)*scale;
   m.cylinder(t.x,base+height*.42,t.y,.65*scale,height*.84,5,'#665648');
