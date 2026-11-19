@@ -1254,9 +1254,9 @@ function buildSpawnHub(){
  const fallingMaterial=new T.MeshBasicMaterial({map:fallingTex,transparent:true,opacity:.84,side:T.DoubleSide,depthWrite:false});
  const curtainTex=fallingTex.clone();curtainTex.repeat.set(9,1);curtainTex.needsUpdate=true;
  const curtainMat=new T.MeshBasicMaterial({map:curtainTex,transparent:true,opacity:.85,side:T.DoubleSide,depthWrite:false});
- const waterfallRing=mesh(new T.CylinderGeometry(7.45,7.45,1.66,72,1,true),curtainMat,root,0,4.31,-4);
+ const waterfallRing=mesh(new T.CylinderGeometry(7.78,8.38,1.66,72,1,true),curtainMat,root,0,4.31,-4);
  waterfallRing.castShadow=false;waterfallRing.receiveShadow=false;
- const foamRing=torus(7.6,.12,cyan,root,0,3.54,-4);
+ const foamRing=torus(8.42,.12,cyan,root,0,3.54,-4);
  foamRing.castShadow=false;
  animations.waterfalls.push(fallingTex,curtainTex);
  // Symmetrical stone archways behind the crystal with ivy and gold trim.
