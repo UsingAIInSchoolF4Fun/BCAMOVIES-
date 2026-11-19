@@ -755,6 +755,80 @@ function ground(x,z) {
     return u+v<=1?h00+(h10-h00)*u+(h01-h00)*v:h11+(h01-h11)*(1-u)+(h10-h11)*(1-v);
 }
 
+// V14 CINEMATIC PERIMETER - mountains hide the rectangular terrain edge.
+// Three uninterrupted sculpted rock belts surround all four sides; the
+// nearest belt starts outside the playable map so players cannot climb out.
+const mountainMistMaterials=[];
+function buildMountainHorizon(){
+ const count=98,rows=5;
+ const palettes=[
+  [0x51506f,0x8a82b8,0xc6badc], // northern astral crags
+  [0x635069,0x92728f,0xd0a3a1], // eastern volcanic ridges
+  [0x365a5a,0x669482,0xb3c8ae], // southern forest foothills
+  [0x526b89,0x87b4c8,0xe1f3f8]  // western snowy peaks
+ ];
+ const locate=(side,d,s)=>side===0?[s,-d]:side===1?[d,s]:side===2?[s,d]:[-d,s];
+ for(let side=0;side<4;side++)for(let layer=2;layer>=0;layer--){
+  const positions=[],colors=[],indices=[],uvs=[];
+  const start=437+layer*82,depth=95,levels=[0,.55,1,.82,.06];
+  const low=new T.Color(palettes[side][0]),mid=new T.Color(palettes[side][1]),high=new T.Color(palettes[side][2]);
+  for(let i=0;i<=count;i++){
+   const along=-565+i*1130/count;
+   const wave=.74+.17*Math.sin(along*.017+side*1.7+layer*.9)
+       +.11*Math.sin(along*.041+layer*1.9+side*.8)
+       +.08*Math.sin(along*.09+side*2.1+layer*4);
+   const height=(layer===0?64:layer===1?105:151)*Math.max(.47,wave);
+   const groundBase=ground(...locate(side,436,Math.max(-439,Math.min(439,along))));
+   for(let j=0;j<=rows;j++){
+    const t=j/rows,at=start+t*depth;
+    const [px,pz]=locate(side,at,along+Math.sin(t*5+i*.08+side)*2.3);
+    const bump=levels[j===rows?4:j];
+    const y=groundBase-20+height*bump;
+    positions.push(px,y,pz);uvs.push(i/count*8,t*4);
+    const c=low.clone().lerp(mid,Math.min(1,t*.9)).lerp(high,bump*(.33+.18*layer));
+    const shade=.82+.1*Math.sin(i*.38+side*.8)+.065*Math.cos(i*.84+j);
+    c.multiplyScalar(shade);
+    colors.push(c.r,c.g,c.b);
+    if(i<count&&j<rows){
+     const a=i*(rows+1)+j;
+     indices.push(a,a+1,a+rows+1,a+1,a+rows+2,a+rows+1);
+    }
+   }
+  }
+  const geometry=new T.BufferGeometry();
+  geometry.setAttribute("position",new T.Float32BufferAttribute(positions,3));
+  geometry.setAttribute("color",new T.Float32BufferAttribute(colors,3));
+  geometry.setAttribute("uv",new T.Float32BufferAttribute(uvs,2));
+  geometry.setIndex(indices);geometry.computeVertexNormals();
+  const material=new T.MeshStandardMaterial({
+   color:0xffffff,vertexColors:true,roughness:1,metalness:0,
+   flatShading:true,side:T.DoubleSide,depthWrite:true
+  });
+  const ridge=new T.Mesh(geometry,material);
+  ridge.castShadow=false;ridge.receiveShadow=false;
+  scene.add(ridge);
+ }
+ // Flowing mist across mountain slopes (animated on the GPU, not moved walls).
+ const mistMaterial=new T.ShaderMaterial({
+  uniforms:{uTime:{value:0},uTint:{value:new T.Color(0xd4c7ed)}},
+  transparent:true,depthWrite:false,side:T.DoubleSide,fog:true,
+  vertexShader:"varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
+  fragmentShader:"uniform float uTime;uniform vec3 uTint;varying vec2 vUv;void main(){float x=vUv.x*11.0-uTime*.027;float noise=sin(x*2.3+sin(vUv.y*7.0))*sin(x*.9-vUv.y*4.0);float edge=smoothstep(0.0,.11,vUv.y)*(1.0-smoothstep(.84,1.0,vUv.y));float fade=smoothstep(0.0,.06,vUv.x)*(1.0-smoothstep(.94,1.0,vUv.x));float alpha=(.065+.055*noise)*edge*fade;gl_FragColor=vec4(uTint,max(0.0,alpha));}"
+ });
+ for(let side=0;side<4;side++)for(let layer=0;layer<2;layer++){
+  const g=new T.PlaneGeometry(1110,49,40,2);
+  const p=new T.Mesh(g,mistMaterial);
+  const d=452+layer*79;
+  const [x,z]=locate(side,d,0);
+  p.position.set(x,52+layer*32,z);
+  if(side===1||side===3)p.rotation.y=Math.PI/2;
+  p.castShadow=false;p.receiveShadow=false;p.frustumCulled=false;
+  scene.add(p);
+ }
+ mountainMistMaterials.push(mistMaterial);
+}
+buildMountainHorizon();
+
 const worldColliders=[];
 function registerCollider(x,z,r,height=Math.max(1.2,r*.85)){worldColliders.push({x,z,r,height})}
 function tree(x, z, s = 1, type = "pine") {
@@ -3678,6 +3752,7 @@ function animate() {
     animateWind(t);
     animateSpawnHub(t);
     skyDomeMaterial.uniforms.uTime.value=t;
+    for(const mist of mountainMistMaterials)mist.uniforms.uTime.value=t;
     animateBiomeGeometry(t);
     animateRealmGateBanners(t);
     animateWaystations(t);
