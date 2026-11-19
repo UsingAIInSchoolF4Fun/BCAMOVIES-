@@ -84,7 +84,7 @@ const UPGRADES={engine:{name:'ENGINE',desc:'More power'},armor:{name:'ARMOR',des
 let mode='home',paused=false,keys={},now=0,last=0,runningSeconds=0,earned=0,combo=1,bannerEnd=0,wave=1,copTimer=0,trafficTimer=0,shake=0,waterTime=0,finishReason='',lastNearMiss=-100,scoreTick=0,hudTick=0,spikeTimer=0;
 let car=null,cops=[],traffic=[],particles=[],pickups=[],camera={x:0,y:0,zoom:1};let runInfo={nearMisses:0,drifts:0,rammed:0};
 const view={w:innerWidth,h:innerHeight,dpr:1};
-function resize(){view.dpr=Math.min(1.6,window.devicePixelRatio||1);view.w=innerWidth;view.h=innerHeight;let w=Math.round(view.w*view.dpr),h=Math.round(view.h*view.dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;if(webgl)webgl.viewport(0,0,w,h);} }
+function resize(){view.dpr=Math.min(1.25,window.devicePixelRatio||1);view.w=innerWidth;view.h=innerHeight;let w=Math.round(view.w*view.dpr),h=Math.round(view.h*view.dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;if(webgl)webgl.viewport(0,0,w,h);} }
 const CITY_COMPACT=1.18; // Expanded island, 47.5% larger than V6.1.
 const STATIC={canvas:null,bounds:{minX:-1500,minY:-1200,maxX:1500,maxY:1200},scale:1};
 let roads=[],roadSamples=[],structures=[],trees=[],streetProps=[],parkingLots=[];
@@ -480,8 +480,7 @@ function updateCops(dt){
   let clear=clearCopPath(c,aim);
   if(!clear){
    // Prefer the nearest obstacle-free path, with a consistent choice when both sides are clear.
-   const options=[.4,-.4,.85,-.85,1.3,-1.3,2.0,-2.0];
-   options.sort((a,b)=>Math.sign(a)===c.turnBias?-1:Math.sign(b)===c.turnBias?1:Math.abs(a)-Math.abs(b));
+   const options=[.38,.85,1.35,-.38,-.85,-1.35,2,-2].map(v=>v*c.turnBias);
    let found=false;
    for(const offset of options){if(clearCopPath(c,aim+offset,40)){aim+=offset;found=true;break;}}
    if(!found){aim=c.a+c.turnBias*1.15;c.stuck+=dt;}else c.stuck=Math.max(0,c.stuck-dt*.6);
@@ -636,13 +635,13 @@ function build3DCity(){
    const L2=[x2,terrainHeight(x2,z2)+y+.65,z2],R2=[x3,terrainHeight(x3,z3)+y+.65,z3];
    tileAt((a.x+b.x)/2,(a.y+b.y)/2).quad(L,R,R2,L2,col,extra);
  }
- for(let road of roads){let p=road.points;for(let i=0;i<p.length-1;i++){
+ let roadOrder=0;for(let road of roads){let p=road.points,rise=(roadOrder++%7)*.022;for(let i=0;i<p.length-1;i++){
     const a=p[i],b=p[i+1];if(Math.hypot(a.x-b.x,a.y-b.y)<.1)continue;
-    ribbon(a,b,road.width+7,.14,road.style==='coastal'?'#c5ad91':'#75858c');
-    ribbon(a,b,road.width,.17,road.style==='highway'?'#303d4d':road.style==='neon'?'#35354b':'#364753');
-    if(i%5===0)ribbon(a,b,1.2,.187,'#f6d59d');
+    ribbon(a,b,road.width+9,.13+rise,road.style==='coastal'?'#c9b69b':road.style==='mountain'?'#8d9389':'#889ca4');
+    ribbon(a,b,road.width,.19+rise,road.style==='coastal'?'#394e59':road.style==='mountain'?'#465353':road.style==='boulevard'?'#405567':road.style==='neon'?'#423b5e':'#364854');
+    if(i%4===0)ribbon(a,b,1.1,.24+rise,road.style==='neon'?'#7fe9ed':road.style==='mountain'?'#d8e6de':'#f8dda8');
     if(i%11===0){const dx=b.x-a.x,dz=b.y-a.y,len=Math.hypot(dx,dz)||1,nx=-dz/len,nz=dx/len;for(let side of [-1,1]){
-      const a1={x:a.x+nx*road.width*.34*side,y:a.y+nz*road.width*.34*side},b1={x:b.x+nx*road.width*.34*side,y:b.y+nz*road.width*.34*side};ribbon(a1,b1,.45,.191,'#ded1b9');
+      const a1={x:a.x+nx*road.width*.34*side,y:a.y+nz*road.width*.34*side},b1={x:b.x+nx*road.width*.34*side,y:b.y+nz*road.width*.34*side};ribbon(a1,b1,.65,.265+rise,'#dce6dc');
     }}
  }}
  for(const park of parkingLots){let m=tileAt(park.x,park.y),base=terrainHeight(park.x,park.y);m.box(park.x,base+.18,park.y,park.w+4,.16,park.h+4,'#9eafa4',park.rot);m.box(park.x,base+.275,park.y,park.w,.07,park.h,'#485665',park.rot);for(let j=-2;j<=2;j++)m.box(park.x+j*8,base+.317,park.y,0.4,.03,12,'#e8d3ad',park.rot)}
@@ -786,9 +785,9 @@ function render3D(){if(!g3.ready)return;
  const gl=webgl;
  const w=canvas.width,h=canvas.height;gl.viewport(0,0,w,h);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
  let playing=mode==='playing'||mode==='pause'||mode==='over';let target=car||{x:80,y:20,a:-.4,speed:0},anchorA=playing?target.a:now*.035;
- let cg=g3.camera,angleDelta=Math.atan2(Math.sin(anchorA-cg.heading),Math.cos(anchorA-cg.heading));cg.heading+=angleDelta*(playing?.075:.01);
+ let cg=g3.camera,angleDelta=Math.atan2(Math.sin(anchorA-cg.heading),Math.cos(anchorA-cg.heading));cg.heading+=angleDelta*(playing?.09:.012);
  let span=playing?(92+Math.min(33,Math.abs(target.speed)*.08)):165,ht=playing?49:110;
- let xGoal=target.x-Math.sin(cg.heading)*span,yGoal=terrainHeight(target.x,target.y)+ht,zGoal=target.y+Math.cos(cg.heading)*span;
+ let xGoal=target.x-Math.sin(cg.heading)*span,zGoal=target.y+Math.cos(cg.heading)*span,yGoal=Math.max(terrainHeight(target.x,target.y)+ht,terrainHeight(xGoal,zGoal)+19);
  cg.x=lerp(cg.x,xGoal,playing?.16:.055);cg.y=lerp(cg.y,yGoal,playing?.16:.055);cg.z=lerp(cg.z,zGoal,playing?.16:.055);
  let fwdX=playing?target.x+Math.sin(cg.heading)*28:target.x,fwdZ=playing?target.y-Math.cos(cg.heading)*28:target.y;
  gl.uniformMatrix4fv(g3.loc.vp,false,new Float32Array(mul3(perspective3(.94,w/h,.25,950),look3([cg.x,cg.y,cg.z],[fwdX,terrainHeight(fwdX,fwdZ)+4,fwdZ]))));gl.uniform3f(g3.loc.eye,cg.x,cg.y,cg.z);gl.uniform1f(g3.loc.tick,now);
@@ -797,7 +796,7 @@ function render3D(){if(!g3.ready)return;
  for(let i=0;i<50;i++){let ix=(i*173+Math.floor(cg.x/400)*53)%1000-500,iz=(i*379+Math.floor(cg.z/400)*83)%1000-500;let wx=cg.x+ix,wz=cg.z+iz;if(coastDistance(wx,wz)<-10){ocean.box(wx,.015+Math.sin(now*1.8+i)*.06,wz,18+(i%4)*5,.027,.4,i%3?'#4e9dbb':'#74b9c9',.23,.2)}}
  draw3Immediate(ocean);
  draw3Buffer(g3.ground);
- let cells=0;for(let cell of g3.tiles.values()){if(Math.abs(cell.x-target.x)>520||Math.abs(cell.z-target.y)>520)continue;draw3Buffer(cell.draw);cells++}g3.stats.visible=cells;
+ let cells=0;for(let cell of g3.tiles.values()){if(Math.abs(cell.x-target.x)>470||Math.abs(cell.z-target.y)>470)continue;draw3Buffer(cell.draw);cells++}g3.stats.visible=cells;
  let dynamic=new Mesh3();if(car){for(let t of traffic){if(Math.hypot(t.x-target.x,t.y-target.y)>390)continue;vehicle3(dynamic,t)}for(let c of cops){if(Math.hypot(c.x-target.x,c.y-target.y)>390)continue;vehicle3(dynamic,c,'cop')}vehicle3(dynamic,car,'me');for(let p of pickups){if(p.claimed||Math.hypot(p.x-target.x,p.y-target.y)>320)continue;let rise=3+Math.sin(now*4+p.t)*1.0;dynamic.cylinder(p.x,terrainHeight(p.x,p.y)+rise,p.y,3.5,1.1,9,'#ffd887',.8);dynamic.box(p.x,terrainHeight(p.x,p.y)+rise+2,p.y,1.2,.3,1.2,'#fff7b4',.0,.7)}for(let p of particles){if(Math.hypot(p.x-target.x,p.y-target.y)>200)continue;dynamic.box(p.x,terrainHeight(p.x,p.y)+.9+p.size*.1,p.y,p.size,p.size,p.size,p.col,0,.4)}}
  draw3Immediate(dynamic);
 }
@@ -815,18 +814,18 @@ function renderSoftware3D(){
  function outline(pts,color,width=1){let points=[];for(let p of pts){let q=proj(...p);if(!q)return;points.push(q)}g.strokeStyle=color;g.lineWidth=width;g.beginPath();g.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);g.closePath();g.stroke();}
  function shade(h,f){if(h[0]!=='#')return h;let x=h.slice(1);if(x.length===3)x=x.split('').map(a=>a+a).join('');return '#'+[0,2,4].map(i=>Math.max(0,Math.min(255,Math.floor(parseInt(x.slice(i,i+2),16)*f))).toString(16).padStart(2,'0')).join('');}
  // The island is a continuous surface, with open ocean beyond the irregular coast.
- const cells=[];let step=70;for(let dx=-910;dx<=910;dx+=step)for(let dz=-910;dz<=910;dz+=step){let x=target.x+dx,z=target.y+dz,center=coastDistance(x,z);if(center<-40)continue;let depth=dx*si-dz*co;if(depth<-70||depth>1100)continue;cells.push({x,z,depth,center})}
+ const cells=[];let step=90;for(let dx=-810;dx<=810;dx+=step)for(let dz=-810;dz<=810;dz+=step){let x=target.x+dx,z=target.y+dz,center=coastDistance(x,z);if(center<-40)continue;let depth=dx*si-dz*co;if(depth<-70||depth>1100)continue;cells.push({x,z,depth,center})}
  cells.sort((a,b)=>b.depth-a.depth);
  for(let cell of cells){let x=cell.x,z=cell.z,s=step*.51;let ht=terrainHeight(x,z),fill=terrainStyle(x,z,ht);polygon([[x-s,terrainHeight(x-s,z-s),z-s],[x+s,terrainHeight(x+s,z-s),z-s],[x+s,terrainHeight(x+s,z+s),z+s],[x-s,terrainHeight(x-s,z+s),z+s]],fill)}
  // Roads are extruded on top of the ground, rather than drawn as a flat screenshot.
  for(let road of roads){let p=road.points;for(let i=0;i<p.length-1;i+=2){let a=p[i],b=p[Math.min(i+2,p.length-1)],mx=(a.x+b.x)/2,mz=(a.y+b.y)/2,dx=b.x-a.x,dz=b.y-a.y,len=Math.hypot(dx,dz)||1;
-  if(Math.hypot(mx-target.x,mz-target.y)>650)continue;let nx=-dz/len,nz=dx/len,w=road.width/2;
+  if(Math.hypot(mx-target.x,mz-target.y)>540)continue;let nx=-dz/len,nz=dx/len,w=road.width/2;
   polygon([[a.x-nx*w,terrainHeight(a.x-nx*w,a.y-nz*w)+.3,a.y-nz*w],[a.x+nx*w,terrainHeight(a.x+nx*w,a.y+nz*w)+.3,a.y+nz*w],[b.x+nx*w,terrainHeight(b.x+nx*w,b.y+nz*w)+.3,b.y+nz*w],[b.x-nx*w,terrainHeight(b.x-nx*w,b.y-nz*w)+.3,b.y-nz*w]],'#3e5160');
   if(i%10===0)polygon([[a.x-nx*.35,terrainHeight(a.x-nx*.35,a.y-nz*.35)+.34,a.y-nz*.35],[a.x+nx*.35,terrainHeight(a.x+nx*.35,a.y+nz*.35)+.34,a.y+nz*.35],[b.x+nx*.35,terrainHeight(b.x+nx*.35,b.y+nz*.35)+.34,b.y+nz*.35],[b.x-nx*.35,terrainHeight(b.x-nx*.35,b.y-nz*.35)+.34,b.y-nz*.35]],'#e7cea1');
  }}
- let objects=[];for(let b of structures){let dx=b.x-target.x,dz=b.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<900&&Math.hypot(dx,dz)<930)objects.push({type:'b',obj:b,depth});}
- for(let t of trees){let dx=t.x-target.x,dz=t.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<700&&Math.hypot(dx,dz)<700)objects.push({type:'t',obj:t,depth});}
- for(let v of [...traffic,...cops]){let dx=v.x-target.x,dz=v.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<650&&Math.hypot(dx,dz)<700)objects.push({type:v.type?'cop':'traffic',obj:v,depth});}
+ let objects=[];for(let b of structures){let dx=b.x-target.x,dz=b.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<720&&Math.hypot(dx,dz)<780)objects.push({type:'b',obj:b,depth});}
+ for(let t of trees){let dx=t.x-target.x,dz=t.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<600&&Math.hypot(dx,dz)<620)objects.push({type:'t',obj:t,depth});}
+ for(let v of [...traffic,...cops]){let dx=v.x-target.x,dz=v.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<570&&Math.hypot(dx,dz)<610)objects.push({type:v.type?'cop':'traffic',obj:v,depth});}
  if(car)objects.push({type:'player',obj:car,depth:0});
  objects.sort((a,b)=>b.depth-a.depth);
  function building(b){let co=Math.cos(b.rot),sn=Math.sin(b.rot),h=b.height||(b.kind==='villa'?9:b.kind==='tower'?64:24),base=terrainHeight(b.x,b.y),w=b.w/2,dd=b.h/2;
