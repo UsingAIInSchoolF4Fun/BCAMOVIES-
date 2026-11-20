@@ -5400,11 +5400,16 @@ function animate() {
       if(player.position.y>=ramp-2.7&&player.position.y<=ramp+3.2&&velocityY<=0)floor=Math.max(floor,ramp);
     }
     for(const tw of launchTowers)if(Math.hypot(player.position.x-tw.x,player.position.z-tw.z)<10.5&&Math.abs(player.position.y-tw.top)<3.5)floor=Math.max(floor,tw.top);
+    // Actual jumping: a raised stage only supports the player if the feet
+    // descend onto its top. No walking into a 1.7-unit rise to auto-step up.
     for(const p of trialPlatforms){
-      if(Math.abs(player.position.x-p.x)<p.w/2-.3&&
-         Math.abs(player.position.z-p.z)<p.d/2-.3&&
-         player.position.y>=p.top-2.8&&player.position.y<=p.top+2.2&&velocityY<=0)
-        floor=Math.max(floor,p.top);
+      if(Math.abs(player.position.x-p.x)>p.w/2-.45||
+         Math.abs(player.position.z-p.z)>p.d/2-.45)continue;
+      const nextFeet=player.position.y+velocityY*dt;
+      const landing=velocityY<=0&&player.position.y>=p.top-.27&&
+         nextFeet<=p.top+.38;
+      const standing=onGround&&Math.abs(player.position.y-p.top)<.24;
+      if(landing||standing)floor=Math.max(floor,p.top);
     }
     // Ramp floor is interpolated between neighboring boards so it has no gaps.
     for(let i=1;i<volcanoRamp.length;i++){
