@@ -1897,29 +1897,9 @@ function buildSpawnHub(){
  registerCollider(-55*hubScale,-6*hubScale,13.5*hubScale,22);
  registerCollider(55*hubScale,-6*hubScale,13.5*hubScale,22);
 
- // Rear waterfalls are single, terrain-anchored water sheets over stone cliffs.
- // Subdivided sheets add texture without isolated, flickering panels.
- for(const side of [-1,1]){
-  const cx=side*61,cz=-39;
-  const area=new T.Group();area.position.set(cx,(ground(cx*hubScale,cz*hubScale)-base)/hubY,cz);root.add(area);
-  box(17,10,6,edge,area,0,4,-2.5);
-  for(let i=0;i<5;i++){
-   box(3.1,7+(i%3)*1.5,6.1,stone,area,(i-2)*3.1,4.1,-2.6);
-  }
-  const fallGeom=new T.PlaneGeometry(12.6,8.5,12,20);
-  const vertex=fallGeom.attributes.position;
-  for(let i=0;i<vertex.count;i++)
-   vertex.setZ(i,Math.sin(vertex.getX(i)*1.2+vertex.getY(i)*2.5)*.13);
-  fallGeom.computeVertexNormals();
-  const fall=mesh(fallGeom,fallingMaterial,area,0,4.5,1.2);
-  fall.castShadow=false;fall.receiveShadow=false;
-  cyl(8,8,.14,darkWater,area,0,.1,5.8,24);
-  const mist=torus(5.7,.18,cyan,area,0,.25,5.3);mist.castShadow=false;
-  for(let i=0;i<5;i++){
-   const a=i*1.256;
-   sphere(1.25,leaves,area,Math.cos(a)*10,1.7,Math.sin(a)*8);
-  }
- }
+ // Removed unsupported rear decorative falls and puddles. These appeared to
+ // start out of nowhere beside shops, separate from the mountain-fed river.
+ // The Origin fountain remains as an intentional architectural water feature.
  // A small number of deliberately placed ornamental trees frame the plaza.
  function ornamentalTree(x,z,pink){
   const g=new T.Group();g.position.set(x,(ground(x*hubScale,z*hubScale)-base)/hubY,z);root.add(g);
@@ -1954,7 +1934,8 @@ function buildSpawnHub(){
  for(const side of [-1,1]){
   const cx=side*48,cz=22;
   const bridgeGroup=new T.Group();bridgeGroup.position.set(cx,(ground(cx*hubScale,cz*hubScale)-base)/hubY,cz);root.add(bridgeGroup);
-  box(15,.14,10,darkWater,bridgeGroup,0,.17,0);
+  // Shallow stone-lined walkway instead of a floating blue water rectangle.
+  box(15,.14,10,stone,bridgeGroup,0,.17,0);
   for(let i=0;i<11;i++){
    const px=(i-5)*1.25;
    const plank=box(1.19,.34,8.5,timber,bridgeGroup,px,1.08+Math.cos(px/6.4*Math.PI/2)*.24,0);
@@ -2034,7 +2015,6 @@ function buildSpawnHub(){
   for(const xx of [-9,9])for(const zz of [-1,21])
    registerCollider((side*45+xx)*hubScale,zz*hubScale,1.22*hubScale,10);
   registerCollider(side*34*hubScale,20*hubScale,4.5*hubScale,5);
-  registerCollider(side*61*hubScale,-42*hubScale,8.7*hubScale,12);
   for(const zz of [0,10,22])
    registerCollider(side*54*hubScale,zz*hubScale,1.15*hubScale,8.5);
  }
@@ -2210,7 +2190,7 @@ function finishRiverBridges(){
   let previous=null;
   for(let i=0;i<=steps;i++){
    const u=i/steps,p=spline.getPoint(u),diff=p.z-riverPathZ(p.x);
-   if(previous&&previous.diff*diff<=0&&p.x>-302&&p.x<336){
+   if(previous&&previous.diff*diff<=0&&p.x>RIVER_START+8&&p.x<RIVER_END-8){
     const crossing=spline.getPoint(Math.max(0,(i-.5)/steps)),tangent=spline.getTangent(u);
     const len=Math.hypot(tangent.x,tangent.z)||1,tx=tangent.x/len,tz=tangent.z/len;
     if(riverCrossings.some(v=>Math.hypot(v.x-crossing.x,v.z-crossing.z)<17))break;
@@ -2268,16 +2248,15 @@ function addBridgeWaterwheels(){
    box(.68,.9,.7,brass,wheel,px,py,0).rotation.z=a;
   }
   cyl(.45,.55,3.1,timber,root,0,0,-1.45,8).rotation.x=Math.PI/2;
-  const water=torus(1.65,.1,scenicCyan,scene,x,riverWaterHeight(b.x)+.13,z);
-  water.castShadow=false;
-  animatedWaterwheels.push({wheel,water,phase:i});
+  animatedWaterwheels.push({wheel,phase:i});
  }
 }
-addBridgeWaterwheels();
+// Removed loose river-edge waterwheel props until a proper connected mill
+// and structural foundations exist; bridge crossings are fully retained.
 function animateWaterwheels(t){
  for(const o of animatedWaterwheels){
   o.wheel.rotation.z=-t*.52+o.phase;
-  o.water.scale.setScalar(1+Math.sin(t*2.8+o.phase)*.12);
+  // Detached ripple rings removed; only legacy wheels animate if explicitly used.
  }
 }
 
@@ -3602,9 +3581,9 @@ function conceptIsles(){
  cyl(8+i*2,5+i,3.2,mats.stoneDark,g,x,y,z,10);cyl(7+i*2,8+i*2,1.3,conceptLeaf,g,x,y+2.2,z,10);
  for(const side of [-1,1])cyl(.7,.9,8,mats.stone,g,x+side*3,y+6.5,z,8);box(8,1.3,2,conceptGold,g,x,y+10.5,z)}
 }
-// Keep only landmark silhouettes that complement the map; the old origin
-// plaza, floating isles and scattered towers clashed with the approved hub.
-conceptGrove();conceptTemple();conceptSky();
+// V18: remove three early, non-interactive landmark mockups whose pillars,
+// roots and plinths sat directly on the established walking routes.
+// Functional district architecture and challenge monuments remain intact.
 
 // Landmark-scale environmental silhouettes and designed traversal scenery.
 const worldWater=new T.MeshStandardMaterial({color:0x2683a5,metalness:.36,roughness:.19,transparent:true,opacity:.84,side:T.DoubleSide});
@@ -3736,33 +3715,8 @@ function buildMountainHeadwaters(){
 }
 authoredRiver();
 const mountainWaterfallMaterial=buildMountainHeadwaters();
-function groundedCascade(cx,cz,width=9,length=31){
- // A shallow tributary follows the triangulated ground throughout its width.
- // Multiple cross-width vertices avoid the old two-edge sheet cutting into hills.
- const count=46,lanes=6,p=[],uv=[],indices=[];
- for(let j=0;j<=count;j++){
-  const z=cz-length*.5+length*j/count;
-  const taper=Math.min(1,.18+j/5,.18+(count-j)/5);
-  for(let k=0;k<=lanes;k++){
-   const cross=(k/lanes*2-1);
-   const x=cx+cross*width*.5*taper;
-   p.push(x,ground(x,z)+.19,z);
-   uv.push(k/lanes,j/count*5);
-   if(j<count&&k<lanes){
-    const n=j*(lanes+1)+k;
-    indices.push(n,n+1,n+lanes+1,n+1,n+lanes+2,n+lanes+1);
-   }
-  }
- }
- const stream=makeWaterSurface(p,uv,indices);
- // Sparse rocks at the sides, sunk naturally into the real ground surface.
- for(const side of [-1,1])for(let i=0;i<4;i++){
-  const zz=cz-12+i*8,x=cx+side*(width*.8+1.6),y=ground(x,zz);
-  const b=sphere(1.15+(i%2)*.28,worldStone,scene,x,y+.12,zz);
-  b.scale.set(1.12,.72,1.05);b.castShadow=false;
- }
- return stream;
-}
+// All former isolated stream ribbons were removed in favor of the
+// continuous source-fed main river.
 function softRockRidge(cx,cz,span,count,mat,phase=0){
  // Rounded broad mountain shoulders, anchored to the exact existing terrain.
  // Stay beyond reserved gameplay sites and principal trails.
@@ -5654,7 +5608,7 @@ function animate() {
         nz=Math.max(-404.7,Math.min(404.7,nz));
       }
       let ny=player.position.y+glideVel.y*dt;
-      const water=nx>-304&&nx<339&&Math.abs(nz-riverPathZ(nx))<8?
+      const water=nx>RIVER_START&&nx<RIVER_END&&Math.abs(nz-riverPathZ(nx))<8.3?
         riverWaterHeight(nx)-.65:-Infinity;
       const landingFloor=Math.max(ground(nx,nz),roadWalkHeight(nx,nz),
         waystationWalkHeight(nx,nz),hubWalkHeight(nx,nz),gameArenaWalkHeight(nx,nz),water);
@@ -5694,7 +5648,7 @@ function animate() {
     // Shallow wading keeps the player from sinking invisibly under the river.
     // Crossing a bridge still takes priority via its higher collision surface.
     const riverX=player.position.x,riverZ=player.position.z;
-    if(riverX>-304&&riverX<339&&Math.abs(riverZ-riverPathZ(riverX))<7.8)
+    if(riverX>RIVER_START&&riverX<RIVER_END&&Math.abs(riverZ-riverPathZ(riverX))<8.3)
       floor=Math.max(floor,riverWaterHeight(riverX)-.65);
     floor=Math.max(floor,roadWalkHeight(player.position.x,player.position.z));
     floor=Math.max(floor,waystationWalkHeight(player.position.x,player.position.z));
