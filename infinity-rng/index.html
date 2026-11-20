@@ -1121,6 +1121,17 @@ for (let j = 0; j < verts.length; j += 3) {
     if(x>162&&z>118)tone.lerp(new T.Color(h>6?0xb78b56:0xcfad6e),blend(118,215,z));
     if(x>155&&z< -85)tone.lerp(new T.Color(h>6?0x663c45:0x794b4a),blend(85,190,-z));
     if(pathDistance(x,z)<6.7)tone.lerp(new T.Color(0xb7a396),.24);
+    // Underwater gravel + exposed rounded stone fade into the surrounding
+    // biome. Uses the real sculpted terrain vertex colors, not a blue decal.
+    if(x>RIVER_START-8&&x<RIVER_END+6){
+      const riverDistance=Math.abs(z-riverPathZ(x));
+      if(riverDistance<30){
+        const bed=new T.Color(riverDistance<11?0x415550:0x887c65);
+        const factor=riverDistance<11?.85:
+          .82*Math.max(0,Math.min(1,(30-riverDistance)/19));
+        tone.lerp(bed,factor);
+      }
+    }
     // Tiny variations keep terrain from looking like one flat paint color.
     // Baked directional shade gives Chromebooks hillside shadows even with
     // performance mode's real-time shadow map disabled.
@@ -3647,8 +3658,8 @@ function makeWaterSurface(positions,uvs,indices){
 // One continuous river, from the western mountain waterfall to the eastern
 // boundary. Gravel and bank meshes are sampled from the same collision terrain.
 const bankMaterials=[
- new T.MeshStandardMaterial({color:0x696964,roughness:1,map:mats.stone.map,polygonOffset:true,polygonOffsetFactor:-1}),
- new T.MeshStandardMaterial({color:0x847863,roughness:1,map:mats.sand.map,polygonOffset:true,polygonOffsetFactor:-1})
+ new T.MeshStandardMaterial({color:0x696964,roughness:1,map:mats.stone.map,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1}),
+ new T.MeshStandardMaterial({color:0x847863,roughness:1,map:mats.sand.map,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1})
 ];
 function riverStripGeometry(first,last,segments,inner,outer,side,material){
  const vertices=[],uvs=[],faces=[],lanes=4;
