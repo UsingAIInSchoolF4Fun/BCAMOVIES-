@@ -1659,7 +1659,7 @@ function buildSpawnHub(){
  const glow=material(0xc49bff,.16,0x8a3eff,1.5),cyan=material(0x75dfff,.22,0x1e96e9,1.1);
  const goldLight=material(0xffce79,.24,0xffae4f,1.65),leaves=material(0x437951),bloom=material(0xf3a1d5);
  const darkWater=material(0x174a79,.26,0x075e97,.4);
- const animations={crystal:null,halo:[],banners:[],waterfalls:[],lights:[],motes:[],spray:null,foam:null};
+ const animations={crystal:null,halo:[],orbiters:[],banners:[],waterfalls:[],lights:[],motes:[],spray:null,foam:null};
  // One raised, walkable 31-unit plaza with stone rims and a subtly textured surface.
  cyl(38.5,38.5,2.36,edge,root,0,1.18,0,72);
  cyl(37.8,37.8,.23,stone,root,0,2.35,0,72);
@@ -1716,6 +1716,15 @@ function buildSpawnHub(){
  for(let i=0;i<3;i++){
   let halo=torus(6+i*1.6,.12,i===1?trim:glow,crystalRig,0,6+i*1.3,0);
   halo.rotation.set(.15+i*.19,i*1.17,.25+i*.17);animations.halo.push(halo);
+ }
+ // Eight orbiting faceted fragments imply a living, powerful Origin monument.
+ // This animated architecture is above the plaza, never blocking paths.
+ for(let i=0;i<8;i++){
+  const angle=i*Math.PI/4,rad=8.9+(i%2)*1.2;
+  const shard=mesh(new T.OctahedronGeometry(.42+(i%3)*.14,0),
+    i%3===0?innerMat:crystalMat,crystalRig,Math.cos(angle)*rad,7.2,Math.sin(angle)*rad);
+  shard.scale.set(.7,1.55,.65);shard.castShadow=false;
+  animations.orbiters.push({mesh:shard,phase:angle,rad,y:7.1+(i%2)*1.1});
  }
  animations.crystal=crystalRig;
  const magicalLight=new T.PointLight(0xb06dff,2.7,47,2);magicalLight.position.set(0,14,-4);root.add(magicalLight);
@@ -2012,6 +2021,7 @@ function buildSpawnHub(){
  });
  return {baseY:base,topY:top,crystal:animations.crystal,halo:animations.halo,banners:animations.banners,
   waterfalls:animations.waterfalls,lights:animations.lights,motes:animations.motes,
+  orbiters:animations.orbiters,
   spray:animations.spray,foam:animations.foam,magicalLight};
 }
 const spawnHub=buildSpawnHub();
@@ -2476,6 +2486,11 @@ function animateSpawnHub(t){
  spawnHub.crystal.rotation.y=t*.14;
  spawnHub.crystal.position.y=5.6+Math.sin(t*1.45)*.18;
  spawnHub.halo.forEach((ring,i)=>{ring.rotation.z+=.0015*(i%2?1:-1);ring.rotation.y+=.0025;});
+ spawnHub.orbiters.forEach((o,i)=>{
+  const a=t*(.19+(i%3)*.025)+o.phase;
+  o.mesh.position.set(Math.cos(a)*o.rad,o.y+Math.sin(t*1.2+i)*.35,Math.sin(a)*o.rad);
+  o.mesh.rotation.y=t*.45+i;o.mesh.rotation.z=Math.sin(t*.5+i)*.18;
+ });
  spawnHub.waterfalls.forEach(tex=>{tex.offset.y=-(t*.23%1);});
  setWorldUniformTime(spawnHub.spray,t,'fountain spray');
  spawnHub.foam.scale.setScalar(1+Math.sin(t*2.8)*.019);
@@ -3057,6 +3072,63 @@ function platformFootprint(x,z,p,margin=.45){
    Math.hypot(dx,dz)<p.w*.43-margin*.35:
    Math.abs(dx)<p.w*.5-margin&&Math.abs(dz)<p.d*.5-margin;
 }
+// Unique sky signatures are designed around each region rather than
+// using an identical portal for all 12 parks. Only 3-7 extra low-poly
+// meshes per course; no new colliders or obstacles on walkable routes.
+function buildTrialSignature(site,topY,stone,accent){
+ const group=new T.Group();
+ group.position.set(site.x,topY+2,site.z);
+ scene.add(group);
+ const name=site.name.toLowerCase();
+ const isFrost=/frozen|frost/.test(name),isForest=/forest|temple/.test(name);
+ const isEmber=/ember|flame|fortress/.test(name);
+ const isDesert=/sunstone|desert/.test(name);
+ const isAstral=/astral|sanctuary/.test(name);
+ const isCrystal=/crystal|amethyst|spires/.test(name);
+ if(isFrost){
+  for(let i=0;i<5;i++){const a=i*Math.PI*2/5;
+   const ice=mesh(new T.ConeGeometry(1.1,6+(i%2)*2,5),accent,group,
+     Math.cos(a)*9,4,Math.sin(a)*9);
+   ice.castShadow=false;
+  }
+ }else if(isForest){
+  for(let i=0;i<6;i++){const a=i*Math.PI/3;
+   const leaf=mesh(new T.ConeGeometry(1.8,5.5,5),stone,group,
+     Math.cos(a)*9,1.4,Math.sin(a)*9);
+   leaf.rotation.z=Math.sin(a)*.42;leaf.castShadow=false;
+  }
+ }else if(isEmber){
+  for(let i=0;i<5;i++){const a=i*Math.PI*2/5;
+   const flame=mesh(new T.ConeGeometry(.95,4+(i%3)*1.1,5),accent,group,
+      Math.cos(a)*9,3,Math.sin(a)*9);
+   flame.rotation.z=Math.sin(a)*.3;flame.castShadow=false;
+  }
+ }else if(isDesert){
+  const disc=mesh(new T.CylinderGeometry(5.5,5.5,.35,16),accent,group,0,3,0);
+  disc.rotation.x=Math.PI/2;disc.castShadow=false;
+  for(let i=0;i<6;i++){const a=i*Math.PI/3;
+   const ray=mesh(new T.ConeGeometry(.6,3.2,5),accent,group,
+     Math.cos(a)*8.5,3+Math.sin(a)*8.5,0);
+   ray.rotation.z=a-Math.PI/2;ray.castShadow=false;
+  }
+ }else if(isAstral){
+  for(let i=0;i<3;i++){
+   const ring=torus(6+i*2,.12,accent,group,0,2,0);
+   ring.rotation.set(i*.65,.25+i*.4,i*.17);
+  }
+ }else if(isCrystal){
+  for(let i=0;i<6;i++){const a=i*Math.PI/3;
+   const prism=mesh(new T.OctahedronGeometry(1.7+(i%2)*.7,0),accent,group,
+     Math.cos(a)*8,2.5+(i%3)*1.4,Math.sin(a)*8);
+   prism.scale.y=1.6;prism.castShadow=false;
+  }
+ }else{
+  for(let i=0;i<3;i++){const hoop=torus(5.8+i*1.6,.15,accent,group,0,2+i*1.8,0);
+   hoop.rotation.x=.2+i*.42;hoop.rotation.y=i*.7;
+  }
+ }
+ return group;
+}
 function buildEpicObby(site,color,kind){
  site.kind=kind;site.id=site.id||site.name.toLowerCase().replace(/[^a-z0-9]+/g,"_");
  site.color=color;site.platforms=[];
@@ -3126,7 +3198,8 @@ function buildEpicObby(site,color,kind){
  mesh(new T.CylinderGeometry(1.3,2.1,topY-ground(site.x,site.z),10,1,true),beamMat,scene,site.x,(topY+ground(site.x,site.z))*.5,site.z).castShadow=false;
  const sign=new T.Sprite(new T.SpriteMaterial({map:landmarkSign("JUMP TRIAL · "+site.name.toUpperCase(),color),transparent:true,depthWrite:false}));
  sign.position.set(site.x,topY+13,site.z);sign.scale.set(31,7.8,1);scene.add(sign);
- site.spectacle={halo,halo2,hero,phase:site.x*.03+site.z*.01,edge};
+ const signature=buildTrialSignature(site,topY,stone,edge);
+ site.spectacle={halo,halo2,hero,signature,phase:site.x*.03+site.z*.01,edge};
  site.top=site.platforms[stages-1].top;
  adventureCourses.push(site);
 }
@@ -5115,6 +5188,31 @@ function updateBiomeTrials(t){
  }else trialPanel.style.display="none";
 }
 
+// One recycled world-space pulse, shared between every course. No per-trial
+// effects loop or expensive postprocessing.
+const checkpointSignal=new T.Mesh(new T.TorusGeometry(2,.13,6,36),
+ new T.MeshBasicMaterial({color:0xb9a2ff,emissive:undefined,
+   transparent:true,opacity:0,depthWrite:false,side:T.DoubleSide}));
+checkpointSignal.rotation.x=Math.PI/2;
+checkpointSignal.visible=false;scene.add(checkpointSignal);
+let checkpointSignalTime=0,checkpointSignalDuration=.9;
+function signalCheckpoint(stage,color,long=false){
+ if(!stage)return;
+ checkpointSignal.position.set(stage.x,stage.top+.18,stage.z);
+ checkpointSignal.material.color.setHex(color);
+ checkpointSignalDuration=long?1.35:.9;
+ checkpointSignalTime=checkpointSignalDuration;
+ checkpointSignal.visible=true;
+}
+function animateCheckpointSignal(dt){
+ if(checkpointSignalTime<=0){checkpointSignal.visible=false;return;}
+ checkpointSignalTime=Math.max(0,checkpointSignalTime-dt);
+ const k=1-checkpointSignalTime/checkpointSignalDuration;
+ checkpointSignal.scale.setScalar(.75+k*3.2);
+ checkpointSignal.material.opacity=.7*(1-k);
+ if(checkpointSignalTime===0)checkpointSignal.visible=false;
+}
+
 // V16: interactive, untimed physical jumping challenges, including a real
 // stay-or-give-up choice on every failed run.
 function adventureGatePosition(site){
@@ -5135,6 +5233,7 @@ function startAdventure(site){
  }
  activeAdventure={site,target:1,checkpoint:0,started:Date.now(),paused:false};
  adventureTeleport(site.platforms[0]);
+ signalCheckpoint(site.platforms[0],site.color);
  adventureChoice.style.display="none";
  adventureHud.style.display="block";
  trialNotification("✦ "+site.name.toUpperCase()+" ✦\nJump between the REAL platforms! Checkpoints save progress. No timer.");
@@ -5178,6 +5277,7 @@ function finishAdventure(){
  adventureChoice.style.display="none";adventureHud.style.display="none";
  player.position.set(...adventureGatePosition(a.site));
  velocityY=0;onGround=false;
+ signalCheckpoint(a.site.platforms[a.site.platforms.length-1],a.site.color,true);
  if(a.site.kind==="biome")finishBiomeTrial(a.site);
  else finishSkyTrial({site:a.site,started:a.started});
  trialNotification("✦ COURSE COMPLETE ✦\n"+a.site.name+" · reward earned! Come back to beat your time.");
@@ -5209,6 +5309,7 @@ function handleAdventureInteraction(t){
   const effect=course.spectacle;
   effect.halo.rotation.z=t*.038+effect.phase;
   effect.halo2.rotation.z=-t*.058;
+  effect.signature.rotation.y=Math.sin(t*.16+effect.phase)*.13;
   effect.hero.rotation.y=t*.22+effect.phase;
   effect.hero.position.y=effect.hero.userData.baseY??effect.hero.position.y;
   if(effect.hero.userData.baseY===undefined)effect.hero.userData.baseY=effect.hero.position.y;
@@ -5234,6 +5335,7 @@ function updateAdventureProgress(t){
    const landed=a.target;
    if(landed===3||landed===6||landed===8){
     a.checkpoint=landed;
+    signalCheckpoint(target,a.site.color);
     trialNotification("✦ CHECKPOINT SAVED · PLATFORM "+(landed+1)+" ✦");
    }
    if(landed===a.site.platforms.length-1){finishAdventure();return;}
@@ -5340,6 +5442,24 @@ window.addEventListener("resize", () => {
 let lastBiome = "",
     frameN = 0;
 
+// Biome-specific distant haze makes the world readable without a heavy
+// volumetric rendering pass. Changes are gradual, never sudden color jumps.
+const biomeFogColors={
+ "The Origin":0x66758c,"Frozen Expanse":0x6f8da6,
+ "Whispering Forest":0x4e7169,"Amethyst Canyon":0x666080,
+ "Ember Wastes":0x755460,"Astral Highlands":0x54567e,
+ "Sunstone Desert":0x937b67
+};
+const fogTarget=new T.Color();
+function updateBiomeFog(){
+ const biome=biomeAt(player.position.x,player.position.z);
+ fogTarget.setHex(biomeFogColors[biome]||0x66758c);
+ scene.fog.color.lerp(fogTarget,.038);
+ const targetDensity=biome==="Astral Highlands"?.0017:
+  biome==="Frozen Expanse"?.0016:.00135;
+ scene.fog.density+=(targetDensity-scene.fog.density)*.035;
+}
+
 const missingWorldUniforms=new Set();
 function setWorldUniformTime(material,t,label){
  const uniform=material&&material.uniforms&&material.uniforms.uTime;
@@ -5355,6 +5475,7 @@ function animate() {
         t = clock.elapsedTime;
     animateWind(t);
     animateSpawnHub(t);
+    if(frameN%8===0)updateBiomeFog();
     setWorldUniformTime(skyDomeMaterial,t,'sky');
     for(const mist of mountainMistMaterials)setWorldUniformTime(mist,t,'mountain mist');
     animateBiomeGeometry(t);
@@ -5364,6 +5485,7 @@ function animate() {
     animateScenicFlocks(t);
     animateCliffBeacons(t);
     handleAdventureInteraction(t);
+    animateCheckpointSignal(dt);
     animateGameLandmarks(t);
     riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
