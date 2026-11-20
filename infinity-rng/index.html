@@ -4350,7 +4350,7 @@ function updateAuraPose(t,dt,moving,onGround,gliding,stride){
    torsoPitch=descent?.08:-.095;
  }
  for(let i=0;i<2;i++){
-  if(!moving&&!gliding){
+  if(!moving&&!gliding&&!airborne){
     ax[i]*=poseStrength;az[i]*=poseStrength;
     lx[i]*=poseStrength;lz[i]*=poseStrength;
   }
@@ -5208,7 +5208,7 @@ function updateBiomeTrials(t){
 // One recycled world-space pulse, shared between every course. No per-trial
 // effects loop or expensive postprocessing.
 const checkpointSignal=new T.Mesh(new T.TorusGeometry(2,.13,6,36),
- new T.MeshBasicMaterial({color:0xb9a2ff,emissive:undefined,
+ new T.MeshBasicMaterial({color:0xb9a2ff,
    transparent:true,opacity:0,depthWrite:false,side:T.DoubleSide}));
 checkpointSignal.rotation.x=Math.PI/2;
 checkpointSignal.visible=false;scene.add(checkpointSignal);
