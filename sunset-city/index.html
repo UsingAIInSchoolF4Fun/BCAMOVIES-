@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V9.1 — ROADS & TERRAIN FIXED</title>
+<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V9.2 — ESCALATING POLICE PURSUIT</title>
 <style>
 :root{--ink:#0c1a2b;--panel:#101f30f2;--line:#ffffff29;--cyan:#63e6e5;--orange:#ffb36b;--muted:#a8bbc9;--green:#89f4ac}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#081b2b;color:#fff;font-family:Inter,Arial,Helvetica,sans-serif;user-select:none;touch-action:none}
@@ -123,8 +123,8 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 <body>
 <canvas id="game" aria-label="3D third-person police chase driving game"></canvas><div id="tint"></div>
 <div id="hud">
-  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V9.1 ROAD REBUILD</small></div><div class="hudMid">
-   <div class="pill"><label>SURVIVAL</label><strong id="survive">00:00</strong></div><div class="pill cash"><label>RUN EARNINGS</label><strong id="earn">$0</strong></div><div class="pill heat"><label>HEAT LEVEL</label><strong id="stars">★☆☆☆☆</strong></div></div></div>
+  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V9.2 POLICE ESCALATION</small></div><div class="hudMid">
+   <div class="pill"><label>SURVIVAL</label><strong id="survive">00:00</strong></div><div class="pill cash"><label>RUN EARNINGS</label><strong id="earn">$0</strong></div><div class="pill heat"><label id="heatLabel">LEVEL 1 · 1 COP</label><strong id="stars">★☆☆☆☆</strong></div></div></div>
   <div id="hudLeft"><div class="meter"><div class="meterhead"><span>CAR INTEGRITY</span><span id="healthText">100%</span></div><div class="track"><div class="fill" id="healthbar"></div></div></div><div class="meter"><div class="meterhead"><span>NITRO</span><span id="boostText">100%</span></div><div class="track"><div class="fill boost" id="boostbar"></div></div></div><div class="tips"><b>W/S</b> accelerate / brake<br><b>A/D</b> steer &nbsp; <b>SHIFT</b> boost<br><b>SPACE</b> handbrake drift<br><b>ESC</b> pause<br><b>M</b> island map · <b>C</b> camera<br><b>MOUNTAINS</b> earn ridge bonuses<br><b>OCEAN</b> ends your run</div></div>
   <button id="escapeBtn" type="button">Ⅱ PAUSE</button>
   <div id="hudBottom"><div class="minimap"><canvas id="radar" width="180" height="180"></canvas></div><div class="speedGroup"><div class="speednum" id="speed">0</div><small>KM/H</small><div class="gear" id="carName">STREET COMPACT</div><div class="gear" id="terrainStatus">3D PURSUIT</div><div class="progress"><i id="heatProgress"></i></div></div></div>
@@ -636,14 +636,20 @@ function roadLanePoint(v,index){
  const dx=r.x-q.x,dy=r.y-q.y,len=Math.hypot(dx,dy)||1;
  return {x:p.x-dy/len*v.lane,y:p.y+dx/len*v.lane};
 }
+// Progressive pursuit: one very slow officer at the start, then a new level and car every 30 seconds.
+const HEAT_SECONDS=30, MAX_HEAT=10, MAX_POLICE=10;
+function heatLevelAt(seconds){return Math.min(MAX_HEAT,1+Math.floor(Math.max(0,seconds)/HEAT_SECONDS));}
+function maxCopsAt(level){return Math.min(MAX_POLICE,level);}
+function copTopSpeed(level,heavy=false){return Math.max(30,Math.min(155,38+(level-1)*13)-(heavy?14:0));}
+function copAcceleration(level,heavy=false){return (heavy?.73:1)*(28+(level-1)*7);}
 function spawnCop(){
  if(!car)return;
- const p=randomRoadSample(car.x,car.y,160,315);
+ const p=randomRoadSample(car.x,car.y,wave<=2?90:130,wave<=2?195:285);
  if(!p||coastDistance(p.x,p.y)<24||carCollision(p.x,p.y,12))return;
  if(cops.some(c=>Math.hypot(c.x-p.x,c.y-p.y)<29))return;
  const a=Math.atan2(car.x-p.x,-(car.y-p.y));
- cops.push({x:p.x,y:p.y,a,speed:26+wave*3,hp:85+wave*12,hitCooldown:0,stun:0,
-  type:wave>=4&&Math.random()<.28?'heavy':'patrol',phase:Math.random()*TAU,
+ cops.push({x:p.x,y:p.y,a,speed:Math.min(18+wave*2,copTopSpeed(wave,false)*.55),hp:85+wave*12,hitCooldown:0,stun:0,
+  type:wave>=6&&Math.random()<.24?'heavy':'patrol',phase:Math.random()*TAU,
   turnBias:Math.random()<.5?-1:1,stuck:0,knockVX:0,knockVY:0,far:0});
 }
 function spawnTraffic(n=17){
@@ -664,7 +670,7 @@ function spawnTraffic(n=17){
 }
 function spark(x,y,n=9,color='#ffc988',scale=1){if(particles.length>240)return;for(let i=0;i<n;i++){let a=rand(-Math.PI,Math.PI),v=rand(30,140)*scale;particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:rand(.2,.55),life:.55,col:color,size:rand(1.5,3.6)})}}
 function createPickups(){pickups=[];let used=[];for(let i=0;i<34;i++){let p=randomRoadSample(0,0,130,960);if(!p||used.some(o=>Math.hypot(o.x-p.x,o.y-p.y)<70))continue;pickups.push({x:p.x,y:p.y,claimed:false,t:Math.random()*TAU});used.push(p)}}
-function beginRun(){keys={};mode='playing';paused=false;runningSeconds=0;earned=0;combo=1;waterTime=0;copTimer=0;spikeTimer=0;scoreTick=0;lastRidgeBonus=-100;wave=1;cops=[];traffic=[];particles=[];runInfo={nearMisses:0,drifts:0,rammed:0};car=spawnPlayer();spawnTraffic(17);createPickups();camera.x=car.x;camera.y=car.y;camera.zoom=1;for(let k=0;k<2;k++)spawnCop();$('overlay').classList.add('hidden');$('hud').classList.add('show');now=0;bannerEnd=0;last=performance.now();updateHud();showBanner('THE CHASE IS ON','Survive longer. Earn more. Upgrade your ride.',3)}
+function beginRun(){keys={};mode='playing';paused=false;runningSeconds=0;earned=0;combo=1;waterTime=0;copTimer=0;spikeTimer=0;scoreTick=0;lastRidgeBonus=-100;wave=1;cops=[];traffic=[];particles=[];runInfo={nearMisses:0,drifts:0,rammed:0};car=spawnPlayer();spawnTraffic(17);createPickups();camera.x=car.x;camera.y=car.y;camera.zoom=1;for(let k=0;k<6&&cops.length<1;k++)spawnCop();$('overlay').classList.add('hidden');$('hud').classList.add('show');now=0;bannerEnd=0;last=performance.now();updateHud();showBanner('THE CHASE IS ON','Survive longer. Earn more. Upgrade your ride.',3)}
 function finishRun(reason){if(mode!=='playing'&&mode!=='pause')return;mode='over';finishReason=reason;keys={};const amount=Math.floor(earned);save.wallet+=amount;save.runs++;save.total+=Math.floor(runningSeconds);save.best=Math.max(save.best,Math.floor(runningSeconds));persist();$('hud').classList.remove('show');renderResults()}
 function damage(amount){if(car.hitCooldown>0)return;car.health=Math.max(0,car.health-amount);car.hitCooldown=.55;shake=Math.max(shake,11);spark(car.x,car.y,17,'#f8d599',1.35);if(car.health<=0)finishRun('The police totaled your car.')}
 function carCollision(x,y,radius){for(let b of structures){if(Math.hypot(x-b.x,y-b.y)>b.rad+radius)continue;let cs=Math.cos(b.rot),sn=Math.sin(b.rot),dx=x-b.x,dy=y-b.y,lx=dx*cs+dy*sn,ly=-dx*sn+dy*cs;let ax=clamp(lx,-b.w*.5,b.w*.5),ay=clamp(ly,-b.h*.5,b.h*.5);if(Math.hypot(lx-ax,ly-ay)<radius)return b}return null}
@@ -782,9 +788,14 @@ function clearCopPath(c,a,d=34){
 }
 function updateCops(dt){
  copTimer-=dt;
- wave=Math.min(5,1+Math.floor(runningSeconds/40));
- const wantedCount=Math.min(7,2+(wave-1)*2);
- if(copTimer<=0&&cops.length<wantedCount){spawnCop();copTimer=1.35;}
+ const prevLevel=wave;
+ wave=heatLevelAt(runningSeconds);
+ const wantedCount=maxCopsAt(wave);
+ if(wave>prevLevel)showBanner('WANTED LEVEL '+wave,'POLICE REINFORCEMENTS · UP TO '+wantedCount+' COPS',2.2);
+ if(copTimer<=0&&cops.length<wantedCount){
+  spawnCop();
+  copTimer=Math.max(.55,1.45-(wave-1)*.08);
+ }
  for(const c of cops){
   c.hitCooldown=Math.max(0,c.hitCooldown-dt);
   c.stun=Math.max(0,c.stun-dt);
@@ -801,13 +812,13 @@ function updateCops(dt){
   }else c.stuck=Math.max(0,c.stuck-dt*1.7);
   let error=Math.abs(Math.atan2(Math.sin(aim-c.a),Math.cos(aim-c.a)));
   c.a=angleTurn(c.a,aim,dt*(c.type==='heavy'?1.13:1.55));
-  const cap=(wave>=4?123:89)+wave*8-(c.type==='heavy'?18:0);
+  const cap=copTopSpeed(wave,c.type==='heavy');
   let targetSpeed=cap*clamp(1-error/2.25,.27,1)*(onRoad(c.x,c.y)?1:c.type==='heavy'?.51:.66)*clamp(1-Math.abs(slopeAt(c.x,c.y,c.a))*1.8,.48,1);
   if(distance<23)targetSpeed*=.65;
   if(c.stun>0)targetSpeed*=.22;
   if(!clear)targetSpeed*=.66;
   if(c.stuck>1.5)targetSpeed=0;
-  c.speed+=clamp(targetSpeed-c.speed,-160*dt,76*dt);
+  c.speed+=clamp(targetSpeed-c.speed,-(copAcceleration(wave,c.type==='heavy')*1.8)*dt,copAcceleration(wave,c.type==='heavy')*dt);
   const ox=c.x,oy=c.y;
   const move=Math.min(4.1,Math.max(0,c.speed*dt));
   c.x+=Math.sin(c.a)*move+(c.knockVX||0)*dt;
@@ -820,7 +831,7 @@ function updateCops(dt){
   if(distance>660||c.stuck>5){
    c.far=(c.far||0)+dt;
    if(c.far>1.1){const p=randomRoadSample(car.x,car.y,250,365);
-    if(p&&!carCollision(p.x,p.y,12)&&!isWater(p.x,p.y)){c.x=p.x;c.y=p.y;c.speed=24;c.stun=0;c.stuck=0;c.far=0;}}
+    if(p&&!carCollision(p.x,p.y,12)&&!isWater(p.x,p.y)){c.x=p.x;c.y=p.y;c.speed=Math.min(24,copTopSpeed(wave,c.type==='heavy')*.55);c.stun=0;c.stuck=0;c.far=0;}}
   }else c.far=0;
  }
 }
@@ -859,14 +870,14 @@ function resolveVehicleContacts(dt){
 function updateParticles(dt){for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=Math.pow(.90,dt*60);p.vy*=Math.pow(.90,dt*60);p.t-=dt}particles=particles.filter(p=>p.t>0)}
 function updatePlaying(dt){runningSeconds+=dt;now+=dt;updateCar(dt);if(mode!=='playing')return;updateTraffic(dt);updateCops(dt);resolveVehicleContacts(dt);updateParticles(dt);
  let lvl=wave;let dollars=(14+lvl*7)*dt*(1+Math.min(1.5,runningSeconds/160));earned+=dollars;
- let newCombo=Math.min(4,1+Math.floor(runningSeconds/42));if(newCombo!==combo){combo=newCombo;showBanner(`EARNINGS ×${combo}`,`HEAT ${wave} · STAY ALIVE`,2)}
+ let newCombo=Math.min(4,1+Math.floor(runningSeconds/42));if(newCombo!==combo){combo=newCombo;if(runningSeconds%HEAT_SECONDS>3)showBanner(`EARNINGS ×${combo}`,`HEAT ${wave} · STAY ALIVE`,2)}
  let xlook=car.x+clamp(car.vx*.35,-105,105),ylook=car.y+clamp(car.vy*.35,-105,105);camera.x=lerp(camera.x,xlook,clamp(dt*3.7,0,1));camera.y=lerp(camera.y,ylook,clamp(dt*3.7,0,1));
  if(terrainHeight(car.x,car.y)>85&&Math.abs(car.speed)>55&&runningSeconds-lastRidgeBonus>22){lastRidgeBonus=runningSeconds;earned+=260;showBanner('RIDGE RUNNER','+$260 · HIGH PASS SURVIVAL',1.8)}
  const targetZoom=clamp(1.02-Math.abs(car.speed)/1200,.74,1.05);camera.zoom=lerp(camera.zoom,targetZoom,clamp(dt*2.1,0,1));shake=Math.max(0,shake-dt*18);
  if(now>bannerEnd)$('runbanner').classList.remove('show');
  hudTick+=dt;if(hudTick>.08){hudTick=0;updateHud()}
 }
-function updateHud(){if(!car)return;$('survive').textContent=timeFmt(runningSeconds);$('earn').textContent='$'+fmt(earned);$('stars').textContent='★'.repeat(wave)+'☆'.repeat(5-wave);$('healthText').textContent=Math.ceil(car.health/car.maxHealth*100)+'%';$('healthbar').style.width=clamp(car.health/car.maxHealth*100,0,100)+'%';$('boostText').textContent=Math.ceil(car.nitro/car.maxNitro*100)+'%';$('boostbar').style.width=clamp(car.nitro/car.maxNitro*100,0,100)+'%';$('speed').textContent=Math.floor(Math.abs(car.speed)*.65);$('carName').textContent=car.template.name+' · '+(isWater(car.x,car.y)?'OCEAN HAZARD':terrainHeight(car.x,car.y)>38?'MOUNTAIN':onRoad(car.x,car.y)?'STREET':'OFF ROAD');$('terrainStatus').textContent=isWater(car.x,car.y)?'OCEAN HAZARD':webgl?'3D · MOUNTAIN TERRAIN':'3D-STYLE FALLBACK';$('heatProgress').style.width=(runningSeconds%40/40*100)+'%';drawRadar()}
+function updateHud(){if(!car)return;$('survive').textContent=timeFmt(runningSeconds);$('earn').textContent='$'+fmt(earned);$('heatLabel').textContent='LEVEL '+wave+' · '+cops.length+' COP'+(cops.length===1?'':'S');$('stars').textContent='★'.repeat(Math.min(5,wave))+'☆'.repeat(Math.max(0,5-wave));$('healthText').textContent=Math.ceil(car.health/car.maxHealth*100)+'%';$('healthbar').style.width=clamp(car.health/car.maxHealth*100,0,100)+'%';$('boostText').textContent=Math.ceil(car.nitro/car.maxNitro*100)+'%';$('boostbar').style.width=clamp(car.nitro/car.maxNitro*100,0,100)+'%';$('speed').textContent=Math.floor(Math.abs(car.speed)*.65);$('carName').textContent=car.template.name+' · '+(isWater(car.x,car.y)?'OCEAN HAZARD':terrainHeight(car.x,car.y)>38?'MOUNTAIN':onRoad(car.x,car.y)?'STREET':'OFF ROAD');$('terrainStatus').textContent=isWater(car.x,car.y)?'OCEAN HAZARD':webgl?'3D · MOUNTAIN TERRAIN':'3D-STYLE FALLBACK';$('heatProgress').style.width=(runningSeconds%HEAT_SECONDS/HEAT_SECONDS*100)+'%';drawRadar()}
 function drawRadar(){let g=rctx,W=180,H=180;g.clearRect(0,0,W,H);g.fillStyle='#0a2a41';g.fillRect(0,0,W,H);g.save();g.translate(W/2,H/2);let s=.10;g.scale(s,s);g.translate(-car.x,-car.y);pathIsland(g);g.fillStyle='#428c70';g.fill();for(const m of MOUNTAINS){for(let ring=1;ring<=4;ring++){g.strokeStyle=ring%2?'#c8d6a1':'#779c80';g.lineWidth=6;g.beginPath();g.ellipse(m.x,m.z,m.sx*ring/4,m.sz*ring/4,0,0,TAU);g.stroke();}}for(let r of roads){polyStroke(g,r.points,r.width+6,'#9ba6a7');polyStroke(g,r.points,r.width,'#455767')}for(let b of structures){g.fillStyle='#b7b29b';g.fillRect(b.x-b.w/2,b.y-b.h/2,b.w,b.h)}for(let p of pickups){if(p.claimed)continue;g.fillStyle='#ffdb79';g.beginPath();g.arc(p.x,p.y,18,0,TAU);g.fill()}for(let c of cops){g.fillStyle='#ff647d';g.beginPath();g.arc(c.x,c.y,22,0,TAU);g.fill()}g.restore();g.save();g.translate(90,90);g.rotate(car.a);g.fillStyle='#ffffff';g.strokeStyle='#031422';g.lineWidth=2;g.beginPath();g.moveTo(0,-12);g.lineTo(8,10);g.lineTo(0,6);g.lineTo(-8,10);g.closePath();g.fill();g.stroke();g.restore();g.strokeStyle='#ffffff66';g.lineWidth=2;g.strokeRect(1,1,178,178)}
 function drawVehicle(g,v,police=false,player=false){let x=v.x,y=v.y,a=v.a,col=police?(v.type==='heavy'?'#394651':'#e4edf0'):v.color;g.save();g.translate(x,y);g.rotate(a);
  if(player&&car.hitCooldown>0&&Math.floor(now*13)%2)g.globalAlpha=.55;
@@ -1376,7 +1387,7 @@ function renderHome(){
  mode='home';paused=false;$('hud').classList.remove('show');
  const selected=CARS.find(c=>c.id===save.selected)||CARS[0];
  showOverlay(`<section class="homeStage">
- <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V9.1 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
+ <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V9.2 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
  <div class="heroLine"></div>
  <div class="heroLogo"><span>ISLAND</span><strong>PURSUIT<span class="heroDot">.</span></strong><em>WILDLANDS</em></div>
  <p class="homeTagline">OUTRUN THE LAW. OWN THE MOUNTAINS.</p>
@@ -1500,8 +1511,8 @@ function drawAtlasCanvas(){
  g.font='11px Arial';g.fillStyle='#b4c8d1';g.fillText('SCENIC HIGHWAYS • HIGHLANDS • COAST',25,49);
  g.save();g.translate(W-66,52);g.strokeStyle='#cae4dc';g.lineWidth=3;g.beginPath();g.moveTo(0,22);g.lineTo(0,-23);g.lineTo(-7,-11);g.moveTo(0,-23);g.lineTo(7,-11);g.stroke();g.fillStyle='#e6f1e9';g.font='bold 15px Arial';g.fillText('N',-5,-32);g.restore();
 }
-function renderHelp(){mode='help';showOverlay(`<div class="kicker">SURVIVAL GUIDE // SINGLE-PLAYER ARCADE PURSUIT</div><h1 class="endHeading">ESCAPE. <span>SURVIVE.</span> UPGRADE.</h1><div class="subtitle">The police are chasing you the entire time. Every 40 seconds your wanted level increases, adding more police. Every getaway car now has distinct acceleration, braking, off-road ability and grip. Police look for routes around buildings instead of charging straight through them. Your cash grows continuously while your car is still running. At the end of every run, you keep the money you earned—even if the police wreck your ride.</div><div class="resultGrid"><div class="resultStat"><small>W / ↑</small><strong style="font-size:18px">ACCELERATE</strong></div><div class="resultStat"><small>A/D / ←→</small><strong style="font-size:18px">STEER</strong></div><div class="resultStat"><small>S / ↓</small><strong style="font-size:18px">BRAKE / REVERSE</strong></div><div class="resultStat"><small>SHIFT</small><strong style="font-size:18px">NITRO BOOST</strong></div><div class="resultStat"><small>SPACE</small><strong style="font-size:18px">DRIFT</strong></div><div class="resultStat"><small>ESC</small><strong style="font-size:18px">PAUSE</strong></div></div><p class="smalltext">Collect glowing money pickups, pull off drifts, and narrowly miss civilian cars for bonus cash. The coastline has no invisible walls, but the ocean is NOT driveable. Driving into the sea ends your run and banks your earned money. All cars physically bounce during impacts and buildings are solid. You can climb mountain slopes off-road, with slower uphill driving and faster descents. Cars and upgrades persist in this browser.</p><div class="buttons"><button class="btn primary" data-action="start">START CHASE</button><button class="btn ghost" data-action="home">BACK</button></div>`)}
-function renderResults(){showOverlay(`<div class="kicker">PURSUIT ENDED // RUN ${save.runs}</div><h1 class="endHeading">CHASE <span>OVER.</span></h1><p class="reason">${finishReason}</p><div class="resultGrid"><div class="resultStat"><small>SURVIVED</small><strong>${timeFmt(runningSeconds)}</strong></div><div class="resultStat"><small>NEW CASH BANKED</small><strong style="color:#9efcc7">+$${fmt(earned)}</strong></div><div class="resultStat"><small>HEAT REACHED</small><strong>${'★'.repeat(wave)}</strong></div><div class="resultStat"><small>NEAR MISSES</small><strong>${fmt(runInfo.nearMisses)}</strong></div><div class="resultStat"><small>DRIFT BONUSES</small><strong>${fmt(runInfo.drifts)}</strong></div><div class="resultStat"><small>BANK TOTAL</small><strong>$${fmt(save.wallet)}</strong></div></div><div class="buttons"><button class="btn primary" data-action="start">↻ TRY AGAIN</button><button class="btn gold" data-action="garage">◈ BUY BETTER CARS</button><button class="btn ghost" data-action="home">MAIN MENU</button></div>`)}
+function renderHelp(){mode='help';showOverlay(`<div class="kicker">SURVIVAL GUIDE // SINGLE-PLAYER ARCADE PURSUIT</div><h1 class="endHeading">ESCAPE. <span>SURVIVE.</span> UPGRADE.</h1><div class="subtitle">The police are chasing you the entire time. Start against one very slow police car. Every 30 seconds you survive, your wanted level rises and another police car joins the chase. Police accelerate gradually and get faster at higher levels, up to level 10 with 10 cops. Every getaway car now has distinct acceleration, braking, off-road ability and grip. Police look for routes around buildings instead of charging straight through them. Your cash grows continuously while your car is still running. At the end of every run, you keep the money you earned—even if the police wreck your ride.</div><div class="resultGrid"><div class="resultStat"><small>W / ↑</small><strong style="font-size:18px">ACCELERATE</strong></div><div class="resultStat"><small>A/D / ←→</small><strong style="font-size:18px">STEER</strong></div><div class="resultStat"><small>S / ↓</small><strong style="font-size:18px">BRAKE / REVERSE</strong></div><div class="resultStat"><small>SHIFT</small><strong style="font-size:18px">NITRO BOOST</strong></div><div class="resultStat"><small>SPACE</small><strong style="font-size:18px">DRIFT</strong></div><div class="resultStat"><small>ESC</small><strong style="font-size:18px">PAUSE</strong></div></div><p class="smalltext">Collect glowing money pickups, pull off drifts, and narrowly miss civilian cars for bonus cash. The coastline has no invisible walls, but the ocean is NOT driveable. Driving into the sea ends your run and banks your earned money. All cars physically bounce during impacts and buildings are solid. You can climb mountain slopes off-road, with slower uphill driving and faster descents. Cars and upgrades persist in this browser.</p><div class="buttons"><button class="btn primary" data-action="start">START CHASE</button><button class="btn ghost" data-action="home">BACK</button></div>`)}
+function renderResults(){showOverlay(`<div class="kicker">PURSUIT ENDED // RUN ${save.runs}</div><h1 class="endHeading">CHASE <span>OVER.</span></h1><p class="reason">${finishReason}</p><div class="resultGrid"><div class="resultStat"><small>SURVIVED</small><strong>${timeFmt(runningSeconds)}</strong></div><div class="resultStat"><small>NEW CASH BANKED</small><strong style="color:#9efcc7">+$${fmt(earned)}</strong></div><div class="resultStat"><small>HEAT REACHED</small><strong>LEVEL ${wave} · ${cops.length} COPS</strong></div><div class="resultStat"><small>NEAR MISSES</small><strong>${fmt(runInfo.nearMisses)}</strong></div><div class="resultStat"><small>DRIFT BONUSES</small><strong>${fmt(runInfo.drifts)}</strong></div><div class="resultStat"><small>BANK TOTAL</small><strong>$${fmt(save.wallet)}</strong></div></div><div class="buttons"><button class="btn primary" data-action="start">↻ TRY AGAIN</button><button class="btn gold" data-action="garage">◈ BUY BETTER CARS</button><button class="btn ghost" data-action="home">MAIN MENU</button></div>`)}
 function togglePause(){if(mode==='playing'){paused=true;mode='pause';showOverlay(`<div class="kicker">SUNSET CITY // CHASE PAUSED</div><h1 class="endHeading">TAKE A <span>BREATHER.</span></h1><p class="subtitle">Your run is paused at ${timeFmt(runningSeconds)}. Cash earned: $${fmt(earned)}. Resume to keep building your payout, or bank it and return to the garage.</p><div class="buttons"><button class="btn primary" data-action="resume">▶ RESUME CHASE</button><button class="btn gold" data-action="cashout">BANK CASH & GARAGE</button><button class="btn ghost" data-action="restart">RESTART</button></div>`)}else if(mode==='pause')resume()}
 function resume(){mode='playing';paused=false;keys={};$('overlay').classList.add('hidden');last=performance.now()}
 function clickAction(e){const el=e.target.closest('[data-action]');if(!el)return;const act=el.dataset.action,id=el.dataset.id;
