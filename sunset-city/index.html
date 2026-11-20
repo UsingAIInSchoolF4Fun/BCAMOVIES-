@@ -537,7 +537,7 @@ function buildWorld(){
   for(let i=0;i<1350;i++){
     const x=(hash(i+213)*2-1)*970*CITY_COMPACT,y=(hash(i+723)*2-1)*715*CITY_COMPACT;
     const shore=coastDistance(x,y),elev=terrainHeight(x,y);
-    if(shore<38||insideBuilding(x,y,10)||roadsNear(x,y,5))continue;
+    if(shore<38||insideBuilding(x,y,10)||roadsNear(x,y,15))continue;
     if(Math.hypot(x-40*CITY_COMPACT,y-125*CITY_COMPACT)<165)continue;
     if(elev>165&&hash(i+183)<.83)continue;
     const kind=shore<95?'palm':elev>105?'fir':hash(i+33)>.53?'pine':hash(i+57)>.42?'cypress':'oak';
@@ -545,7 +545,7 @@ function buildWorld(){
   }
   for(let i=0;i<250;i++){
     const x=(hash(i+1841)*2-1)*950*CITY_COMPACT,y=(hash(i+7221)*2-1)*700*CITY_COMPACT;
-    if(coastDistance(x,y)<48||terrainHeight(x,y)<42||roadsNear(x,y,9)||insideBuilding(x,y,12))continue;
+    if(coastDistance(x,y)<48||terrainHeight(x,y)<42||roadsNear(x,y,17)||insideBuilding(x,y,12))continue;
     trees.push({x,y,s:.75+hash(i+310)*1.3,kind:'rock'});
   }
   // Sparse country route signage, with denser streetlights in Sunset Village.
@@ -678,7 +678,7 @@ function drawWorldBase(){
 function randomRoadSample(x=0,y=0,minD=120,maxD=1000){let choices=[];for(let j=0;j<80;j++){const p=roadSamples[Math.floor(Math.random()*roadSamples.length)],d=Math.hypot(p.x-x,p.y-y);if(d>minD&&d<maxD&&coastDistance(p.x,p.y)>35)choices.push(p)}return choices.length?choices[Math.floor(Math.random()*choices.length)]:roadSamples[Math.floor(Math.random()*roadSamples.length)]}
 function showBanner(title,desc,duration=1.8){$('bannerTitle').textContent=title;$('bannerDesc').textContent=desc;$('runbanner').classList.add('show');bannerEnd=now+duration}
 function carStats(c){return {maxSpeed:c.speed*PLAYER_SPEED_SCALE*(1+save.upgrades.engine*.063),accel:c.accel*.88*(1+save.upgrades.engine*.078),turn:c.turn*.94,health:c.armor*(1+save.upgrades.armor*.20),boost:c.boost*(1+save.upgrades.nitro*.22),grip:c.grip,offroad:Math.max(.82,c.offroad),brake:c.brake,turbo:c.turbo}}
-function spawnPlayer(){let template=CARS.find(c=>c.id===save.selected)||CARS[0],s=carStats(template);return {x:-65*CITY_COMPACT,y:137*CITY_COMPACT,a:0,speed:0,vx:0,vy:0,health:s.health,maxHealth:s.health,nitro:s.boost,maxNitro:s.boost,template,color:save.paint[template.id]||template.color,hitCooldown:0,driftScore:0,water:0,slip:0,lean:0,pitch:0,bump:0,wheelSpin:0,steer:0}}
+function spawnPlayer(){let template=CARS.find(c=>c.id===save.selected)||CARS[0],s=carStats(template);return {x:-65*CITY_COMPACT,y:137*CITY_COMPACT,a:0,speed:0,vx:0,vy:0,health:s.health,maxHealth:s.health,nitro:s.boost,maxNitro:s.boost,template,color:save.paint[template.id]||template.color,hitCooldown:0,driftScore:0,water:0,slip:0,lean:0,pitch:0,bump:0,wheelSpin:0,steer:0,lastTerrainWarn:-10,groundKind:'ROAD',suspension:0,damageStage:0,stuntChain:0}}
 function roadLanePoint(v,index){
  const ps=v.roadRef.points,n=ps.length,i=clamp(index,0,n-1);
  const p=ps[i],q=ps[Math.max(0,i-1)],r=ps[Math.min(n-1,i+1)];
@@ -731,23 +731,40 @@ function carCollision(x,y,radius){for(let b of structures){if(Math.hypot(x-b.x,y
 function onRoad(x,y){const r=roadSurfaceAt(x,y);return !!r&&r.edge<=2&&r.seg.road.style!=='trail'}
 function updateCar(dt){if(!car)return;
  car.hitCooldown=Math.max(0,car.hitCooldown-dt);car.slip=Math.max(0,car.slip-dt);
- const s=carStats(car.template),offroad=!onRoad(car.x,car.y),beach=coastDistance(car.x,car.y)<52,grade=slopeAt(car.x,car.y,car.a);
+ const s=carStats(car.template),ground=driveSurface(car.x,car.y,car.template);
+ const trail=ground.kind==='TRAIL',offroad=ground.kind!=='ROAD',beach=coastDistance(car.x,car.y)<52;
+ const grade=slopeAt(car.x,car.y,car.a);
+ car.groundKind=ground.kind;
+ const healthRatio=car.maxHealth>0?car.health/car.maxHealth:1;
+ const damagePower=healthRatio<.23?.63:healthRatio<.48?.78:healthRatio<.75?.90:1;
+ const loose=ground.kind==='ROAD'?1:trail?(car.template.id==='rally'||car.template.id==='armored'?.93:.76):ground.kind==='SHOULDER'?.84:(car.template.id==='rally'||car.template.id==='armored'?.68:.46);
  const throttle=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0),steer=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),drifting=!!keys[' '];
- let boosting=!!keys.shift&&car.nitro>1&&throttle>0&&Math.abs(car.speed)>25;car.steer=steer;
+ let boosting=!!keys.shift&&car.nitro>1&&throttle>0&&Math.abs(car.speed)>25&&healthRatio>.18;car.steer=steer;
  if(boosting){car.nitro=Math.max(0,car.nitro-dt*34);if(Math.random()<dt*26)spark(car.x-Math.sin(car.a)*15,car.y+Math.cos(car.a)*15,2,'#65e9ff',.4)}else car.nitro=Math.min(s.boost,car.nitro+dt*5);
- if(throttle>0)car.speed+=(s.accel*(boosting?s.turbo:1)*(offroad?s.offroad:1))*dt;
+ if(throttle>0)car.speed+=(s.accel*damagePower*(boosting?s.turbo:1)*loose)*dt;
  else if(throttle<0)car.speed-=s.accel*(car.speed>0?s.brake:.60)*dt;
  else car.speed*=Math.pow(.984,dt*60);
  car.speed-=grade*(throttle>0?33:27)*dt;
- let max=s.maxSpeed*(boosting?1+.22*s.turbo:1)*(offroad?s.offroad:1)*(beach?.85:1)*(car.slip>0?.56:1);
+ let max=s.maxSpeed*damagePower*(boosting?1+.22*s.turbo:1)*loose*(beach?.85:1)*(car.slip>0?.56:1);
+ if(!ground.passable)max=Math.min(max,18);
  car.speed=clamp(car.speed,-100,max);
  if(drifting)car.speed*=Math.pow(.991,dt*60);
  let speedRatio=clamp(Math.abs(car.speed)/135,.16,1.0);
  if(Math.abs(car.speed)>9)car.a+=steer*s.turn*speedRatio*(drifting?1.55:1)*(car.speed<0?-.7:1)*dt;
  let dirX=Math.sin(car.a),dirY=-Math.cos(car.a),targetX=dirX*car.speed,targetY=dirY*car.speed;
- const grip=(drifting?.055:offroad?.15:.28)*s.grip;
+ const grip=(drifting?.052:trail?.18:offroad?.135:.28)*s.grip*(ground.passable?1:.6);
  car.vx=lerp(car.vx,targetX,clamp(grip*dt*60,0,1));car.vy=lerp(car.vy,targetY,clamp(grip*dt*60,0,1));
- car.lean=lerp(car.lean,-steer*clamp(Math.abs(car.speed)/190,0,1)*2.6,clamp(dt*5,0,1));car.pitch=lerp(car.pitch,grade*8,clamp(dt*4,0,1));car.bump=lerp(car.bump,0,clamp(dt*3.2,0,1));car.wheelSpin+=Math.abs(car.speed)*dt*.13;
+ // Body and wheels react to terrain height, turn input and spring stiffness.
+ const sideX=Math.cos(car.a)*car.template.width*.39,sideY=Math.sin(car.a)*car.template.width*.39;
+ const leftY=terrainHeight(car.x-sideX,car.y-sideY),rightY=terrainHeight(car.x+sideX,car.y+sideY);
+ const wheelRoll=clamp((rightY-leftY)*.50,-3.2,3.2);
+ const targetLean=wheelRoll-steer*clamp(Math.abs(car.speed)/150,0,1)*(car.template.id==='armored'?1.65:2.25);
+ car.lean=lerp(car.lean,targetLean,clamp(dt*(car.template.id==='rally'?4.2:6.0),0,1));
+ car.pitch=lerp(car.pitch,clamp(grade*9,-3.4,3.4),clamp(dt*3.9,0,1));
+ const roughness=trail?.8:ground.kind==='ROAD'?.09:.6;
+ const suspensionTarget=Math.sin(car.wheelSpin*.7)*roughness*clamp(Math.abs(car.speed)/90,0,1);
+ car.suspension=lerp(car.suspension,suspensionTarget,clamp(dt*(car.template.id==='rally'?5:9),0,1));
+ car.bump=lerp(car.bump,0,clamp(dt*3.2,0,1));car.wheelSpin+=Math.abs(car.speed)*dt*.13;
   const oldX=car.x,oldY=car.y;
  // Continuous substep collision prevents fast cars tunneling through narrow buildings.
  const steps=Math.min(18,Math.max(1,Math.ceil(Math.hypot(car.vx,car.vy)*dt/5)));
