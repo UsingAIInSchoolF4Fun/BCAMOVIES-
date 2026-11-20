@@ -929,15 +929,18 @@ const HEAT_SECONDS=30, MAX_ACTIVE_COPS=18;
 const PLAYER_CAR_SCALE=.67, PLAYER_SPEED_SCALE=.74;
 function heatLevelAt(seconds){return 1+Math.floor(Math.max(0,seconds)/HEAT_SECONDS);}
 function maxCopsAt(level){return Math.min(MAX_ACTIVE_COPS,Math.max(1,level));}
-function copTopSpeed(level,heavy=false){return Math.max(24,38+(level-1)*11+Math.max(0,level-12)*2-(heavy?13:0));}
-function copAcceleration(level,heavy=false){return (heavy?.73:1)*(28+(level-1)*5.5);}
+function copTopSpeed(level,heavy=false){return Math.max(55,78+(level-1)*13+Math.max(0,level-12)*2.5-(heavy?15:0));}
+function copAcceleration(level,heavy=false){return (heavy?.80:1)*(50+(level-1)*7);}
 function copAggression(level){return 1+Math.max(0,level-5)*.055;}
 function spawnCop(){
  if(!car)return;
  const p=randomRoadSample(car.x,car.y,wave<=2?90:130,wave<=2?195:285);
  if(!p||coastDistance(p.x,p.y)<24||carCollision(p.x,p.y,12))return;
  if(cops.some(c=>Math.hypot(c.x-p.x,c.y-p.y)<29))return;
- const a=Math.atan2(car.x-p.x,-(car.y-p.y));
+ const near=roadSurfaceAt(p.x,p.y),segment=near?.seg;
+ const tangent=segment?Math.atan2(segment.b.x-segment.a.x,-(segment.b.y-segment.a.y)):0;
+ const direct=Math.atan2(car.x-p.x,-(car.y-p.y));
+ const a=segment&&Math.cos(direct-tangent)>.25?tangent:segment&&Math.cos(direct-tangent)<-.25?tangent+Math.PI:direct;
  cops.push({x:p.x,y:p.y,a,speed:Math.min(18+wave*2,copTopSpeed(wave,false)*.55),hp:85+wave*12,hitCooldown:0,stun:0,
   type:wave>=6&&Math.random()<Math.min(.62,.20+(wave-6)*.018)?'heavy':'patrol',phase:Math.random()*TAU,
   turnBias:Math.random()<.5?-1:1,stuck:0,knockVX:0,knockVY:0,far:0});
@@ -1247,9 +1250,35 @@ function quickCopTerrain(x,y){
 function clearCopPath(c,a,d=34){
  for(const r of [.48,1.0]){
   const x=c.x+Math.sin(a)*d*r,y=c.y-Math.cos(a)*d*r;
-  if(isWater(x,y)||carCollision(x,y,c.type==='heavy'?12:10)||!quickCopTerrain(x,y))return false;
+  if(isWater(x,y)||guardContact(x,y,c.type==='heavy'?8:6)||carCollision(x,y,c.type==='heavy'?12:10)||!quickCopTerrain(x,y))return false;
  }
  return true;
+}
+// Route-guided intercept when cutting straight toward the player is unsafe.
+// The route is chosen locally, avoiding costly graph searches for each cop.
+function copRoadHeading(c,tx,ty){
+ const near=roadSurfaceAt(c.x,c.y);
+ if(!near||near.edge>17)return null;
+ const road=near.seg.road,pts=road.points,last=pts.length-1;
+ if(last<3)return null;
+ const loop=Math.hypot(pts[0].x-pts[last].x,pts[0].y-pts[last].y)<3;
+ const picks=[];
+ for(const dir of [-1,1]){
+  let idx=near.seg.index+(dir>0?3:-2);
+  if(loop)idx=(idx%last+last)%last;else idx=clamp(idx,0,last);
+  const pt=pts[idx],d=Math.hypot(pt.x-c.x,pt.y-c.y);
+  if(d<8)continue;
+  const angle=Math.atan2(pt.x-c.x,-(pt.y-c.y));
+  const error=Math.abs(Math.atan2(Math.sin(angle-c.a),Math.cos(angle-c.a)));
+  const distance=Math.hypot(tx-pt.x,ty-pt.y);
+  const score=distance+error*20+(c.routeRoad===road.id&&c.routeDir===dir?-32:0);
+  picks.push({angle,dir,road:road.id,score,d});
+ }
+ if(!picks.length)return null;
+ picks.sort((a,b)=>a.score-b.score);
+ const pick=picks[0];
+ c.routeRoad=pick.road;c.routeDir=pick.dir;
+ return pick;
 }
 function updateCops(dt){
  copTimer-=dt;
@@ -1272,10 +1301,16 @@ function updateCops(dt){
     const scanTime=.11+hash(c.phase*17+Math.floor(now*3))*.065;
     c.routeCooldown=scanTime;
     aim=Math.atan2(dx,-dy);
-    clear=clearCopPath(c,aim);
+    clear=clearCopPath(c,aim,Math.min(100,Math.max(38,distance*.52)));
+    if(!clear){
+      const guide=copRoadHeading(c,car.x+car.vx*.15,car.y+car.vy*.15);
+      if(guide&&clearCopPath(c,guide.angle,Math.min(52,guide.d+15))){
+        aim=guide.angle;clear=true;c.stuck=Math.max(0,c.stuck-.3);
+      }
+    }
     if(!clear){
       // Reuse the chosen route briefly rather than recomputing eight paths every frame.
-      const options=[.42,-.42,.95,-.95,1.6,-1.6];
+      const options=[.34,-.34,.72,-.72,1.18,-1.18,1.8,-1.8];
       let found=false;
       for(const offset of options){
         if(clearCopPath(c,aim+offset*c.turnBias,40)){aim+=offset*c.turnBias;found=true;break;}
@@ -1286,13 +1321,13 @@ function updateCops(dt){
     c.routeAim=aim;c.routeClear=clear;
   }
   let error=Math.abs(Math.atan2(Math.sin(aim-c.a),Math.cos(aim-c.a)));
-  c.a=angleTurn(c.a,aim,dt*(c.type==='heavy'?1.13:1.55)*Math.sqrt(copAggression(wave)));
+  c.a=angleTurn(c.a,aim,dt*(c.type==='heavy'?1.85:2.65)*Math.sqrt(copAggression(wave)));
   const cap=copTopSpeed(wave,c.type==='heavy');
-  let targetSpeed=cap*clamp(1-error/(2.25+Math.log2(Math.max(1,wave))*.10),.27,1)*(onRoad(c.x,c.y)?1:c.type==='heavy'?.51:.66)*clamp(1-Math.abs(slopeAt(c.x,c.y,c.a))*1.8,.48,1);
-  if(distance<23)targetSpeed*=.65;
+  let targetSpeed=cap*clamp(1-error/(2.9+Math.log2(Math.max(1,wave))*.12),.36,1)*(onRoad(c.x,c.y)?1:c.type==='heavy'?.61:.79)*clamp(1-Math.abs(slopeAt(c.x,c.y,c.a))*1.3,.54,1);
+  if(distance<18)targetSpeed*=.86;
   if(c.stun>0)targetSpeed*=.22;
-  if(!clear)targetSpeed*=.66;
-  if(c.stuck>1.5)targetSpeed=0;
+  if(!clear)targetSpeed*=.72;
+  if(c.stuck>2.8)targetSpeed=Math.min(targetSpeed,18);
   c.speed+=clamp(targetSpeed-c.speed,-(copAcceleration(wave,c.type==='heavy')*1.8)*dt,copAcceleration(wave,c.type==='heavy')*dt);
   const ox=c.x,oy=c.y;
   const move=Math.min(4.1,Math.max(0,c.speed*dt));
@@ -1300,8 +1335,8 @@ function updateCops(dt){
   c.y-=Math.cos(c.a)*move-(c.knockVY||0)*dt;
   c.knockVX=(c.knockVX||0)*Math.pow(.83,dt*60);
   c.knockVY=(c.knockVY||0)*Math.pow(.83,dt*60);
-  if(isWater(c.x,c.y)||carCollision(c.x,c.y,c.type==='heavy'?12:10)||!quickCopTerrain(c.x,c.y)){
-   c.x=ox;c.y=oy;c.speed*=.16;c.stun=Math.max(c.stun,.5);c.a+=c.turnBias*.28;c.stuck+=dt*2;
+  if(isWater(c.x,c.y)||guardContact(c.x,c.y,c.type==='heavy'?8:6)||carCollision(c.x,c.y,c.type==='heavy'?12:10)||!quickCopTerrain(c.x,c.y)){
+   c.x=ox;c.y=oy;c.speed*=.52;c.stun=Math.max(c.stun,.12);c.a+=c.turnBias*.35;c.routeCooldown=0;c.stuck+=dt*2.2;
   }
   if(distance>660||c.stuck>5){
    c.far=(c.far||0)+dt;
