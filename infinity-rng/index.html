@@ -533,6 +533,7 @@ sun.shadow.camera.top = 125;
 sun.shadow.camera.bottom = -125;
 sun.shadow.bias = -.0005;
 scene.add(sun);
+scene.add(sun.target); // moving shadow frustum stays with the player.
 const ambient = new T.AmbientLight(0x68708a, 0.21);
 scene.add(ambient);
 scene.background.setHex(0x415574);
@@ -2739,6 +2740,21 @@ const biomeMotion=[];
  const arms=new T.InstancedMesh(new T.CylinderGeometry(.28,.34,2.6,7),greenCactus,total);
  const counts={trunk:0,lower:0,upper:0,canopy:0,rocks:0,crystals:0,crystalSmall:0,cactus:0,arms:0};
  const object=new T.Object3D();
+ // Soft, instanced contact shadows give trees and rocks depth even when
+ // Chromebook performance mode disables dynamic shadows.
+ const shadowCanvas=document.createElement("canvas");shadowCanvas.width=128;shadowCanvas.height=128;
+ const shadowCtx=shadowCanvas.getContext("2d");
+ const radial=shadowCtx.createRadialGradient(64,64,3,64,64,63);
+ radial.addColorStop(0,"rgba(5,13,23,.50)");
+ radial.addColorStop(.42,"rgba(7,17,25,.31)");
+ radial.addColorStop(1,"rgba(8,15,22,0)");
+ shadowCtx.fillStyle=radial;shadowCtx.fillRect(0,0,128,128);
+ const shadowTexture=new T.CanvasTexture(shadowCanvas);
+ const contactShadows=new T.InstancedMesh(new T.CircleGeometry(1,12),
+    new T.MeshBasicMaterial({map:shadowTexture,transparent:true,depthWrite:false,
+       side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3}),total);
+ let shadowCount=0;
+ const shadowDummy=new T.Object3D();
  const colors={
   pine:[0x50a963,0x2e8e6e,0x75bd78],snow:[0xc5eff2,0x92c7e9,0xe2f7fd],
   astral:[0xb18cdb,0x7c86d1,0xbd97e3],ember:[0x986e72,0x655d78,0xb58a71],
@@ -2773,6 +2789,14 @@ const biomeMotion=[];
    if(!Number.isFinite(y)||sl>2.9)continue;
    const n=(row*11+col*5+zone.seed)%13,scale=.8+n*.041;
    occupied.push({x,z,r:zone.type==="crystal"?4.5:zone.type==="rock"?4.2:5.2});
+   // Grounded shadow: no shadow disks on rivers, and no extra draw per tree.
+   const shadowRadius=(zone.type==="broad"?5.2:
+      zone.type==="rock"?3.4:zone.type==="crystal"?3.0:zone.type==="cactus"?2.1:3.7)*scale;
+   shadowDummy.position.set(x,y+.085,z);
+   shadowDummy.rotation.set(-Math.PI/2,0,0);
+   shadowDummy.scale.set(shadowRadius,shadowRadius,1);
+   shadowDummy.updateMatrix();
+   contactShadows.setMatrixAt(shadowCount++,shadowDummy.matrix);
    if(zone.type==="crystal"){
     const hues=[0x9f6cff,0xe080ff,0x5fbfff,0xb786ec],hue=hues[n%4];
     place("crystals",x,y+3.1*scale,z,1.25*scale,3.3*scale,1.1*scale,hue);
@@ -2815,6 +2839,10 @@ const biomeMotion=[];
   m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;
   if(m.count>0)scene.add(m);
  }
+ contactShadows.count=shadowCount;
+ contactShadows.castShadow=false;contactShadows.receiveShadow=false;
+ contactShadows.instanceMatrix.needsUpdate=true;
+ if(shadowCount)scene.add(contactShadows);
 })();
 // Animate actual instanced vegetation and crystal clusters using gentle motion.
 const biomePose=new T.Object3D();
@@ -5416,6 +5444,12 @@ function animate() {
     }
 
     if(mapPanel.style.display!=="none"&&frameN%8===0)drawWorldMap();
+    // Keep dynamic shadows near the active character, not fixed at spawn.
+    if(renderer.shadowMap.enabled&&frameN%8===0){
+      sun.position.set(player.position.x-110,player.position.y+130,player.position.z+78);
+      sun.target.position.set(player.position.x,player.position.y,player.position.z);
+      sun.target.updateMatrixWorld();
+    }
     // V14 smooth walking orbit and cinematic flight chase camera.
     const eye=new T.Vector3(player.position.x,player.position.y+(gliding?2.55:2.05),player.position.z);
     const travelHeading=gliding?glideHeading+Math.PI:yaw;
