@@ -312,8 +312,13 @@ function rawTerrainHeight(x,z){
   h+=m.h*.10*Math.sin(dx*13+dz*4)*Math.cos(dz*11-dx*3)*Math.exp(-1.15*t);
  }
  // A protected valley allows a readable town and garage without mountains through the streets.
- const village=Math.exp(-Math.pow((x-40*CITY_COMPACT)/(255*CITY_COMPACT),2)-Math.pow((z-120*CITY_COMPACT)/(210*CITY_COMPACT),2));
- h*=1-.82*village;
+ const village=Math.exp(-Math.pow((x-40*CITY_COMPACT)/(325*CITY_COMPACT),2)-Math.pow((z-120*CITY_COMPACT)/(270*CITY_COMPACT),2));
+ h*=1-.91*village;
+  // Broad rolling clearings below the smaller village, harbor and airstrip.
+  for(const town of [{x:-270,z:310,sx:125,sz:145,f:.62},{x:615,z:430,sx:125,sz:110,f:.77},{x:700,z:-185,sx:115,sz:100,f:.83}]){
+    const dx=(x-town.x*CITY_COMPACT)/(town.sx*CITY_COMPACT),dz=(z-town.z*CITY_COMPACT)/(town.sz*CITY_COMPACT);
+    h*=1-town.f*Math.exp(-(dx*dx+dz*dz)*1.5);
+  }
  // Smooth dunes at the coastline transition into the mountains.
  return Math.max(0,h)*Math.min(1,shore/85);
 }
@@ -332,8 +337,8 @@ function terrainHeight(x,z){
   const ca=Math.cos(b.rot),sa=Math.sin(b.rot),dx=x-b.x,dy=z-b.y;
   const lx=dx*ca+dy*sa,ly=-dx*sa+dy*ca;
   const edge=Math.max(Math.abs(lx)-b.w*.5,Math.abs(ly)-b.h*.5);
-  if(edge<12){
-   const t=clamp(Math.max(0,edge)/12,0,1);
+  if(edge<19){
+   const t=clamp(Math.max(0,edge)/19,0,1);
    h=lerp(b.padY,h,t*t*(3-2*t));
   }
  }
@@ -540,10 +545,10 @@ function buildWorld(){
   addLandmark(685*CITY_COMPACT,-176*CITY_COMPACT,122,35,.08,'airport',DISTRICTS[3]);
   const important=structures.slice();
   const settlements=[
-    {x:40,y:125,rx:220,ry:166,count:150,zone:0},
-    {x:-270,y:310,rx:110,ry:125,count:48,zone:1},
-    {x:615,y:430,rx:108,ry:110,count:40,zone:2},
-    {x:710,y:-185,rx:72,ry:80,count:24,zone:3}
+    {x:40,y:125,rx:245,ry:195,count:360,zone:0},
+    {x:-270,y:310,rx:125,ry:136,count:112,zone:1},
+    {x:615,y:430,rx:118,ry:120,count:90,zone:2},
+    {x:710,y:-185,rx:92,ry:96,count:60,zone:3}
   ];
   let id=0;
   for(const region of settlements)for(let i=0;i<region.count;i++){
@@ -551,9 +556,9 @@ function buildWorld(){
     const px=(region.x+Math.cos(phi)*radius*region.rx)*CITY_COMPACT;
     const py=(region.y+Math.sin(phi)*radius*region.ry)*CITY_COMPACT;
     if(coastDistance(px,py)<57||terrainHeight(px,py)>37)continue;
-    const zone=DISTRICTS[region.zone],bsize=17+hash(id+19)*20;
+    const zone=DISTRICTS[region.zone],bsize=16+hash(id+19)*24;
     const w=bsize*(.79+hash(id+21)*.70),h=bsize*(.76+hash(id+23)*.78);
-    if(roadsNear(px,py,Math.max(w,h)*.63+14))continue;
+    if(roadsNear(px,py,Math.max(w,h)*.42+8))continue;
     if(important.some(b=>Math.hypot(px-b.x,py-b.y)<b.rad+37))continue;
     if(structures.some(b=>Math.abs(px-b.x)<(w+b.w)*.60&&Math.abs(py-b.y)<(h+b.h)*.60))continue;
     if(hash(id*7+14)<.16){if(buildingSiteValid(px,py,w+9,h+8,0))parkingLots.push({x:px,y:py,w:w+9,h:h+8,rot:0,padY:terrainHeight(px,py)});continue;}
