@@ -5006,7 +5006,7 @@ function adventureGatePosition(site){
 }
 function adventureTeleport(stage){
  if(gliding)finishGlide();
- player.position.set(stage.x,stage.top+.42,stage.z);
+ player.position.set(stage.x,stage.top+.1,stage.z);
  velocityY=0;onGround=true;
  for(const k of Object.keys(keys))keys[k]=false;
 }
@@ -5424,6 +5424,9 @@ function animate() {
     for (const p of parkourPlatforms) {
         if (Math.abs(player.position.x - p.x) < p.w / 2 && Math.abs(player.position.z - p.z) < p.d / 2 && player.position.y >= p.top - .5 && player.position.y <= p.top + 1.3 && velocityY <= 0) floor = Math.max(floor, p.top)
     }
+    // Walking off a floating platform must begin a real fall; no infinite
+    // midair jumping after leaving an edge.
+    if(activeAdventure&&onGround&&player.position.y>floor+.38)onGround=false;
     // Climb low obstacles and ramp boards without being forced inside their geometry.
     if(onGround&&floor>player.position.y&&floor-player.position.y<4.5){player.position.y=floor;velocityY=0;}
     if (keys.Space && onGround && !gliding && !activeAdventure?.paused) {
