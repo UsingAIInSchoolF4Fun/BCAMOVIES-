@@ -3197,6 +3197,13 @@ function buildEpicObby(site,color,kind){
  // The Origin hub stays free of parkour towers.
  site.kind="biome";site.id=site.id||site.name.toLowerCase().replace(/[^a-z0-9]+/g,"_");
  site.color=color;site.platforms=[];site.checkpoints=[5,11,17,23];
+ // Entrances align with the new approach paths; no player has to run
+ // through the middle of a solid tower or respawn in a riverbed.
+ const entryLocations={
+  frost:[-274,81],forest:[127,220],crystal:[204,93],
+  ember:[243,-187],astral:[-135,-211],desert:[244,248]
+ };
+ site.entry=entryLocations[site.id]||[site.x,site.z+18];
  const name=site.name.toLowerCase(),isFrost=/frost|frozen/.test(name);
  const isForest=/forest|grove/.test(name),isEmber=/ember|flame/.test(name);
  const isDesert=/sunstone|desert/.test(name),isAstral=/astral/.test(name);
@@ -3227,8 +3234,13 @@ function buildEpicObby(site,color,kind){
  cyl(6,7.5,shaftHeight,stone,scene,site.x,gy+shaftHeight*.5,site.z,12).castShadow=false;
  cyl(3.7,4.9,shaftHeight+6,stoneDark,scene,site.x,gy+(shaftHeight+6)*.5,site.z,10).castShadow=false;
  cyl(13.5,14.8,2.5,stone,scene,site.x,gy+.85,site.z,20).castShadow=false;
- const entry=torus(12,.28,accent,scene,site.x,gy+2.18,site.z,36);
+ const gateX=site.entry[0],gateZ=site.entry[1];
+ const entry=torus(5.7,.28,accent,scene,gateX,ground(gateX,gateZ)+.25,gateZ,36);
  entry.rotation.x=Math.PI/2;entry.castShadow=false;
+ const arrivalSign=new T.Sprite(new T.SpriteMaterial({map:landmarkSign("PRESS F · ONLY UP",color),
+  transparent:true,depthWrite:false}));
+ arrivalSign.position.set(gateX,ground(gateX,gateZ)+7.2,gateZ);
+ arrivalSign.scale.set(15,3.8,1);scene.add(arrivalSign);
  for(let k=0;k<=5;k++){
   const y=base+k*stepRise*5;
   cyl(7.5,7.5,.72,accent,scene,site.x,y-1.1,site.z,12).castShadow=false;
@@ -5306,7 +5318,7 @@ function animateCheckpointSignal(dt){
 // V16: interactive, untimed physical jumping challenges, including a real
 // stay-or-give-up choice on every failed run.
 function adventureGatePosition(site){
- const x=site.x,z=site.z+18;
+ const [x,z]=site.entry||[site.x,site.z+18];
  return [x,ground(x,z)+1.3,z];
 }
 function adventureTeleport(stage){
