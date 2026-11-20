@@ -163,6 +163,7 @@ function resize(){view.dpr=Math.min(1.25,window.devicePixelRatio||1);view.w=inne
 const CITY_COMPACT=1.18; // Expanded island, 47.5% larger than V6.1.
 const STATIC={canvas:null,bounds:{minX:-1500,minY:-1200,maxX:1500,maxY:1200},scale:1};
 let roads=[],roadSamples=[],structures=[],trees=[],streetProps=[],parkingLots=[];
+const OBSTACLE_CELL=64,obstacleGrid=new Map();
 const landmarks=[
  {name:'SUNSET VILLAGE',x:55,y:115,type:'plaza'},
  {name:'TIMBER COVE',x:-260,y:310,type:'village'},
@@ -352,6 +353,46 @@ function terrainStyle(x,z,h){
  if(h>26)return patch>.55?'#5f9671':'#4b856b';
  return patch>.76?'#76a980':patch>.42?'#5d9979':'#478b70';
 }
+// Natural obstacles and a deliberately limited off-road driving envelope.
+function rebuildObstacleGrid(){
+ obstacleGrid.clear();
+ for(const t of trees){
+   if(t.kind==='palm'||t.kind==='garden')continue;
+   const cellX=Math.floor(t.x/OBSTACLE_CELL),cellY=Math.floor(t.y/OBSTACLE_CELL);
+   const key=cellX+','+cellY,bucket=obstacleGrid.get(key)||[];
+   bucket.push({x:t.x,y:t.y,kind:t.kind,r:t.kind==='rock'?(3.7+hash(t.x*3+t.y*7)*5.6)*t.s*.62:Math.max(1.6,t.s*2.1)});
+   obstacleGrid.set(key,bucket);
+ }
+}
+function terrainObstacle(x,y,r=5){
+ const cx=Math.floor(x/OBSTACLE_CELL),cy=Math.floor(y/OBSTACLE_CELL);
+ for(let ix=cx-1;ix<=cx+1;ix++)for(let iy=cy-1;iy<=cy+1;iy++){
+   const b=obstacleGrid.get(ix+','+iy);if(!b)continue;
+   for(const t of b){if((x-t.x)**2+(y-t.y)**2<(t.r+r)**2)return t;}
+ }
+ return null;
+}
+function terrainGradient(x,y,d=9){
+ const dx=(terrainHeight(x+d,y)-terrainHeight(x-d,y))/(2*d);
+ const dy=(terrainHeight(x,y+d)-terrainHeight(x,y-d))/(2*d);
+ return {x:dx,y:dy,slope:Math.hypot(dx,dy)};
+}
+function driveSurface(x,y,template){
+ const route=roadSurfaceAt(x,y);
+ const onTrack=route&&route.edge<=3;
+ const trail=onTrack&&route.seg.road.style==='trail';
+ if(onTrack)return {kind:trail?'TRAIL':'ROAD',passable:true,slope:0,traction:trail?.66:1,route};
+ const gradient=terrainGradient(x,y);
+ const height=terrainHeight(x,y),rally=template&&(template.id==='rally'||template.id==='armored');
+ const shoulder=route&&route.edge<14;
+ if(shoulder)return {kind:'SHOULDER',passable:true,slope:gradient.slope,traction:.78,route};
+ let limit=rally?.46:.34;
+ if(height>65)limit=rally?.38:.29;
+ if(height>105)limit=rally?.30:.23;
+ const obstruction=terrainObstacle(x,y,template?.id==='armored'?5.0:4.2);
+ return {kind:height>55?'MOUNTAIN':'OPEN GROUND',passable:gradient.slope<=limit&&!obstruction,
+   slope:gradient.slope,limit,gradient,obstruction,traction:rally?.63:.42,route};
+}
 function slopeAt(x,z,angle){const d=10,fx=Math.sin(angle),fz=-Math.cos(angle);return (terrainHeight(x+fx*d,z+fz*d)-terrainHeight(x-fx*d,z-fz*d))/(2*d);}
 function pathIsland(g,inset=0){let count=300;g.beginPath();for(let i=0;i<=count;i++){let a=(i/count)*TAU,R=shorelineRadius(a)-inset,x=Math.cos(a)*R*1.23,y=Math.sin(a)*R*.92;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}g.closePath();}
 function makeRoad(id,points,width=27,style='urban'){roads.push({id,points,width,style});for(let i=0;i<points.length-1;i++){let a=points[i],b=points[i+1],d=Math.hypot(b.x-a.x,b.y-a.y),n=Math.max(1,Math.floor(d/20));for(let j=0;j<n;j++){let t=j/n,pt={x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),a:Math.atan2(b.y-a.y,b.x-a.x),id};if(style!=='trail'&&coastDistance(pt.x,pt.y)>36)roadSamples.push(pt)}}}
@@ -514,6 +555,7 @@ function buildWorld(){
     const urban=Math.hypot(p.x-40*CITY_COMPACT,p.y-125*CITY_COMPACT)<300;
     streetProps.push({x:p.x+Math.sin(p.a)*24,y:p.y-Math.cos(p.a)*24,a:p.a,kind:urban&&i%4!==0?'lamp':'billboard'});
   }
+  rebuildObstacleGrid();
 }
 function polypath(g,p){g.beginPath();for(let i=0;i<p.length;i++){const q=p[i];if(i===0)g.moveTo(q.x,q.y);else g.lineTo(q.x,q.y)}}
 function polyStroke(g,p,w,color,dash=[],offset=0){g.save();g.lineJoin='round';g.lineCap='round';polypath(g,p);g.lineWidth=w;g.strokeStyle=color;g.setLineDash(dash);g.lineDashOffset=offset;g.stroke();g.restore()}
@@ -686,7 +728,7 @@ function beginRun(){keys={};mode='playing';paused=false;runningSeconds=0;earned=
 function finishRun(reason){if(mode!=='playing'&&mode!=='pause')return;mode='over';finishReason=reason;keys={};const amount=Math.floor(earned);save.wallet+=amount;save.runs++;save.total+=Math.floor(runningSeconds);save.best=Math.max(save.best,Math.floor(runningSeconds));persist();$('hud').classList.remove('show');renderResults()}
 function damage(amount){if(car.hitCooldown>0)return;car.health=Math.max(0,car.health-amount);car.hitCooldown=.55;shake=Math.max(shake,11);spark(car.x,car.y,17,'#f8d599',1.35);if(car.health<=0)finishRun('The police totaled your car.')}
 function carCollision(x,y,radius){for(let b of structures){if(Math.hypot(x-b.x,y-b.y)>b.rad+radius)continue;let cs=Math.cos(b.rot),sn=Math.sin(b.rot),dx=x-b.x,dy=y-b.y,lx=dx*cs+dy*sn,ly=-dx*sn+dy*cs;let ax=clamp(lx,-b.w*.5,b.w*.5),ay=clamp(ly,-b.h*.5,b.h*.5);if(Math.hypot(lx-ax,ly-ay)<radius)return b}return null}
-function onRoad(x,y){return roadsNear(x,y,1)}
+function onRoad(x,y){const r=roadSurfaceAt(x,y);return !!r&&r.edge<=2&&r.seg.road.style!=='trail'}
 function updateCar(dt){if(!car)return;
  car.hitCooldown=Math.max(0,car.hitCooldown-dt);car.slip=Math.max(0,car.slip-dt);
  const s=carStats(car.template),offroad=!onRoad(car.x,car.y),beach=coastDistance(car.x,car.y)<52,grade=slopeAt(car.x,car.y,car.a);
