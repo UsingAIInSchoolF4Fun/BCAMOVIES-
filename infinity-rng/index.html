@@ -856,12 +856,29 @@ const reservedSites=[
 // The river runs visibly from the western mountain waterfall all the way
 // to the eastern rim. Scenery always respects the bank, not only the water.
 const RIVER_START=-412,RIVER_END=439;
+// River levels now follow a smoothed natural valley profile rather than an
+// arbitrary flat-world -15 to +2 grade that created giant artificial cliffs.
+const riverProfileCache=new Map(),RIVER_PROFILE_SPACING=12;
+function riverProfileSample(x){
+ if(riverProfileCache.has(x))return riverProfileCache.get(x);
+ const offsets=[-48,-24,0,24,48],weights=[1,2,3,2,1];
+ let sum=0;
+ for(let i=0;i<offsets.length;i++){
+  const xx=x+offsets[i];
+  sum+=weights[i]*naturalHeight(xx,riverPathZ(xx));
+ }
+ const level=sum/9-3.8;
+ riverProfileCache.set(x,level);
+ return level;
+}
 function riverBedElevation(x){
- return 2.0-.020*(x-RIVER_START); // natural downhill grade eastward
+ const x0=Math.floor(x/RIVER_PROFILE_SPACING)*RIVER_PROFILE_SPACING;
+ const t=(x-x0)/RIVER_PROFILE_SPACING;
+ return riverProfileSample(x0)*(1-t)+riverProfileSample(x0+RIVER_PROFILE_SPACING)*t;
 }
 function waterFreeFootprint(x,z,radius=0){
  if(x<RIVER_START-12-radius||x>RIVER_END+6+radius)return true;
- const reach=23+radius,dx=Math.min(30,radius);
+ const reach=27+radius,dx=Math.min(30,radius);
  return Math.abs(z-riverPathZ(x))>reach&&
         Math.abs(z-riverPathZ(x-dx))>reach&&
         Math.abs(z-riverPathZ(x+dx))>reach;
@@ -900,7 +917,7 @@ const landmarkPads = [
  [75,65,26],[-235,50,31],[230,-35,30],[45,-240,27],[20,250,29]
 ];
 
-function rawHeight(x,z){
+function naturalHeight(x,z){
  // Sculpted regions: one continent, dramatic ridge-lines, lowland basins and a raised volcanic massif.
  const r=Math.hypot(x,z);
  const broad=Math.sin(x*.009+Math.cos(z*.006))*Math.cos(z*.011)*8.3;
@@ -915,8 +932,8 @@ function rawHeight(x,z){
  // Landmark-scale terrain, not randomized object placement.
  y+=dome(-320,-260,210,200,45); // Sky Sanctuary ridge
  y+=dome(300,-285,195,185,38);  // Ember massif
- y+=dome(-325,50,170,205,27);   // Frostfall mountain foothills
- y+=dome(280,90,175,180,19);    // Crystal Canyon cliffs
+ y+=dome(-325,50,170,205,22);   // Frostfall mountain foothills
+ y+=dome(280,90,175,180,16);    // Crystal Canyon cliffs
  y+=dome(-285,240,155,160,17);  // Grove plateau
  y+=dome(210,-270,155,130,26);  // Isles highland
  y+=dome(-300,-100,120,125,19); // Temple shelf
@@ -931,12 +948,17 @@ function rawHeight(x,z){
  // Central bowl with elevated natural rim.
  y+=dome(0,0,140,140,-13);
  y+=dome(0,0,62,62,13);
- // Physically carve a flat-bottomed stream bed and broad gravel shoulders.
- // The water now occupies a real channel, not a blue strip above the grass.
+ // Keep the regional foothills, but with less isolated vertical exaggeration.
+ return y;
+}
+function rawHeight(x,z){
+ let y=naturalHeight(x,z);
+ // Wide river shoulders feather into the native ground rather than raising
+ // steep canyon walls next to the walking paths.
  const channel=Math.abs(z-riverPathZ(x));
- if(x>RIVER_START-8&&x<RIVER_END+6&&channel<33){
-  const bank=Math.max(0,Math.min(1,(channel-9)/24));
-  const blend=bank*bank*(3-2*bank);
+ if(x>RIVER_START-8&&x<RIVER_END+6&&channel<68){
+  const t=Math.max(0,Math.min(1,(channel-9)/59));
+  const blend=t*t*(3-2*t);
   y=riverBedElevation(x)*(1-blend)+y*blend;
  }
  return y;
@@ -970,8 +992,8 @@ function height(x,z){
  // Keep carved water below the surface even inside the soft fringe of a
  // neighboring landmark pad. Pads cannot fill in the active riverbed.
  const channel=Math.abs(z-riverPathZ(x));
- if(x>RIVER_START-8&&x<RIVER_END+6&&channel<32){
-  const b=Math.max(0,Math.min(1,(channel-9)/23));
+ if(x>RIVER_START-8&&x<RIVER_END+6&&channel<68){
+  const b=Math.max(0,Math.min(1,(channel-9)/59));
   const edge=b*b*(3-2*b);
   shaped=riverBedElevation(x)*(1-edge)+shaped*edge;
  }
@@ -3743,8 +3765,8 @@ function softRockRidge(cx,cz,span,count,mat,phase=0){
  for(let n=0;n<count;n++){
   const a=phase+n*2.399963,rad=span*(.32+.1*(n%3));
   const x=cx+Math.cos(a)*rad,z=cz+Math.sin(a)*rad;
-  const radius=17+(n%4)*4,height=9+(n%3)*3,rings=8,sides=24;
-  if(!clearForScenery(x,z,radius+5))continue;
+  const radius=12+(n%4)*2.2,height=6+(n%3)*1.8,rings=7,sides=20;
+  if(!clearForScenery(x,z,radius+10))continue;
   if(!waterFreeFootprint(x,z,radius+5))continue;
   const coords=[],indexes=[];
   for(let j=0;j<=rings;j++){
