@@ -1306,27 +1306,26 @@ function renderSoftware3D(){
  for(let cell of cells){let x=cell.x,z=cell.z,s=step*.51;let ht=softwareHeight(x,z),fill=terrainStyle(x,z,ht);polygon([[x-s,softwareHeight(x-s,z-s),z-s],[x+s,softwareHeight(x+s,z-s),z-s],[x+s,softwareHeight(x+s,z+s),z+s],[x-s,softwareHeight(x-s,z+s),z+s]],fill)}
  // School Chromebook fallback: continuous roadside quads with shared endpoints.
  // The previous per-segment perpendiculars folded over on sharp switchbacks.
- function roadEdge(road,index,offset){
-  const ps=road.points,p=ps[index],q=ps[Math.max(0,index-1)],r=ps[Math.min(ps.length-1,index+1)];
-  const dx=r.x-q.x,dz=r.y-q.y,len=Math.hypot(dx,dz)||1,nx=-dz/len,nz=dx/len;
-  const x=p.x+nx*offset,z=p.y+nz*offset;
-  return [x,softwareHeight(x,z)+.55,z];
+ // Chromebook fallback shares the same safe, smooth joins as WebGL.
+ function roadEdge(road,index,offset,rise=.4){
+   const pos=roadJoinPoint(road,index,offset),c=road.points[index];
+   return [pos.x,softwareHeight(c.x,c.y)+rise,pos.y];
  }
- function roadPatch(road,i,j,half,color){
-  const a=roadEdge(road,i,-half),b=roadEdge(road,i,half);
-  const c=roadEdge(road,j,half),d=roadEdge(road,j,-half);
-  polygon([a,b,c,d],color);
+ function roadPatch(road,i,j,half,color,rise=.4){
+   const a=roadEdge(road,i,-half,rise),b=roadEdge(road,i,half,rise);
+   const c=roadEdge(road,j,half,rise),d=roadEdge(road,j,-half,rise);
+   polygon([a,b,c,d],color);
  }
  for(const road of roads){
-  const p=road.points;
-  for(let i=0;i<p.length-1;i+=2){
-   const j=Math.min(i+2,p.length-1),mid=p[Math.min(i+1,p.length-1)];
-   if(Math.hypot(mid.x-target.x,mid.y-target.y)>440)continue;
-   if(Math.hypot(p[j].x-p[i].x,p[j].y-p[i].y)<.4)continue;
-   roadPatch(road,i,j,road.width*.5+3,road.style==='mountain'?'#91998d':'#93a09c');
-   roadPatch(road,i,j,road.width*.5,road.style==='mountain'?'#384b4f':'#3b4e58');
-   if(i%10<2)roadPatch(road,i,j,.7,road.style==='mountain'?'#f4d6ac':'#e8e5d2');
-  }
+   const p=road.points,half=road.width*.5;
+   for(let i=0;i<p.length-1;i+=2){
+     const j=Math.min(i+2,p.length-1),mid=p[Math.min(i+1,p.length-1)];
+     if(Math.hypot(mid.x-target.x,mid.y-target.y)>440)continue;
+     if(Math.hypot(p[j].x-p[i].x,p[j].y-p[i].y)<.4)continue;
+     roadPatch(road,i,j,half+2.8,road.style==='mountain'?'#89998d':'#97a59b',.31);
+     roadPatch(road,i,j,half,road.style==='mountain'?'#40515a':'#394e59',.38);
+     if(i%10<4)roadPatch(road,i,j,.65,'#e9d5a6',.44);
+   }
  }
  let objects=[];for(let b of structures){let dx=b.x-target.x,dz=b.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<720&&Math.hypot(dx,dz)<780)objects.push({type:'b',obj:b,depth});}
  for(let t of trees){let dx=t.x-target.x,dz=t.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<600&&Math.hypot(dx,dz)<620)objects.push({type:'t',obj:t,depth});}
