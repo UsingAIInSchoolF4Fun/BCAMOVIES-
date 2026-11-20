@@ -999,10 +999,27 @@ function updateTraffic(dt){
   }
  }
 }
+// Coarse, cached route grading makes large police waves viable on Chromebooks.
+const AI_TERRAIN_GRID=18,aiTerrainCache=new Map();
+function quickCopTerrain(x,y){
+ const road=roadSurfaceAt(x,y);
+ if(road&&road.edge<14)return true;
+ const ix=Math.round(x/AI_TERRAIN_GRID),iy=Math.round(y/AI_TERRAIN_GRID),key=ix+','+iy;
+ const cached=aiTerrainCache.get(key);if(cached!==undefined)return cached;
+ const cx=ix*AI_TERRAIN_GRID,cy=iy*AI_TERRAIN_GRID,d=10;
+ const h=rawTerrainHeight(cx,cy);
+ const slope=Math.hypot((rawTerrainHeight(cx+d,cy)-rawTerrainHeight(cx-d,cy))/(2*d),
+                        (rawTerrainHeight(cx,cy+d)-rawTerrainHeight(cx,cy-d))/(2*d));
+ const limit=h>105?.23:h>65?.29:.34;
+ const allowed=coastDistance(cx,cy)>7&&slope<=limit&&!terrainObstacle(cx,cy,6);
+ if(aiTerrainCache.size>8500)aiTerrainCache.clear();
+ aiTerrainCache.set(key,!!allowed);
+ return !!allowed;
+}
 function clearCopPath(c,a,d=34){
  for(const r of [.48,1.0]){
   const x=c.x+Math.sin(a)*d*r,y=c.y-Math.cos(a)*d*r;
-  if(isWater(x,y)||carCollision(x,y,c.type==='heavy'?12:10)||!driveSurface(x,y,{id:'patrol'}).passable)return false;
+  if(isWater(x,y)||carCollision(x,y,c.type==='heavy'?12:10)||!quickCopTerrain(x,y))return false;
  }
  return true;
 }
@@ -1021,15 +1038,25 @@ function updateCops(dt){
   c.stun=Math.max(0,c.stun-dt);
   const dx=car.x-c.x+car.vx*.12,dy=car.y-c.y+car.vy*.12;
   const distance=Math.hypot(car.x-c.x,car.y-c.y);
-  let aim=Math.atan2(dx,-dy);
-  let clear=clearCopPath(c,aim);
-  if(!clear){
-   // Prefer the nearest obstacle-free path, with a consistent choice when both sides are clear.
-   const options=[.38,.85,1.35,-.38,-.85,-1.35,2,-2].map(v=>v*c.turnBias);
-   let found=false;
-   for(const offset of options){if(clearCopPath(c,aim+offset,40)){aim+=offset;found=true;break;}}
-   if(!found){aim=c.a+c.turnBias*1.15;c.stuck+=dt;}else c.stuck=Math.max(0,c.stuck-dt*.6);
-  }else c.stuck=Math.max(0,c.stuck-dt*1.7);
+  let aim=c.routeAim??Math.atan2(dx,-dy),clear=c.routeClear??true;
+  c.routeCooldown=(c.routeCooldown||0)-dt;
+  if(c.routeCooldown<=0){
+    const scanTime=.11+hash(c.phase*17+Math.floor(now*3))*.065;
+    c.routeCooldown=scanTime;
+    aim=Math.atan2(dx,-dy);
+    clear=clearCopPath(c,aim);
+    if(!clear){
+      // Reuse the chosen route briefly rather than recomputing eight paths every frame.
+      const options=[.42,-.42,.95,-.95,1.6,-1.6];
+      let found=false;
+      for(const offset of options){
+        if(clearCopPath(c,aim+offset*c.turnBias,40)){aim+=offset*c.turnBias;found=true;break;}
+      }
+      if(!found){aim=c.a+c.turnBias*1.12;c.stuck+=scanTime*1.6;}
+      else c.stuck=Math.max(0,c.stuck-scanTime*.6);
+    }else c.stuck=Math.max(0,c.stuck-scanTime*1.4);
+    c.routeAim=aim;c.routeClear=clear;
+  }
   let error=Math.abs(Math.atan2(Math.sin(aim-c.a),Math.cos(aim-c.a)));
   c.a=angleTurn(c.a,aim,dt*(c.type==='heavy'?1.13:1.55)*Math.sqrt(copAggression(wave)));
   const cap=copTopSpeed(wave,c.type==='heavy');
@@ -1045,7 +1072,7 @@ function updateCops(dt){
   c.y-=Math.cos(c.a)*move-(c.knockVY||0)*dt;
   c.knockVX=(c.knockVX||0)*Math.pow(.83,dt*60);
   c.knockVY=(c.knockVY||0)*Math.pow(.83,dt*60);
-  if(isWater(c.x,c.y)||carCollision(c.x,c.y,c.type==='heavy'?12:10)||!driveSurface(c.x,c.y,{id:'patrol'}).passable){
+  if(isWater(c.x,c.y)||carCollision(c.x,c.y,c.type==='heavy'?12:10)||!quickCopTerrain(c.x,c.y)){
    c.x=ox;c.y=oy;c.speed*=.16;c.stun=Math.max(c.stun,.5);c.a+=c.turnBias*.28;c.stuck+=dt*2;
   }
   if(distance>660||c.stuck>5){
