@@ -326,8 +326,8 @@ function buildRoadJunctions(){
  }
  for(const q of roadJunctions){
   // Strip cutout is small; intersection patch extends over all corner edges.
-  q.cut=q.width*.47+4;
-  q.radius=q.width*.78+6;
+  q.cut=q.width*.34+5;
+  q.radius=q.width*.65+5;
  }
 }
 function nearestJunction(x,y){
@@ -570,6 +570,9 @@ function buildingSiteValid(x,y,w,h,rot=0){
  }
  const base=rawTerrainHeight(x,y);
  if(Math.max(...samples,base)-Math.min(...samples,base)>Math.min(32,Math.max(18,Math.min(w,h)*.92)))return false;
+ for(const lot of parkingLots){
+   if(Math.abs(lot.x-x)<(lot.w+w)*.57&&Math.abs(lot.y-y)<(lot.h+h)*.57)return false;
+ }
  for(const old of structures){
   if(Math.hypot(old.x-x,old.y-y)>old.rad+r+8)continue;
   const dx=old.x-x,dy=old.y-y,lx=dx*co+dy*si,ly=-dx*si+dy*co;
@@ -659,8 +662,8 @@ function buildWorld(){
     addBuilding(px,py,w,h,(hash(id+81)-.5)*.24,kind,zone);
   }
   // The majority of the scenery is highland forests.
-  for(let i=0;i<1350;i++){
-    const x=(hash(i+213)*2-1)*970*CITY_COMPACT,y=(hash(i+723)*2-1)*715*CITY_COMPACT;
+  for(let i=0;i<1740;i++){
+    const x=(hash(i+213)*2-1)*1320*CITY_COMPACT,y=(hash(i+723)*2-1)*970*CITY_COMPACT;
     const shore=coastDistance(x,y),elev=terrainHeight(x,y);
     if(shore<38||insideBuilding(x,y,10)||roadsNear(x,y,27))continue;
     if(Math.hypot(x-40*CITY_COMPACT,y-125*CITY_COMPACT)<165)continue;
@@ -674,12 +677,21 @@ function buildWorld(){
     trees.push({x,y,s:.75+hash(i+310)*1.3,kind:'rock'});
   }
   // Sparse country route signage, with denser streetlights in Sunset Village.
-  for(let i=0;i<100;i++){
-    const p=roadSamples[Math.floor(hash(i+1337)*roadSamples.length)];
-    if(!p||coastDistance(p.x,p.y)<60)continue;
-    const urban=Math.hypot(p.x-40*CITY_COMPACT,p.y-125*CITY_COMPACT)<300;
-    streetProps.push({x:p.x+Math.sin(p.a)*24,y:p.y-Math.cos(p.a)*24,a:p.a,kind:urban&&i%4!==0?'lamp':'billboard'});
-  }
+  // Street furniture goes beyond the shoulder, never on the widened lane.
+ for(let i=0;i<90;i++){
+   const p=roadSamples[Math.floor(hash(i+1337)*roadSamples.length)];
+   if(!p||coastDistance(p.x,p.y)<65)continue;
+   const source=roads.find(r=>r.id===p.id);
+   if(!source)continue;
+   const offset=source.width*.5+13;
+   const side=i%2===0?1:-1;
+   const x=p.x+side*Math.sin(p.a)*offset,y=p.y-side*Math.cos(p.a)*offset;
+   if(coastDistance(x,y)<52||roadsNear(x,y,8)||insideBuilding(x,y,16))continue;
+   if(trees.some(t=>Math.hypot(t.x-x,t.y-y)<12))continue;
+   if(nearestJunction(x,y)?.dist<55)continue;
+   const urban=Math.hypot(x-40*CITY_COMPACT,y-125*CITY_COMPACT)<270;
+   streetProps.push({x,y,a:p.a,kind:urban&&i%3!==0?'lamp':'billboard'});
+ }
   rebuildObstacleGrid();
 }
 function polypath(g,p){g.beginPath();for(let i=0;i<p.length;i++){const q=p[i];if(i===0)g.moveTo(q.x,q.y);else g.lineTo(q.x,q.y)}}
@@ -1491,7 +1503,7 @@ function build3DCity(){
    const nx=-dz/len,nz=dx/len;
    for(const side of [-1,1]){
     const x=b.x+nx*road.width*.69*side,z=b.y+nz*road.width*.69*side;
-    if(isWater(x,z))continue;
+    if(isWater(x,z)||nearestJunction(x,z)?.dist<55||roadsNear(x,z,3))continue;
     const mesh=tileAt(x,z),h=surfaceY(x,z);
     mesh.box(x,h+1.25,z,.85,2.5,.85,'#dcdcc9');
     mesh.box(x,h+2.3,z,1,.25,1,road.style==='mountain'?'#ffd38e':'#70d5cb',0,.65);
@@ -1500,8 +1512,8 @@ function build3DCity(){
  }
  // Visible trailheads: wooden ranger signs show where off-road driving is intended.
  for(const trail of roads.filter(r=>r.style==='trail')){
-   for(const i of [0,trail.points.length-1]){
-     const pt=roadJoinPoint(trail,i,trail.width*.5+9),h=surfaceY(pt.x,pt.y);
+   for(const i of [Math.min(9,trail.points.length-1),Math.max(0,trail.points.length-10)]){
+     const pt=roadJoinPoint(trail,i,trail.width*.5+15),h=surfaceY(pt.x,pt.y);
      if(isWater(pt.x,pt.y))continue;
      const mesh=tileAt(pt.x,pt.y);
      mesh.box(pt.x,h+3.3,pt.y,.75,6.6,.75,'#654c39');
@@ -1572,9 +1584,7 @@ function build3DCity(){
   }
  }
  for(let p of streetProps){let m=tileAt(p.x,p.y),base=surfaceY(p.x,p.y);if(p.kind==='lamp'){m.box(p.x,base+4.5,p.y,.28,9,.28,'#526373');m.box(p.x+.9,base+9.3,p.y,2,.18,.45,'#dfd5b8',0,.6)}else{m.box(p.x,base+5,p.y,12,9,.9,'#33415b',-p.a);m.box(p.x,base+5.4,p.y+0.6,11,5,.14,'#c6b396',-p.a,.12)}}
- // Decorative crosswalks at key arterial intersections.
- const crossings=[[40,32],[-310,-340],[-340,90],[160,-180],[365,-65],[-450,130],[-60,285]];
- for(const [ax,az] of crossings){const x=ax*CITY_COMPACT,z=az*CITY_COMPACT;let m=tileAt(x,z);for(let j=-5;j<=5;j++){m.box(x+j*2.3,surfaceY(x+j*2.3,z)+.25,z,1.3,.035,7.5,'#ddd5be')}}
+ // Crosswalk decorations no longer float on unrelated roads or hide real junction markings.
  for(let [key,obj] of tiles){if(!obj.mesh.d.length)continue;g3.tiles.set(key,{x:obj.x,z:obj.z,draw:upload3(obj.mesh)});g3.stats.triangles+=obj.mesh.d.length/30}g3.stats.tiles=g3.tiles.size;
 }
 function perspective3(fovy,ratio,near,far){let f=1/Math.tan(fovy*.5),nf=1/(near-far);return [f/ratio,0,0,0,0,f,0,0,0,0,(far+near)*nf,-1,0,0,2*far*near*nf,0]}
