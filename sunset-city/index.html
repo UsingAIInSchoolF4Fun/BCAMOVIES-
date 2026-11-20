@@ -770,7 +770,27 @@ function updateCar(dt){if(!car)return;
  const steps=Math.min(18,Math.max(1,Math.ceil(Math.hypot(car.vx,car.vy)*dt/5)));
  for(let step=0;step<steps;step++){
    const nx=car.x+car.vx*dt/steps,ny=car.y+car.vy*dt/steps;
-   const hit=carCollision(nx,ny,9.1);
+   const surface=driveSurface(nx,ny,car.template);
+   if(!surface.passable&&!isWater(nx,ny)){
+      const incoming=Math.abs(car.speed);
+      if(surface.gradient&&surface.slope>surface.limit){
+        const normal=surface.gradient,len=Math.max(.01,normal.slope);
+        // Gently push downhill rather than letting the vehicle climb a near-vertical mountain.
+        car.vx=-normal.x/len*Math.min(14,7+incoming*.06);
+        car.vy=-normal.y/len*Math.min(14,7+incoming*.06);
+      }else{car.vx*=-.20;car.vy*=-.20;}
+      car.speed=-Math.max(3,incoming*.10);
+      car.bump=Math.max(car.bump,Math.min(3,incoming*.018));
+      car.slip=.25;
+      if(now-car.lastTerrainWarn>3){
+        car.lastTerrainWarn=now;
+        showBanner(surface.obstruction?'FOREST OBSTACLE':'SLOPE TOO STEEP',
+          surface.obstruction?'USE AN OPEN DIRT TRACK':'FIND A ROAD OR A MARKED TRAIL',2);
+      }
+      if(incoming>95&&car.hitCooldown<=0)damage(Math.min(8,incoming*.045));
+      break;
+   }
+   const hit=carCollision(nx,ny,vehicleRadius(car)*.82);
    if(hit){
       const impact=Math.hypot(car.vx,car.vy);const c=Math.cos(hit.rot),sn=Math.sin(hit.rot);
       // Slide along the hit facade instead of teleporting through it.
@@ -791,7 +811,7 @@ function updateCar(dt){if(!car)return;
  }
  
  if(drifting&&Math.abs(car.speed)>105&&Math.abs(steer)>.1){car.driftScore+=dt;if(car.driftScore>1.2){earned+=75;runInfo.drifts++;showBanner('CLEAN DRIFT!','+$75 STUNT BONUS',1.1);car.driftScore=0;}if(Math.random()<dt*28)spark(car.x-dirX*11,car.y-dirY*11,2,'#aebbbd',.19)}else car.driftScore=Math.max(0,car.driftScore-dt);
- if(offroad&&Math.abs(car.speed)>48&&Math.random()<dt*12)spark(car.x-dirX*9,car.y-dirY*9,1,'#d1b58d',.15);
+ if(offroad&&Math.abs(car.speed)>38&&Math.random()<dt*(trail?19:10))spark(car.x-dirX*9,car.y-dirY*9,2,trail?'#c9a779':'#d1b58d',.19);
  // Water is not driveable. You may drive off the shore, but the car sinks and the run ends.
  if(isWater(car.x,car.y)){
    spark(car.x,car.y,30,'#9fe3f1',1.1);
@@ -948,7 +968,7 @@ function updatePlaying(dt){runningSeconds+=dt;now+=dt;updateCar(dt);if(mode!=='p
  if(now>bannerEnd)$('runbanner').classList.remove('show');
  hudTick+=dt;if(hudTick>.08){hudTick=0;updateHud()}
 }
-function updateHud(){if(!car)return;$('survive').textContent=timeFmt(runningSeconds);$('earn').textContent='$'+fmt(earned);$('heatLabel').textContent='LEVEL '+wave+' · '+cops.length+' COP'+(cops.length===1?'':'S');$('stars').textContent=wave<=5?'★'.repeat(wave)+'☆'.repeat(5-wave):'★★★★★ ×'+wave;$('healthText').textContent=Math.ceil(car.health/car.maxHealth*100)+'%';$('healthbar').style.width=clamp(car.health/car.maxHealth*100,0,100)+'%';$('boostText').textContent=Math.ceil(car.nitro/car.maxNitro*100)+'%';$('boostbar').style.width=clamp(car.nitro/car.maxNitro*100,0,100)+'%';$('speed').textContent=Math.floor(Math.abs(car.speed)*.65);$('carName').textContent=car.template.name+' · '+(isWater(car.x,car.y)?'OCEAN HAZARD':terrainHeight(car.x,car.y)>38?'MOUNTAIN':onRoad(car.x,car.y)?'STREET':'OFF ROAD');$('terrainStatus').textContent=isWater(car.x,car.y)?'OCEAN HAZARD':webgl?'3D · MOUNTAIN TERRAIN':'3D-STYLE FALLBACK';$('heatProgress').style.width=(runningSeconds%HEAT_SECONDS/HEAT_SECONDS*100)+'%';drawRadar()}
+function updateHud(){if(!car)return;$('survive').textContent=timeFmt(runningSeconds);$('earn').textContent='$'+fmt(earned);$('heatLabel').textContent='LEVEL '+wave+' · '+cops.length+' COP'+(cops.length===1?'':'S');$('stars').textContent=wave<=5?'★'.repeat(wave)+'☆'.repeat(5-wave):'★★★★★ ×'+wave;$('healthText').textContent=Math.ceil(car.health/car.maxHealth*100)+'%';$('healthbar').style.width=clamp(car.health/car.maxHealth*100,0,100)+'%';$('boostText').textContent=Math.ceil(car.nitro/car.maxNitro*100)+'%';$('boostbar').style.width=clamp(car.nitro/car.maxNitro*100,0,100)+'%';$('speed').textContent=Math.floor(Math.abs(car.speed)*.65);$('carName').textContent=car.template.name+' · '+(isWater(car.x,car.y)?'OCEAN HAZARD':car.groundKind==='TRAIL'?'DIRT TRAIL':car.groundKind==='ROAD'?'PAVED ROAD':car.groundKind==='SHOULDER'?'SHOULDER':terrainHeight(car.x,car.y)>45?'ROCKY HIGHLANDS':'OPEN GROUND');$('terrainStatus').textContent=isWater(car.x,car.y)?'OCEAN HAZARD':webgl?'3D · MOUNTAIN TERRAIN':'3D-STYLE FALLBACK';$('heatProgress').style.width=(runningSeconds%HEAT_SECONDS/HEAT_SECONDS*100)+'%';drawRadar()}
 function drawRadar(){let g=rctx,W=180,H=180;g.clearRect(0,0,W,H);g.fillStyle='#0a2a41';g.fillRect(0,0,W,H);g.save();g.translate(W/2,H/2);let s=.10;g.scale(s,s);g.translate(-car.x,-car.y);pathIsland(g);g.fillStyle='#428c70';g.fill();for(const m of MOUNTAINS){for(let ring=1;ring<=4;ring++){g.strokeStyle=ring%2?'#c8d6a1':'#779c80';g.lineWidth=6;g.beginPath();g.ellipse(m.x,m.z,m.sx*ring/4,m.sz*ring/4,0,0,TAU);g.stroke();}}for(let r of roads){polyStroke(g,r.points,r.width+6,'#9ba6a7');polyStroke(g,r.points,r.width,'#455767')}for(let b of structures){g.fillStyle='#b7b29b';g.fillRect(b.x-b.w/2,b.y-b.h/2,b.w,b.h)}for(let p of pickups){if(p.claimed)continue;g.fillStyle='#ffdb79';g.beginPath();g.arc(p.x,p.y,18,0,TAU);g.fill()}for(let c of cops){g.fillStyle='#ff647d';g.beginPath();g.arc(c.x,c.y,22,0,TAU);g.fill()}g.restore();g.save();g.translate(90,90);g.rotate(car.a);g.fillStyle='#ffffff';g.strokeStyle='#031422';g.lineWidth=2;g.beginPath();g.moveTo(0,-12);g.lineTo(8,10);g.lineTo(0,6);g.lineTo(-8,10);g.closePath();g.fill();g.stroke();g.restore();g.strokeStyle='#ffffff66';g.lineWidth=2;g.strokeRect(1,1,178,178)}
 function drawVehicle(g,v,police=false,player=false){let x=v.x,y=v.y,a=v.a,col=police?(v.type==='heavy'?'#394651':'#e4edf0'):v.color;g.save();g.translate(x,y);g.rotate(a);
  if(player&&car.hitCooldown>0&&Math.floor(now*13)%2)g.globalAlpha=.55;
