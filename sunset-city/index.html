@@ -864,6 +864,7 @@ function recoverVehicle(auto=false){
 function onRoad(x,y){const r=roadSurfaceAt(x,y);return !!r&&r.edge<=8&&r.seg.road.style!=='trail'}
 function updateCar(dt){if(!car)return;
  car.hitCooldown=Math.max(0,car.hitCooldown-dt);car.slip=Math.max(0,car.slip-dt);
+ let blockedThisFrame=false;
  const s=carStats(car.template),ground=driveSurface(car.x,car.y,car.template);
  const trail=ground.kind==='TRAIL',offroad=ground.kind!=='ROAD',beach=coastDistance(car.x,car.y)<52;
  const grade=slopeAt(car.x,car.y,car.a);
@@ -906,26 +907,36 @@ function updateCar(dt){if(!car)return;
    const nx=car.x+car.vx*dt/steps,ny=car.y+car.vy*dt/steps;
    const surface=driveSurface(nx,ny,car.template);
    if(!surface.passable&&!isWater(nx,ny)){
-      const incoming=Math.abs(car.speed);
-      if(surface.gradient&&surface.slope>surface.limit){
-        const normal=surface.gradient,len=Math.max(.01,normal.slope);
-        // Gently push downhill rather than letting the vehicle climb a near-vertical mountain.
-        car.vx=-normal.x/len*Math.min(14,7+incoming*.06);
-        car.vy=-normal.y/len*Math.min(14,7+incoming*.06);
-      }else{car.vx*=-.20;car.vy*=-.20;}
-      car.speed=-Math.max(3,incoming*.10);
-      car.bump=Math.max(car.bump,Math.min(3,incoming*.018));
-      car.slip=.25;
+      blockedThisFrame=true;
+      const impact=Math.abs(car.speed);
+      let nxWall=0,nyWall=0;
+      if(surface.obstruction){
+        const sep=Math.hypot(car.x-surface.obstruction.x,car.y-surface.obstruction.y)||1;
+        nxWall=(surface.obstruction.x-car.x)/sep;
+        nyWall=(surface.obstruction.y-car.y)/sep;
+      }else if(surface.gradient&&surface.slope>surface.limit){
+        nxWall=surface.gradient.x/Math.max(.01,surface.slope);
+        nyWall=surface.gradient.y/Math.max(.01,surface.slope);
+      }
+      // Keep momentum parallel to the obstacle. Never pin the player with
+      // repeated forceful automatic reverse movements.
+      const towards=car.vx*nxWall+car.vy*nyWall;
+      if(towards>0){car.vx-=nxWall*towards*1.12;car.vy-=nyWall*towards*1.12;}
+      car.vx*=.74;car.vy*=.74;
+      car.speed=clamp(car.vx*Math.sin(car.a)-car.vy*Math.cos(car.a),-65,75);
+      car.bump=Math.max(car.bump,Math.min(2.2,impact*.016));
+      car.slip=.14;
       if(now-car.lastTerrainWarn>3){
         car.lastTerrainWarn=now;
-        showBanner(surface.obstruction?'FOREST OBSTACLE':'SLOPE TOO STEEP',
-          surface.obstruction?'USE AN OPEN DIRT TRACK':'FIND A ROAD OR A MARKED TRAIL',2);
+        showBanner(surface.obstruction?'FOREST OBSTACLE':'MOUNTAIN TOO STEEP',
+          'STAY ON ROADS · PRESS R IF STUCK',1.8);
       }
-      if(incoming>95&&car.hitCooldown<=0)damage(Math.min(8,incoming*.045));
+      if(impact>110&&car.hitCooldown<=0)damage(Math.min(6,impact*.034));
       break;
    }
    const hit=carCollision(nx,ny,vehicleRadius(car)*.82);
    if(hit){
+      blockedThisFrame=true;
       const impact=Math.hypot(car.vx,car.vy);const c=Math.cos(hit.rot),sn=Math.sin(hit.rot);
       // Slide along the hit facade instead of teleporting through it.
       let lx=(nx-hit.x)*c+(ny-hit.y)*sn,ly=-(nx-hit.x)*sn+(ny-hit.y)*c;
@@ -943,6 +954,14 @@ function updateCar(dt){if(!car)return;
    }
    car.x=nx;car.y=ny;
  }
+ const nearbyRoad=roadSurfaceAt(car.x,car.y);
+ if(nearbyRoad&&nearbyRoad.edge<-4&&
+    !carCollision(car.x,car.y,vehicleRadius(car)+2)&&runningSeconds-car.lastSafeAt>.24){
+    car.safeX=car.x;car.safeY=car.y;car.safeA=car.a;car.lastSafeAt=runningSeconds;
+ }
+ if(throttle!==0&&(blockedThisFrame||!ground.passable)&&Math.abs(car.speed)<27)car.stuckTime+=dt;
+ else car.stuckTime=Math.max(0,car.stuckTime-dt*2);
+ if(car.stuckTime>2.7){recoverVehicle(true);return;}
  
  if(drifting&&Math.abs(car.speed)>65&&Math.abs(steer)>.1){car.driftScore+=dt;if(car.driftScore>1.2){earned+=75;runInfo.drifts++;showBanner('CLEAN DRIFT!','+$75 STUNT BONUS',1.1);car.driftScore=0;}if(Math.random()<dt*28)spark(car.x-dirX*11,car.y-dirY*11,2,'#aebbbd',.19)}else car.driftScore=Math.max(0,car.driftScore-dt);
  // Trail mastery rewards intentional mountain shortcuts without rewarding random cliff driving.
