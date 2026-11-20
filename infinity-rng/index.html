@@ -855,7 +855,7 @@ const reservedSites=[
 ];
 // The river runs visibly from the western mountain waterfall all the way
 // to the eastern rim. Scenery always respects the bank, not only the water.
-const RIVER_START=-402,RIVER_END=408;
+const RIVER_START=-412,RIVER_END=439;
 function riverBedElevation(x){
  return 2.0-.020*(x-RIVER_START); // natural downhill grade eastward
 }
@@ -1532,6 +1532,9 @@ function lantern(parent,x,z,y=0){
 function district(x,z,kind){
  const g=scenicAt(x,z),base=ground(x,z);
  const localY=(dx,dz)=>ground(x+dx,z+dz)-base;
+ // Decorative towers and flowerbeds must stay off road and water.
+ const clearDecor=(dx,dz,r=2)=>pathDistance(x+dx,z+dz)>r+8&&
+   waterFreeFootprint(x+dx,z+dz,r+1);
  const sand=new T.MeshStandardMaterial({color:0xc9ac81,roughness:.9,map:mats.sand.map,bumpMap:mats.sand.map,bumpScale:.13});
  const snow=new T.MeshStandardMaterial({color:0xf0f5ff,roughness:.86});
  const slate=new T.MeshStandardMaterial({color:0x51576a,roughness:.9});
@@ -1550,12 +1553,14 @@ function district(x,z,kind){
   // Two orderly glacier towers and a colonnaded frost gate.
   for(const side of [-1,1]){
    const dx=side*21,dy=localY(dx,-9);
+   if(!clearDecor(dx,-9,5.2))continue;
    registerCollider(x+dx,z-9,4.3,19);
    cyl(3.4,4.2,12,slate,g,dx,dy+6,-9,10);
    cyl(3.8,3.8,1.1,snow,g,dx,dy+12.4,-9,10);
    const cap=mesh(new T.ConeGeometry(4.2,6,8),snow,g,dx,dy+15.7,-9);
    for(let j=0;j<3;j++){
     const zz=-25+j*11,yy=localY(side*23,zz);
+    if(!clearDecor(side*23,zz,2.6+j*.35))continue;
     registerCollider(x+side*23,z+zz,1.9+j*.35,11);
     spire(g,side*23,yy,zz,2.0+j*.3,6+j*2,scenicCyan);
    }
@@ -1567,6 +1572,7 @@ function district(x,z,kind){
   // Paired crystal gardens frame an uncluttered main avenue.
   for(const side of [-1,1])for(let row=0;row<4;row++){
    const dx=side*(18+row*7),dz=-18+row*11,yy=localY(dx,dz);
+   if(!clearDecor(dx,dz,5.5))continue;
    registerCollider(x+dx,z+dz,3.6,11);
    const bed=cyl(4.5,5,.55,slate,g,dx,yy+.2,dz,9);
    const sizes=[6,9,5,7];
@@ -1582,12 +1588,14 @@ function district(x,z,kind){
   for(const side of [-1,1])registerCollider(x+side*7,z-20,1.4,15);
   for(const side of [-1,1]){
    const dx=side*23,dy=localY(dx,4);
+   if(!clearDecor(dx,4,6))continue;
    registerCollider(x+dx,z+4,5.2,15);
    cyl(5,5.6,9,slate,g,dx,dy+4.5,4,10);
    cyl(5.1,5.1,.3,bronze,g,dx,dy+9.1,4,10);
    const fire=mesh(new T.ConeGeometry(3.7,6,7),hot,g,dx,dy+12,4);
    for(let i=0;i<4;i++){
     const dz=-16+i*11,yy=localY(side*16,dz);
+    if(!clearDecor(side*16,dz,1.8))continue;
     registerCollider(x+side*16,z+dz,.76,3.2);
     cyl(.55,.72,2.6,slate,g,side*16,yy+1.3,dz,8);
     sphere(.5,hot,g,side*16,yy+2.8,dz);
@@ -1599,12 +1607,14 @@ function district(x,z,kind){
   for(const side of [-1,1])registerCollider(x+side*5,z-20,1.4,12);
   for(const side of [-1,1])for(let row=0;row<4;row++){
    const dx=side*16,dz=-20+row*13,yy=localY(dx,dz);
+   if(!clearDecor(dx,dz,2.5))continue;
    registerCollider(x+dx,z+dz,1.65,9);
    cyl(1.3,1.6,8,sand,g,dx,yy+4,dz,10);
    cyl(1.9,1.9,.7,bronze,g,dx,yy+8.3,dz,10);
   }
   for(const side of [-1,1]){
    const dx=side*25,dz=10,yy=localY(dx,dz);
+   if(!clearDecor(dx,dz,4.2))continue;
    registerCollider(x+dx,z+dz,3,4);
    box(3,2,15,sand,g,dx,yy+1,dz);
    spire(g,dx,yy+2,dz,1.7,3,bronze);
@@ -1617,6 +1627,7 @@ function district(x,z,kind){
    const dx=side*17;
    for(const dz of [-13,0,13]){
     const yy=localY(dx,dz);
+    if(!clearDecor(dx,dz,1.9))continue;
     registerCollider(x+dx,z+dz,.68,6);
     cyl(.45,.6,5,mats.wood,g,dx,yy+2.5,dz,8);
     sphere(1.35,scenicMoss,g,dx,yy+5.5,dz);
@@ -1625,7 +1636,7 @@ function district(x,z,kind){
   }
   for(let i=0;i<6;i++){
    const a=i*Math.PI/3,dx=Math.cos(a)*8.8,dz=Math.sin(a)*8.8;
-   spire(g,dx,.55,dz,.75,2.2,scenicGold);
+   if(clearDecor(dx,dz,1.2))spire(g,dx,.55,dz,.75,2.2,scenicGold);
   }
  }
  return g;
@@ -3676,6 +3687,31 @@ function authoredRiver(){
  }
  return makeWaterSurface(positions,uvs,indices);
 }
+function buildRiverbankStones(){
+ // Boulders and gravel along the carved channel (never on roadways).
+ // One instanced draw call instead of hundreds of separate stone meshes.
+ const max=220;
+ const stones=new T.InstancedMesh(new T.DodecahedronGeometry(1,0),
+  new T.MeshStandardMaterial({color:0x898b85,roughness:1,flatShading:true}),max);
+ const dummy=new T.Object3D();
+ let count=0;
+ for(let i=0;i<220;i++){
+  const u=(i+.5)/220,x=RIVER_START+16+u*(RIVER_END-RIVER_START-32);
+  const side=i%2?1:-1;
+  const radius=19+(i%7)*.86,z=riverPathZ(x)+side*radius;
+  if(pathDistance(x,z)<11||worldColliders.some(o=>Math.hypot(x-o.x,z-o.z)<o.r+3))continue;
+  if(Math.abs(z)>414)continue;
+  const size=.52+(i*13%9)*.11;
+  dummy.position.set(x,ground(x,z)+.16*size,z);
+  dummy.scale.set(size*1.4,size*.57,size*.88);
+  dummy.rotation.set(0,i*2.399963,0);
+  dummy.updateMatrix();stones.setMatrixAt(count++,dummy.matrix);
+ }
+ stones.count=count;stones.castShadow=false;stones.receiveShadow=false;
+ stones.instanceMatrix.needsUpdate=true;
+ if(count)scene.add(stones);
+ return count;
+}
 function buildMountainHeadwaters(){
  // Two falls descend from a single stone escarpment at the western border.
  // Both curtains meet the actual river, rather than being isolated water art.
@@ -3692,10 +3728,10 @@ function buildMountainHeadwaters(){
   fragmentShader:"uniform float uTime;varying vec2 vUv;void main(){float streak=sin(vUv.x*36.0+uTime*.8)*.17+sin(vUv.x*91.0-uTime*1.7)*.1;float flow=sin(vUv.y*33.0+uTime*8.5)*.1;float rim=smoothstep(0.,.12,vUv.x)*(1.-smoothstep(.88,1.,vUv.x));vec3 color=vec3(.42,.74,.8)+streak+flow;gl_FragColor=vec4(color,(.8+.11*flow)*rim);}"
  });
  // An integrated rock face closes the headwater opening into the backdrop.
- const cliff=cyl(14,18,rise+5,rockMat,scene,startX-10,
+ const cliff=cyl(14,18,rise+5,rockMat,scene,startX-23,
   riverY+(rise+5)*.5-1.1,centerZ,12);
  cliff.scale.z=.82;cliff.castShadow=false;
- box(18,1.7,24,ledgeMat,scene,startX-9,top+.2,centerZ).castShadow=false;
+ box(18,1.7,24,ledgeMat,scene,startX-14,top+.2,centerZ).castShadow=false;
  for(const side of [-1,1]){
   const waterfall=mesh(new T.PlaneGeometry(6.5,rise,8,24),
    fallMat,scene,startX-1.7,riverY+rise*.5+.18,centerZ+side*4);
@@ -3714,6 +3750,7 @@ function buildMountainHeadwaters(){
  return fallMat;
 }
 authoredRiver();
+const riverBankStoneCount=buildRiverbankStones();
 const mountainWaterfallMaterial=buildMountainHeadwaters();
 // All former isolated stream ribbons were removed in favor of the
 // continuous source-fed main river.
