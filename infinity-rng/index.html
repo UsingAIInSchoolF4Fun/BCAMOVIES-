@@ -3030,7 +3030,14 @@ document.body.appendChild(adventureIntro);
 function buildEpicObby(site,color,kind){
  site.kind=kind;site.id=site.id||site.name.toLowerCase().replace(/[^a-z0-9]+/g,"_");
  site.color=color;site.platforms=[];
- const stone=new T.MeshStandardMaterial({color:kind==="biome"?0x585069:0x4c5873,roughness:.84,metalness:.1,map:mats.stone.map});
+ const theme=site.name.toLowerCase();
+ const stoneColor=/frost|frozen|glacial/.test(theme)?0x586f8c:
+   /forest|grove|temple/.test(theme)?0x3d6855:
+   /ember|flame|volcan/.test(theme)?0x704550:
+   /sunstone|desert/.test(theme)?0x95724d:
+   /crystal|amethyst/.test(theme)?0x644985:
+   /astral/.test(theme)?0x454a83:0x59506d;
+ const stone=new T.MeshStandardMaterial({color:stoneColor,roughness:.84,metalness:.1,map:mats.stone.map});
  const edge=new T.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.65,roughness:.28,metalness:.16});
  const beamMat=new T.MeshBasicMaterial({color,transparent:true,opacity:.2,depthWrite:false,side:T.DoubleSide});
  let peak=ground(site.x,site.z);
@@ -3042,9 +3049,11 @@ function buildEpicObby(site,color,kind){
  cyl(10.2,12,1.8,stone,scene,site.x,ground(site.x,site.z)+.45,site.z,20).castShadow=false;
  const entry=torus(8.2,.4,edge,scene,site.x,ground(site.x,site.z)+1.55,site.z);entry.rotation.x=Math.PI/2;
  for(let j=0;j<stages;j++){
-  const a=.25+j*.68+site.x*.0009,rad=7.1+j*.83;
+  // Distinct authored curves with real air gaps, not overlapping slabs.
+  const turn=.835+(Math.abs(Math.round(site.x+site.z))%3)*.015;
+  const a=.25+j*turn+site.x*.0009,rad=7.1+j*.76;
   const px=site.x+Math.cos(a)*rad,pz=site.z+Math.sin(a)*rad,top=base+j*1.72;
-  const width=j===0?7.8:j===stages-1?7.1:j%3===0?6.2:5.8;
+  const width=j===0?7:j===stages-1?6.4:j%3===0?5.4:5.1;
   if(j%3===1){
    cyl(width*.47,width*.52,.78,stone,scene,px,top-.39,pz,6).castShadow=false;
    cyl(width*.42,width*.46,.09,edge,scene,px,top+.015,pz,6).castShadow=false;
@@ -3056,7 +3065,7 @@ function buildEpicObby(site,color,kind){
   rim.rotation.x=Math.PI/2;rim.castShadow=false;
   const stage={x:px,z:pz,top,w:width,d:width,index:j,rim,site};
   site.platforms.push(stage);trialPlatforms.push(stage);
-  if(j===0||j===3||j===6||j===9){
+  if(j===0||j===3||j===6||j===8||j===9){
    const gem=mesh(new T.OctahedronGeometry(j===9?2.1:1.08,0),edge,scene,px,top+(j===9?5.2:2.9),pz);
    gem.scale.y=1.5;gem.castShadow=false;
   }
