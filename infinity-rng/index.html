@@ -4998,6 +4998,140 @@ function updateBiomeTrials(t){
  }else trialPanel.style.display="none";
 }
 
+// V16: interactive, untimed physical jumping challenges, including a real
+// stay-or-give-up choice on every failed run.
+function adventureGatePosition(site){
+ const x=site.x,z=site.z+23;
+ return [x,ground(x,z)+1.3,z];
+}
+function adventureTeleport(stage){
+ if(gliding)finishGlide();
+ player.position.set(stage.x,stage.top+.42,stage.z);
+ velocityY=0;onGround=true;
+ for(const k of Object.keys(keys))keys[k]=false;
+}
+function startAdventure(site){
+ if(!site||activeAdventure)return;
+ const cooldown=site.kind==="sky"?(state.skyCooldowns[site.id]||0):(state.trialCooldowns[site.id]||0);
+ if(Date.now()<cooldown){
+  trialNotification(site.name+" · ready in "+Math.ceil((cooldown-Date.now())/60000)+"m");return;
+ }
+ activeAdventure={site,target:1,checkpoint:0,started:Date.now(),paused:false};
+ adventureTeleport(site.platforms[0]);
+ adventureChoice.style.display="none";
+ adventureIntro.style.display="none";
+ adventureHud.style.display="block";
+ trialNotification("✦ "+site.name.toUpperCase()+" ✦\nJump between the REAL platforms! Checkpoints save progress. No timer.");
+}
+function retryAdventure(){
+ if(!activeAdventure)return;
+ const a=activeAdventure;
+ adventureTeleport(a.site.platforms[a.checkpoint]);
+ a.target=Math.min(a.site.platforms.length-1,a.checkpoint+1);
+ a.paused=false;
+ adventureChoice.style.display="none";
+ trialNotification("CHECKPOINT "+(a.checkpoint+1)+" RESTORED · Keep jumping!");
+}
+function giveUpAdventure(){
+ if(!activeAdventure)return;
+ const site=activeAdventure.site;
+ activeAdventure=null;
+ if(gliding)finishGlide();
+ player.position.set(...adventureGatePosition(site));
+ velocityY=0;onGround=false;
+ for(const k of Object.keys(keys))keys[k]=false;
+ adventureChoice.style.display="none";
+ trialNotification("You left "+site.name+". You can retry any time!");
+}
+function failAdventure(){
+ if(!activeAdventure||activeAdventure.paused)return;
+ const a=activeAdventure;
+ a.paused=true;
+ adventureTeleport(a.site.platforms[a.checkpoint]);
+ const message=document.getElementById("adventureFallText");
+ message.textContent="Checkpoint "+(a.checkpoint+1)+"/"+a.site.platforms.length+
+  " saved. Stay and try again or give up? Your run has no time limit.";
+ adventureChoice.style.display="flex";
+ if(document.pointerLockElement===renderer.domElement&&document.exitPointerLock)
+  document.exitPointerLock();
+}
+function finishAdventure(){
+ const a=activeAdventure;
+ if(!a)return;
+ activeAdventure=null;
+ adventureChoice.style.display="none";adventureHud.style.display="none";
+ player.position.set(...adventureGatePosition(a.site));
+ velocityY=0;onGround=false;
+ if(a.site.kind==="biome")finishBiomeTrial(a.site);
+ else finishSkyTrial({site:a.site,started:a.started});
+ trialNotification("✦ COURSE COMPLETE ✦\n"+a.site.name+" · reward earned! Come back to beat your time.");
+}
+function handleAdventureInteraction(t){
+ const p=player.position;
+ const near=adventureCourses.reduce((best,s)=>{
+  const d=Math.hypot(p.x-s.x,p.z-s.z);
+  return d<best.d?{site:s,d}:best;
+ },{site:null,d:1e9});
+ const pressed=!!keys.KeyF&&!adventureLatch;
+ adventureLatch=!!keys.KeyF;
+ if(!activeAdventure&&pressed&&near.site&&near.d<22&&!gliding)startAdventure(near.site);
+ if(activeAdventure){
+  const a=activeAdventure,stage=a.site.platforms[a.target];
+  adventureHud.style.display="block";
+  adventureHud.textContent="✦ "+a.site.name.toUpperCase()+"\n"+
+   "PLATFORM "+(a.target+1)+" / "+a.site.platforms.length+"\n"+
+   "Checkpoint "+(a.checkpoint+1)+" · Unlimited attempts\n"+
+   (a.paused?"FELL — Choose STAY or GIVE UP":"Jump to the next glowing platform!\nSPACE jump · SHIFT sprint");
+ }else if(near.d<34&&!gliding){
+  adventureHud.style.display="block";
+  adventureHud.textContent="✦ "+near.site.name.toUpperCase()+"\n"+
+   "10 floating platforms · real obstacle course\n"+
+   "Press F to start · No countdown\n"+
+   (near.site.kind==="biome"?"Win a themed aura + ×5 luck":"Earn ×2 luck and a personal best");
+ }else adventureHud.style.display="none";
+ if(++adventureFxFrame%3===0)for(const course of adventureCourses){
+  const effect=course.spectacle;
+  effect.halo.rotation.z=t*.038+effect.phase;
+  effect.halo2.rotation.z=-t*.058;
+  effect.hero.rotation.y=t*.22+effect.phase;
+  effect.hero.position.y=effect.hero.userData.baseY??effect.hero.position.y;
+  if(effect.hero.userData.baseY===undefined)effect.hero.userData.baseY=effect.hero.position.y;
+  effect.hero.position.y=effect.hero.userData.baseY+Math.sin(t*1.1+effect.phase)*.7;
+  const focus=activeAdventure?.site===course?activeAdventure.target:-1;
+  for(const stage of course.platforms)if(stage.rim)
+    stage.rim.scale.setScalar(stage.index===focus?1.12+.06*Math.sin(t*3):1);
+ }
+}
+function updateAdventureProgress(t){
+ const a=activeAdventure;
+ if(!a||a.paused)return;
+ const p=player.position,target=a.site.platforms[a.target];
+ // Falling below the last safe platform triggers a deliberate decision,
+ // not an instant auto-reset, death timer or invisible number-check.
+ const safe=a.site.platforms[a.checkpoint];
+ if(p.y<safe.top-7.6||Math.hypot(p.x-a.site.x,p.z-a.site.z)>58){
+  failAdventure();return;
+ }
+ if(!target||gliding||!onGround)return;
+ if(Math.abs(p.x-target.x)<target.w*.46&&
+    Math.abs(p.z-target.z)<target.d*.46&&
+    Math.abs(p.y-target.top)<1.2){
+   const landed=a.target;
+   if(landed===3||landed===6||landed===8){
+    a.checkpoint=landed;
+    trialNotification("✦ CHECKPOINT SAVED · PLATFORM "+(landed+1)+" ✦");
+   }
+   if(landed===a.site.platforms.length-1){finishAdventure();return;}
+   a.target++;
+ }
+}
+document.getElementById("adventureRetry").onclick=retryAdventure;
+document.getElementById("adventureQuit").onclick=giveUpAdventure;
+document.getElementById("adventureQuickStart").onclick=()=>{
+ const first=adventureCourses.find(s=>s.kind==="biome"&&s.id==="origin")||adventureCourses[0];
+ startAdventure(first);
+};
+
 function awardTrial(site){
  if(site.discovered)return;
  site.discovered=true;
@@ -5018,10 +5152,15 @@ window.addEventListener("keydown", e => {
     if(e.target?.matches?.("input,textarea,select,[contenteditable]"))return;
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
     keys[e.code] = true;
+    if(activeAdventure?.paused){
+      if(!e.repeat&&(e.code==="Space"||e.code==="KeyR")){e.preventDefault();retryAdventure();}
+      else if(!e.repeat&&e.code==="KeyX")giveUpAdventure();
+      return;
+    }
     if(e.code==="KeyE"&&!e.repeat)document.getElementById("sprintButton").click();
     // Deployment is an input action, not something that can be missed when
     // a slow Chromebook drops render frames.
-    if(e.code==="KeyG"&&!e.repeat&&!gliding&&performance.now()>glideReady&&
+    if(e.code==="KeyG"&&!e.repeat&&!gliding&&!activeAdventure&&performance.now()>glideReady&&
        player.position.y-ground(player.position.x,player.position.z)>13&&velocityY<4){
       startGlide(player.rotation.y,false);
       glideKeyLatch=true;
@@ -5040,6 +5179,7 @@ sprintButton.onclick = () => {
 };
 const respawnButton=$("respawnButton");
 respawnButton.onclick=()=>{
+ if(activeAdventure)giveUpAdventure();
  if(gliding)finishGlide();player.position.set(0,spawnHub.topY+2,35);
  velocityY=0;onGround=false;gliding=false;glideVel.set(0,0,0);glideWings.visible=false;
  for(const k of Object.keys(keys))keys[k]=false;
@@ -5112,7 +5252,7 @@ function animate() {
     animateWaterwheels(t);
     animateScenicFlocks(t);
     animateCliffBeacons(t);
-    updateBiomeTrials(t);
+    handleAdventureInteraction(t);
     animateGameLandmarks(t);
     riverBridgeLanternMaterial.emissiveIntensity=1.12+Math.sin(t*4.1)*.15;
     animateMeadow(t);
@@ -5131,7 +5271,7 @@ function animate() {
     if (keys.KeyR) yaw -= dt * 1.8;
     let x = Number(!!(keys.KeyD || keys.ArrowRight)) - Number(!!(keys.KeyA || keys.ArrowLeft)),
         z = Number(!!(keys.KeyS || keys.ArrowDown)) - Number(!!(keys.KeyW || keys.ArrowUp));
-    let moving = x !== 0 || z !== 0; if(gliding){moving=false;}
+    let moving = x !== 0 || z !== 0; if(gliding||activeAdventure?.paused){moving=false;}
     if (moving) {
         let dx = x * Math.cos(yaw) + z * Math.sin(yaw),
             dz = z * Math.cos(yaw) - x * Math.sin(yaw),
@@ -5151,7 +5291,7 @@ function animate() {
         player.rotation.y += Math.atan2(Math.sin(angle - player.rotation.y), Math.cos(angle - player.rotation.y)) * Math.min(1, dt * 12)
     }
     // Towers launch automatically; G also deploys the glider after a high jump.
-    if(!gliding&&performance.now()>glideReady){
+    if(!gliding&&!activeAdventure&&performance.now()>glideReady){
       for(const tw of launchTowers){
         if(Math.hypot(player.position.x-tw.x,player.position.z-tw.z)<10&&Math.abs(player.position.y-tw.top)<3){
           startGlide(tw.a,true);
@@ -5160,7 +5300,7 @@ function animate() {
         }
       }
     }
-    if(keys.KeyG&&!glideKeyLatch&&!gliding&&performance.now()>glideReady&&
+    if(keys.KeyG&&!activeAdventure&&!glideKeyLatch&&!gliding&&performance.now()>glideReady&&
        player.position.y-ground(player.position.x,player.position.z)>13&&velocityY<4){
       startGlide(player.rotation.y,false);
     }
@@ -5260,7 +5400,12 @@ function animate() {
       if(player.position.y>=ramp-2.7&&player.position.y<=ramp+3.2&&velocityY<=0)floor=Math.max(floor,ramp);
     }
     for(const tw of launchTowers)if(Math.hypot(player.position.x-tw.x,player.position.z-tw.z)<10.5&&Math.abs(player.position.y-tw.top)<3.5)floor=Math.max(floor,tw.top);
-    for(const p of trialPlatforms){if(Math.abs(player.position.x-p.x)<p.w/2+.5&&Math.abs(player.position.z-p.z)<p.d/2+.5&&player.position.y>=p.top-2.5&&player.position.y<=p.top+3&&velocityY<=0)floor=Math.max(floor,p.top)}
+    for(const p of trialPlatforms){
+      if(Math.abs(player.position.x-p.x)<p.w/2-.3&&
+         Math.abs(player.position.z-p.z)<p.d/2-.3&&
+         player.position.y>=p.top-2.8&&player.position.y<=p.top+2.2&&velocityY<=0)
+        floor=Math.max(floor,p.top);
+    }
     // Ramp floor is interpolated between neighboring boards so it has no gaps.
     for(let i=1;i<volcanoRamp.length;i++){
       const a=volcanoRamp[i-1],b=volcanoRamp[i],dx=b.x-a.x,dz=b.z-a.z;
@@ -5276,7 +5421,7 @@ function animate() {
     }
     // Climb low obstacles and ramp boards without being forced inside their geometry.
     if(onGround&&floor>player.position.y&&floor-player.position.y<4.5){player.position.y=floor;velocityY=0;}
-    if (keys.Space && onGround && !gliding) {
+    if (keys.Space && onGround && !gliding && !activeAdventure?.paused) {
         velocityY = 14.5;
         onGround = false
     }
@@ -5313,7 +5458,7 @@ function animate() {
         }
       }
     }
-    updateSkyTrials(t);
+    updateAdventureProgress(t);
     // Reward physical parkour completion instead of entering a code.
     for(const site of trialSites){if(Math.hypot(player.position.x-site.x,player.position.z-site.z)<5.2&&Math.abs(player.position.y-site.top)<1.5)awardTrial(site)}
     const elapsed=(Date.now()-volcanoCycleStart)%volcano.cycle;
