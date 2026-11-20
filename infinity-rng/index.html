@@ -957,15 +957,34 @@ for(const route of authoredRoutes){
   previous=next;
  }
 }
-function pathDistance(x, z) {
-    let best = 1e9;
-    for (const [ax, az, bx, bz] of pathSegments) {
-        let dx = bx - ax,
-            dz = bz - az,
-            t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz)));
-        best = Math.min(best, Math.hypot(x - ax - t * dx, z - az - t * dz))
-    }
-    return best
+// Spatially index curve segments, so every terrain vertex need not scan
+// the entire road network. The 48-unit buffer exceeds all route-clearance tests.
+const PATH_CELL=48,pathSegmentCells=new Map();
+for(const seg of pathSegments){
+ const [ax,az,bx,bz]=seg;
+ const left=Math.floor((Math.min(ax,bx)-48)/PATH_CELL);
+ const right=Math.floor((Math.max(ax,bx)+48)/PATH_CELL);
+ const top=Math.floor((Math.min(az,bz)-48)/PATH_CELL);
+ const bottom=Math.floor((Math.max(az,bz)+48)/PATH_CELL);
+ for(let ix=left;ix<=right;ix++)for(let iz=top;iz<=bottom;iz++){
+  const key=ix+","+iz;
+  let bucket=pathSegmentCells.get(key);
+  if(!bucket){bucket=[];pathSegmentCells.set(key,bucket);}
+  bucket.push(seg);
+ }
+}
+function pathDistance(x,z){
+ let bestSq=1e18;
+ const bucket=pathSegmentCells.get(Math.floor(x/PATH_CELL)+","+Math.floor(z/PATH_CELL));
+ if(!bucket)return 1e9;
+ for(const [ax,az,bx,bz] of bucket){
+  const dx=bx-ax,dz=bz-az,denom=dx*dx+dz*dz;
+  const t=denom>0?Math.max(0,Math.min(1,((x-ax)*dx+(z-az)*dz)/denom)):0;
+  const ex=x-ax-t*dx,ez=z-az-t*dz;
+  const d2=ex*ex+ez*ez;
+  if(d2<bestSq)bestSq=d2;
+ }
+ return Math.sqrt(bestSq);
 }
 const SIZE = 880,
     GRID = 184,
