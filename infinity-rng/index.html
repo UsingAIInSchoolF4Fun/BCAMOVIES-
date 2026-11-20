@@ -3759,7 +3759,7 @@ function buildMountainHeadwaters(){
   waterfall.castShadow=false;
   // Rocks at the base visually unite the falling sheets and river entrance.
   for(let j=0;j<3;j++){
-   const rz=centerZ+side*(7+j*3),rx=startX+3+j*2;
+   const rz=centerZ+side*(12+j*3),rx=startX+3+j*2;
    const b=mesh(new T.DodecahedronGeometry(1.3+(j%2)*.6,0),
      rockMat,scene,rx,ground(rx,rz)+.3,rz);
    b.scale.y=.58;b.castShadow=false;
