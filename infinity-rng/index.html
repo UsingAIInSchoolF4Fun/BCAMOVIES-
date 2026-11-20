@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V15.2 CLEAR PATHS</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V16.0 SKY TRIALS</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
 
 /* V14.4: focused gameplay HUD, with optional detail and true keyboard access */
@@ -65,7 +65,7 @@ body:not(.compact-ui) #challengeStatus{display:block}
 .top button:hover,.side button:hover,.bottom button:hover{transform:translateY(-2px);box-shadow:0 6px 17px #b482ff33}
 @keyframes v15MenuIn{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
 @media(max-width:600px){.version{font-size:8px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V15.2 · CLEAR PATHS</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find biome shrines and finish timed rune trials for themed auras</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V16.0 · SKY TRIALS</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find biome shrines and finish timed rune trials for themed auras</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
  <h2>⚙ Settings</h2>
  <p>Keep your screen clean. Keyboard shortcuts still work.</p>
  <h3>DISPLAY</h3>
@@ -2400,12 +2400,7 @@ function buildWaystation(routeName,u,side=1){
  registerCollider(x,z,2.1,6.5);
  animatedWaystations.push({x,z,walkTop:foundationTop+.52,emblem,disc,core,roof,phase:x*.03+z*.011,shine});
 }
-buildWaystation("Forest Trail",.68,1);
-buildWaystation("Frost Citadel",.58,-1);
-buildWaystation("Crystal Road",.65,1);
-buildWaystation("Desert Road",.68,-1);
-buildWaystation("Ember Citadel",.63,1);
-buildWaystation("Astral Road",.6,-1);
+// Unrelated roadside pavilion buildings removed to emphasize big challenges.
 function waystationWalkHeight(x,z){
  for(const st of animatedWaystations){
   if(Math.hypot(x-st.x,z-st.z)<6.1)return st.walkTop;
@@ -3015,36 +3010,80 @@ function canStand(x,z,y=0){
  const worldClear=worldColliders.every(o=>!obstacle(o)||y>ground(o.x,o.z)+(o.height||Math.max(1.2,o.r*.85)));
  return solidsClear&&worldClear&&volcanoPassable(x,z,y);
 }
-// Five towering parkour sanctuaries. Only reaching the high altar awards luck.
-for(const site of trialSites){
- const y=ground(site.x,site.z),altitude=y+13;
- site.top=altitude;site.cooldown=0;
- site.id=site.name.toLowerCase().replace(/[^a-z0-9]+/g,"_");
- site.platforms=[];
- const stone=mats.stoneDark.clone();
- stone.color.setHex(site.type===2?0x9e7772:0xffffff);
- stone.roughness=1;
- cyl(12,15,1.5,stone,scene,site.x,y+.4,site.z,16);
- for(let j=0;j<8;j++){const a=j*Math.PI/4,px=site.x+Math.cos(a)*13,pz=site.z+Math.sin(a)*13;
-  cyl(.95,1.3,17,stone,scene,px,y+8,pz,8);sphere(1.3,trialMat,scene,px,y+17,pz);addSolid(px,pz,1.3)}
- // Starting step is low; the remaining platforms ascend around the altar.
- for(let j=0;j<9;j++){
-  const a=j*.38+.3,rad=8.8-j*.23,px=site.x+Math.cos(a)*rad,pz=site.z+Math.sin(a)*rad,top=y+1.6+j*1.35;
-  box(5.4,.65,5.4,stone,scene,px,top-.33,pz);
-  box(5.45,.12,5.45,trialMat,scene,px,top-.02,pz);
-  const stage={x:px,z:pz,top,w:5.4,d:5.4,index:j,site};
-  site.platforms.push(stage);trialPlatforms.push(stage);
-  // Glowing numbered stages make the required parkour sequence legible.
-  const rim=torus(2.15,.12,trialMat,scene,px,top+.13,pz);
-  rim.castShadow=false;stage.rim=rim;
+// V16: real jumping courses — the 12 arena portals are the game's main activity.
+const adventureCourses=[];
+let activeAdventure=null,adventureLatch=false,adventureFxFrame=0;
+const adventureHud=document.createElement("div");
+adventureHud.id="adventureHud";
+adventureHud.style.cssText="display:none;position:fixed;right:14px;top:112px;z-index:8;pointer-events:none;width:min(320px,45vw);padding:15px;border:1px solid #bb9cff;background:linear-gradient(145deg,#17152bf0,#261748e9);border-radius:15px;box-shadow:0 10px 36px #000a;color:#f9f2ff;font:600 12px/1.65 Arial,sans-serif;white-space:pre-line";
+document.body.appendChild(adventureHud);
+const adventureChoice=document.createElement("div");
+adventureChoice.id="adventureChoice";
+adventureChoice.style.cssText="display:none;position:fixed;inset:0;z-index:95;background:#050816bd;align-items:center;justify-content:center;pointer-events:auto";
+adventureChoice.innerHTML='<div style="width:min(420px,90vw);padding:28px;text-align:center;border-radius:22px;background:linear-gradient(140deg,#15162f,#31204e);border:2px solid #ba91ff;box-shadow:0 0 65px #7243ce99;color:#fff;font:15px/1.5 Arial"><div style="font-size:34px;margin-bottom:6px">✦</div><h2 style="margin:0 0 10px;font-size:25px">YOU FELL!</h2><p id="adventureFallText">Your checkpoint is saved. Stay or give up?</p><button id="adventureRetry" style="padding:13px 22px;margin:8px;background:#37975d">↻ STAY & RETRY</button><button id="adventureQuit" style="padding:13px 22px;margin:8px;background:#803d51">GIVE UP</button><div style="opacity:.72;font-size:12px;margin-top:10px">Space/R to retry · X to quit</div></div>';
+document.body.appendChild(adventureChoice);
+const adventureIntro=document.createElement("div");
+adventureIntro.id="adventureIntro";
+adventureIntro.style.cssText="position:fixed;top:75px;left:50%;transform:translateX(-50%);z-index:9;padding:12px 16px;border-radius:14px;background:#17112fe9;border:1px solid #cdb8ff;color:#fff;box-shadow:0 8px 36px #0009;text-align:center;min-width:265px;pointer-events:auto;font:12px/1.4 Arial";
+adventureIntro.innerHTML='<b style="font-size:16px;color:#e3c2ff">✦ JUMP TRIALS ARE THE MAIN EVENT ✦</b><div style="margin:4px 0 9px">Jump floating platforms · Reach checkpoints · Win themed auras</div><button id="adventureQuickStart" style="padding:10px 17px;font-weight:900">PLAY A JUMP CHALLENGE</button>';
+document.body.appendChild(adventureIntro);
+function buildEpicObby(site,color,kind){
+ site.kind=kind;site.id=site.id||site.name.toLowerCase().replace(/[^a-z0-9]+/g,"_");
+ site.color=color;site.platforms=[];
+ const stone=new T.MeshStandardMaterial({color:kind==="biome"?0x585069:0x4c5873,roughness:.84,metalness:.1,map:mats.stone.map});
+ const edge=new T.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.65,roughness:.28,metalness:.16});
+ const beamMat=new T.MeshBasicMaterial({color,transparent:true,opacity:.2,depthWrite:false,side:T.DoubleSide});
+ let peak=ground(site.x,site.z);
+ for(let i=0;i<16;i++)for(const r of [17,35]){
+  const a=i*Math.PI/8;peak=Math.max(peak,ground(site.x+Math.cos(a)*r,site.z+Math.sin(a)*r));
  }
- cyl(5.6,6.2,1.1,stone,scene,site.x,altitude-.55,site.z,18);
- torus(5,.3,trialMat,scene,site.x,altitude+.1,site.z);
- for(let j=0;j<6;j++){let a=j*Math.PI/3;cyl(.6,.8,4,stone,scene,site.x+Math.cos(a)*6,altitude+1.6,site.z+Math.sin(a)*6)}
- const beacon=mesh(new T.OctahedronGeometry(2.1),trialMat,scene,site.x,altitude+4,site.z);beacon.scale.y=1.8;
- const summit={x:site.x,z:site.z,top:altitude,w:10,d:10,index:9,site};
- site.platforms.push(summit);trialPlatforms.push(summit);
+ const base=peak+(kind==="biome"?23:22),stages=10;
+ site.startTop=base;
+ cyl(10.2,12,1.8,stone,scene,site.x,ground(site.x,site.z)+.45,site.z,20).castShadow=false;
+ const entry=torus(8.2,.4,edge,scene,site.x,ground(site.x,site.z)+1.55,site.z);entry.rotation.x=Math.PI/2;
+ for(let j=0;j<stages;j++){
+  const a=.25+j*.68+site.x*.0009,rad=7.1+j*.83;
+  const px=site.x+Math.cos(a)*rad,pz=site.z+Math.sin(a)*rad,top=base+j*1.72;
+  const width=j===0?7.8:j===stages-1?7.1:j%3===0?6.2:5.8;
+  if(j%3===1){
+   cyl(width*.47,width*.52,.78,stone,scene,px,top-.39,pz,6).castShadow=false;
+   cyl(width*.42,width*.46,.09,edge,scene,px,top+.015,pz,6).castShadow=false;
+  }else{
+   box(width,.77,width,stone,scene,px,top-.385,pz).castShadow=false;
+   box(width*.87,.085,width*.87,edge,scene,px,top+.012,pz).castShadow=false;
+  }
+  const rim=torus(width*.31,.115,edge,scene,px,top+.135,pz,20);
+  rim.rotation.x=Math.PI/2;rim.castShadow=false;
+  const stage={x:px,z:pz,top,w:width,d:width,index:j,rim,site};
+  site.platforms.push(stage);trialPlatforms.push(stage);
+  if(j===0||j===3||j===6||j===9){
+   const gem=mesh(new T.OctahedronGeometry(j===9?2.1:1.08,0),edge,scene,px,top+(j===9?5.2:2.9),pz);
+   gem.scale.y=1.5;gem.castShadow=false;
+  }
+ }
+ // Tall illuminated supports and a large aerial halo make each course
+ // recognizable from the central spawn rather than a random small building.
+ for(let i=0;i<4;i++){
+  const a=Math.PI/4+i*Math.PI/2,xx=site.x+Math.cos(a)*28,zz=site.z+Math.sin(a)*28;
+  if(pathDistance(xx,zz)<7||!waterFreeFootprint(xx,zz,5))continue;
+  const gy=ground(xx,zz),h=kind==="biome"?57:51;
+  cyl(1.9,2.8,h,stone,scene,xx,gy+h*.5,zz,10).castShadow=false;
+  cyl(2.55,2.55,1.1,edge,scene,xx,gy+h+.2,zz,10).castShadow=false;
+  mesh(new T.OctahedronGeometry(2.4,0),edge,scene,xx,gy+h+3.2,zz).scale.y=1.6;
+ }
+ const topY=base+stages*1.72+27;
+ const halo=torus(kind==="biome"?15:13,.8,edge,scene,site.x,topY,site.z,48);
+ const halo2=torus(11,.21,edge,scene,site.x,topY,site.z,48);
+ const hero=mesh(new T.OctahedronGeometry(5,0),edge,scene,site.x,topY,site.z);hero.scale.y=1.5;hero.castShadow=false;
+ mesh(new T.CylinderGeometry(1.3,2.1,topY-ground(site.x,site.z),10,1,true),beamMat,scene,site.x,(topY+ground(site.x,site.z))*.5,site.z).castShadow=false;
+ const sign=new T.Sprite(new T.SpriteMaterial({map:landmarkSign("JUMP TRIAL · "+site.name.toUpperCase(),color),transparent:true,depthWrite:false}));
+ sign.position.set(site.x,topY+13,site.z);sign.scale.set(31,7.8,1);scene.add(sign);
+ site.spectacle={halo,halo2,hero,phase:site.x*.03+site.z*.01,edge};
+ site.top=site.platforms[stages-1].top;
+ adventureCourses.push(site);
 }
+const skyPalette=[0xb78cff,0xb8efff,0xff9675,0xc9aaff,0x8fe5ac];
+for(const site of trialSites)buildEpicObby(site,skyPalette[site.type]||0xb78cff,"sky");
 // Five independent SKY PARKOUR games, no shared broken progress counter.
 // Start at the glowing landmark with F, then visit 10 platforms in order.
 let activeSkyTrial=null,skyInteractLatch=false,skyGameFrame=0;
@@ -3267,23 +3306,7 @@ const parkourMat = mats.stone.clone(),
         emissive: 0x39aaff,
         emissiveIntensity: .95
     });
-for (let i = 0; i < 12; i++) {
-    let x = -55 - i * 4.5,
-        z = 55 + Math.sin(i * .85) * 5,
-        top = ground(x, z) + 1.5 + (i % 3) * 1.2,
-        w = 4.5,
-        d = 4.5;
-    box(w, .7, d, parkourMat, scene, x, top - .35, z);
-    box(w + .1, .13, d + .1, parkourGlow, scene, x, top - .05, z);
-    parkourPlatforms.push({
-        x,
-        z,
-        top,
-        w,
-        d,
-        index: i
-    })
-}
+// Removed detached older practice platform strips.
 const platform = cyl(15, 17, 1.3, mats.stoneDark, scene, 0, -.2, 0, 64);
 torus(14, .32, mats.gold, scene, 0, .6, 0);
 for (let i = 0; i < 12; i++) {
@@ -4734,66 +4757,21 @@ function courseGroundSafe(x,z){
  return Number.isFinite(mid);
 }
 function buildBiomeTrials(){
+ // Seven biome games become physical jumping courses; no numbered rune-touch game.
  for(const region of BIOME_REWARDS){
-  const shrineY=ground(region.x,region.z),color=region.color;
-  const stone=new T.MeshStandardMaterial({color:0x69677c,roughness:.9,map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.13});
-  const baseMat=new T.MeshStandardMaterial({color,roughness:.48,emissive:color,emissiveIntensity:.2});
-  const emberMat=new T.MeshStandardMaterial({color,roughness:.21,metalness:.15,emissive:color,emissiveIntensity:1.1});
-  // The platform is rooted slightly into the precisely leveled site.
-  cyl(5.7,6,.65,stone,scene,region.x,shrineY+.26,region.z,18);
-  cyl(4.9,5,.13,baseMat,scene,region.x,shrineY+.66,region.z,18);
-  const dais=torus(4.25,.22,emberMat,scene,region.x,shrineY+.75,region.z);
-  dais.rotation.x=Math.PI/2;
-  for(let n=0;n<4;n++){
-   const a=n*Math.PI/2;
-   const x=region.x+Math.cos(a)*3.9,z=region.z+Math.sin(a)*3.9;
-   cyl(.45,.62,2.1,stone,scene,x,shrineY+1.7,z,8);
-   sphere(.41,emberMat,scene,x,shrineY+2.85,z).castShadow=false;
+  const site={...region,shrineY:ground(region.x,region.z)};
+  const baseMat=new T.MeshStandardMaterial({color:0x4d465e,roughness:.9,map:mats.stone.map});
+  const gemMat=new T.MeshStandardMaterial({color:region.color,emissive:region.color,emissiveIntensity:.7});
+  cyl(7.5,9.2,1.6,baseMat,scene,site.x,site.shrineY+.4,site.z,16);
+  const ring=torus(6.8,.3,gemMat,scene,site.x,site.shrineY+1.35,site.z,30);ring.rotation.x=Math.PI/2;
+  for(let k=0;k<4;k++){
+   const a=k*Math.PI/2;
+   mesh(new T.OctahedronGeometry(1.25,0),gemMat,scene,site.x+Math.cos(a)*6.1,site.shrineY+2.6,site.z+Math.sin(a)*6.1).scale.y=1.45;
   }
-  const core=mesh(new T.OctahedronGeometry(1.35,0),emberMat,scene,region.x,shrineY+3.7,region.z);
-  core.scale.y=1.7;core.castShadow=false;
-  const flags=[];
-  const checkpoints=[];
-  const angles=[.75,2.30,3.85,5.40];
-  for(let stage=0;stage<4;stage++){
-   let px=0,pz=0,found=false;
-   for(let attempt=0;attempt<24;attempt++){
-    const theta=angles[stage]+attempt*.29;
-    const radius=27+(stage%2)*4+(attempt%3)*3;
-    const tx=region.x+Math.cos(theta)*radius,tz=region.z+Math.sin(theta)*radius;
-    if(!courseGroundSafe(tx,tz))continue;
-    if(checkpoints.some(p=>Math.hypot(tx-p.x,tz-p.z)<17))continue;
-    px=tx;pz=tz;found=true;break;
-   }
-   if(!found){
-    // No giant floating obstacle if terrain is crowded: fall back to a
-    // compact, explicitly grounded rune closer to the central altar.
-    const angle=angles[stage],dist=12;
-    px=region.x+Math.cos(angle)*dist;pz=region.z+Math.sin(angle)*dist;
-   }
-   const py=ground(px,pz);
-   cyl(2.2,2.5,.75,stone,scene,px,py+.29,pz,12);
-   cyl(1.9,2,.12,baseMat,scene,px,py+.71,pz,12);
-   const marker=torus(1.72,.16,emberMat,scene,px,py+2.75,pz,24);
-   marker.rotation.y=stage*.22;marker.castShadow=false;
-   const rune=mesh(new T.OctahedronGeometry(.8,0),emberMat,scene,px,py+2.8,pz);
-   rune.castShadow=false;rune.scale.y=1.35;
-   // Numbered canvas icon makes the checkpoint order obvious.
-   const canvas=document.createElement("canvas");canvas.width=canvas.height=96;
-   const c=canvas.getContext("2d");c.clearRect(0,0,96,96);
-   c.font="bold 67px Arial";c.textAlign="center";c.lineWidth=5;
-   c.strokeStyle="#1b173a";c.strokeText(String(stage+1),48,70);
-   c.fillStyle="#fff8e5";c.fillText(String(stage+1),48,70);
-   const tex=new T.CanvasTexture(canvas);tex.encoding=T.sRGBEncoding;
-   const number=new T.Sprite(new T.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
-   number.position.set(px,py+6.2,pz);number.scale.set(2.3,2.3,1);
-   scene.add(number);
-   checkpoints.push({x:px,z:pz,y:py,marker,rune,number,mat:emberMat});
-   flags.push({marker,rune,py,phase:stage*.84,number});
-  }
-  trialCourses.push({...region,shrineY,core,flags,checkpoints,baseMat,emberMat});
+  buildEpicObby(site,region.color,"biome");trialCourses.push(site);
  }
 }
+
 buildBiomeTrials();
 
 // V14.6 - Signature landmarks around EVERY mini-game and shrine.
@@ -4825,7 +4803,7 @@ function landmarkFoundation(x,z,radius){
  return {top,bottom};
 }
 function buildGameLandmark(x,z,name,color,mode){
- const facade=mode==="sky"?"SKY PARKOUR · "+name.toUpperCase():name.toUpperCase()+" RUNES";
+ const facade=(mode==="sky"?"SKY TRIAL · ":"AURA JUMP TRIAL · ")+name.toUpperCase();
  const shapeMat=new T.MeshStandardMaterial({
   color:mode==="sky"?0x55526e:0x5f587c,
   roughness:.8,metalness:.08,map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.12
@@ -4878,9 +4856,7 @@ function buildGameLandmark(x,z,name,color,mode){
  }
  gameLandmarks.push({name,x,z,mode,top:levels.top+.26,root,crest,orb,orbit,magic,phase:x*.013+z*.027});
 }
-for(const trial of BIOME_REWARDS){
- buildGameLandmark(trial.x,trial.z,trial.name,trial.color,"runes");
-}
+// Replaced the redundant small arenas with the V16 giant trial courses.
 const parkourLandmarks=[
  {name:"Crystal Spires",x:75,z:65,color:0xb78cff},
  {name:"Frozen Citadel",x:-235,z:50,color:0xb8efff},
@@ -4888,7 +4864,7 @@ const parkourLandmarks=[
  {name:"Astral Sanctuary",x:45,z:-240,color:0xc9aaff},
  {name:"Forest Temple",x:20,z:250,color:0x8fe5ac}
 ];
-for(const trial of parkourLandmarks)buildGameLandmark(trial.x,trial.z,trial.name,trial.color,"sky");
+// Existing parkour locations now use the main V16 tower structures.
 function gameArenaWalkHeight(x,z){
  for(const g of gameLandmarks){
   const r=Math.hypot(x-g.x,z-g.z);
