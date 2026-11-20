@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V17.0 WORLD & ANIMATION POLISH</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V18.0 RIVER SOURCE & CLEAN PATHS</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
 
 /* V14.4: focused gameplay HUD, with optional detail and true keyboard access */
@@ -75,7 +75,7 @@ body:not(.compact-ui) #challengeStatus{display:block}
 .top button:hover,.side button:hover,.bottom button:hover{transform:translateY(-2px);box-shadow:0 6px 17px #b482ff33}
 @keyframes v15MenuIn{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
 @media(max-width:600px){.version{font-size:8px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V17.0 · ANIMATION & WORLD POLISH</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Explore the giant jumping trials to earn themed auras and luck</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V18.0 · RIVER & PATHS</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Explore the giant jumping trials to earn themed auras and luck</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
  <h2>⚙ Settings</h2>
  <p>Keep your screen clean. Keyboard shortcuts still work.</p>
  <h3>DISPLAY</h3>
@@ -853,11 +853,15 @@ const reservedSites=[
  {x:75,z:65,r:24},{x:-235,z:50,r:24},{x:230,z:-35,r:24},{x:45,z:-240,r:24},{x:20,z:250,r:24},
  {x:318,z:-295,r:93}
 ];
-// Keep banks genuinely clear: no trees, boulders, cliff props or floating hills
-// within the riverbed. Bridges and authored paths are the only exceptions.
+// The river runs visibly from the western mountain waterfall all the way
+// to the eastern rim. Scenery always respects the bank, not only the water.
+const RIVER_START=-412,RIVER_END=439;
+function riverBedElevation(x){
+ return 2.0-.020*(x-RIVER_START); // natural downhill grade eastward
+}
 function waterFreeFootprint(x,z,radius=0){
- if(x<-319-radius||x>354+radius)return true;
- const reach=11+radius,dx=Math.min(30,radius);
+ if(x<RIVER_START-12-radius||x>RIVER_END+6+radius)return true;
+ const reach=23+radius,dx=Math.min(30,radius);
  return Math.abs(z-riverPathZ(x))>reach&&
         Math.abs(z-riverPathZ(x-dx))>reach&&
         Math.abs(z-riverPathZ(x+dx))>reach;
@@ -927,11 +931,13 @@ function rawHeight(x,z){
  // Central bowl with elevated natural rim.
  y+=dome(0,0,140,140,-13);
  y+=dome(0,0,62,62,13);
- // Ravines and water corridors: wide, curving, readable from a distance.
- const river=Math.abs(z-riverPathZ(x));
- if(x>-310&&x<345&&river<30){
-  const f=1-river/30;
-  y-=11*f*f;
+ // Physically carve a flat-bottomed stream bed and broad gravel shoulders.
+ // The water now occupies a real channel, not a blue strip above the grass.
+ const channel=Math.abs(z-riverPathZ(x));
+ if(x>RIVER_START-8&&x<RIVER_END+6&&channel<33){
+  const bank=Math.max(0,Math.min(1,(channel-9)/24));
+  const blend=bank*bank*(3-2*bank);
+  y=riverBedElevation(x)*(1-blend)+y*blend;
  }
  return y;
 }
@@ -960,7 +966,16 @@ function height(x,z){
   weightedLevel+=rawHeight(cx,cz)*weight;
  }
  const blend=Math.min(1,total);
- return total>0?original*(1-blend)+(weightedLevel/total)*blend:original;
+ let shaped=total>0?original*(1-blend)+(weightedLevel/total)*blend:original;
+ // Keep carved water below the surface even inside the soft fringe of a
+ // neighboring landmark pad. Pads cannot fill in the active riverbed.
+ const channel=Math.abs(z-riverPathZ(x));
+ if(x>RIVER_START-8&&x<RIVER_END+6&&channel<32){
+  const b=Math.max(0,Math.min(1,(channel-9)/23));
+  const edge=b*b*(3-2*b);
+  shaped=riverBedElevation(x)*(1-edge)+shaped*edge;
+ }
+ return shaped;
 }
 const authoredRoutes=[{"name":"Forest Trail","theme":"forest","width":9,"points":[[0,78],[4,99],[24,132],[61,189],[105,230]]},{"name":"Forest Temple","theme":"forest","width":7,"points":[[18,79],[26,105],[22,159],[20,213],[20,250]]},{"name":"Frost Citadel","theme":"frost","width":8,"points":[[-77,17],[-87,27],[-146,39],[-196,49],[-235,50]]},{"name":"Frost Tower","theme":"frost","width":7,"points":[[-233,54],[-286,45],[-317,23],[-350,10]]},{"name":"Snow Road","theme":"frost","width":8,"points":[[-72,-32],[-111,-21],[-181,-42],[-248,-64]]},{"name":"Ruins Road","theme":"desert","width":7,"points":[[-185,-44],[-227,-60],[-260,-60],[-285,-102]]},{"name":"Astral Road","theme":"astral","width":8,"points":[[-62,-68],[-92,-95],[-155,-153],[-209,-205],[-245,-230]]},{"name":"Astral Tower","theme":"astral","width":7,"points":[[-15,-44],[-14,-99],[3,-161],[37,-225],[30,-270],[-14,-320],[-55,-350]]},{"name":"Crystal Road","theme":"crystal","width":9,"points":[[79,8],[93,17],[150,28],[201,36],[260,30]]},{"name":"Crystal Gardens","theme":"crystal","width":7,"points":[[153,29],[202,81],[255,103],[285,120]]},{"name":"Desert Road","theme":"desert","width":9,"points":[[58,58],[77,78],[119,119],[166,160],[207,216],[255,280]]},{"name":"Ember Citadel","theme":"ember","width":7,"points":[[78,-44],[105,-32],[176,-32],[230,-35]]},{"name":"Volcano Road","theme":"ember","width":9,"points":[[49,-69],[98,-105],[157,-145],[216,-183],[285,-211],[318,-210]]},{"name":"Forest Watchtower","theme":"forest","width":7,"points":[[120,229],[179,269],[235,309],[310,345]]}];
 // Extra waypoints complete the route network; endpoints share existing paths
@@ -1106,6 +1121,17 @@ for (let j = 0; j < verts.length; j += 3) {
     if(x>162&&z>118)tone.lerp(new T.Color(h>6?0xb78b56:0xcfad6e),blend(118,215,z));
     if(x>155&&z< -85)tone.lerp(new T.Color(h>6?0x663c45:0x794b4a),blend(85,190,-z));
     if(pathDistance(x,z)<6.7)tone.lerp(new T.Color(0xb7a396),.24);
+    // Underwater gravel + exposed rounded stone fade into the surrounding
+    // biome. Uses the real sculpted terrain vertex colors, not a blue decal.
+    if(x>RIVER_START-8&&x<RIVER_END+6){
+      const riverDistance=Math.abs(z-riverPathZ(x));
+      if(riverDistance<30){
+        const bed=new T.Color(riverDistance<11?0x415550:0x887c65);
+        const factor=riverDistance<11?.85:
+          .82*Math.max(0,Math.min(1,(30-riverDistance)/19));
+        tone.lerp(bed,factor);
+      }
+    }
     // Tiny variations keep terrain from looking like one flat paint color.
     // Baked directional shade gives Chromebooks hillside shadows even with
     // performance mode's real-time shadow map disabled.
@@ -1526,6 +1552,9 @@ function lantern(parent,x,z,y=0){
 function district(x,z,kind){
  const g=scenicAt(x,z),base=ground(x,z);
  const localY=(dx,dz)=>ground(x+dx,z+dz)-base;
+ // Decorative towers and flowerbeds must stay off road and water.
+ const clearDecor=(dx,dz,r=2)=>pathDistance(x+dx,z+dz)>r+8&&
+   waterFreeFootprint(x+dx,z+dz,r+1);
  const sand=new T.MeshStandardMaterial({color:0xc9ac81,roughness:.9,map:mats.sand.map,bumpMap:mats.sand.map,bumpScale:.13});
  const snow=new T.MeshStandardMaterial({color:0xf0f5ff,roughness:.86});
  const slate=new T.MeshStandardMaterial({color:0x51576a,roughness:.9});
@@ -1544,12 +1573,14 @@ function district(x,z,kind){
   // Two orderly glacier towers and a colonnaded frost gate.
   for(const side of [-1,1]){
    const dx=side*21,dy=localY(dx,-9);
+   if(!clearDecor(dx,-9,5.2))continue;
    registerCollider(x+dx,z-9,4.3,19);
    cyl(3.4,4.2,12,slate,g,dx,dy+6,-9,10);
    cyl(3.8,3.8,1.1,snow,g,dx,dy+12.4,-9,10);
    const cap=mesh(new T.ConeGeometry(4.2,6,8),snow,g,dx,dy+15.7,-9);
    for(let j=0;j<3;j++){
     const zz=-25+j*11,yy=localY(side*23,zz);
+    if(!clearDecor(side*23,zz,2.6+j*.35))continue;
     registerCollider(x+side*23,z+zz,1.9+j*.35,11);
     spire(g,side*23,yy,zz,2.0+j*.3,6+j*2,scenicCyan);
    }
@@ -1561,6 +1592,7 @@ function district(x,z,kind){
   // Paired crystal gardens frame an uncluttered main avenue.
   for(const side of [-1,1])for(let row=0;row<4;row++){
    const dx=side*(18+row*7),dz=-18+row*11,yy=localY(dx,dz);
+   if(!clearDecor(dx,dz,5.5))continue;
    registerCollider(x+dx,z+dz,3.6,11);
    const bed=cyl(4.5,5,.55,slate,g,dx,yy+.2,dz,9);
    const sizes=[6,9,5,7];
@@ -1576,12 +1608,14 @@ function district(x,z,kind){
   for(const side of [-1,1])registerCollider(x+side*7,z-20,1.4,15);
   for(const side of [-1,1]){
    const dx=side*23,dy=localY(dx,4);
+   if(!clearDecor(dx,4,6))continue;
    registerCollider(x+dx,z+4,5.2,15);
    cyl(5,5.6,9,slate,g,dx,dy+4.5,4,10);
    cyl(5.1,5.1,.3,bronze,g,dx,dy+9.1,4,10);
    const fire=mesh(new T.ConeGeometry(3.7,6,7),hot,g,dx,dy+12,4);
    for(let i=0;i<4;i++){
     const dz=-16+i*11,yy=localY(side*16,dz);
+    if(!clearDecor(side*16,dz,1.8))continue;
     registerCollider(x+side*16,z+dz,.76,3.2);
     cyl(.55,.72,2.6,slate,g,side*16,yy+1.3,dz,8);
     sphere(.5,hot,g,side*16,yy+2.8,dz);
@@ -1593,12 +1627,14 @@ function district(x,z,kind){
   for(const side of [-1,1])registerCollider(x+side*5,z-20,1.4,12);
   for(const side of [-1,1])for(let row=0;row<4;row++){
    const dx=side*16,dz=-20+row*13,yy=localY(dx,dz);
+   if(!clearDecor(dx,dz,2.5))continue;
    registerCollider(x+dx,z+dz,1.65,9);
    cyl(1.3,1.6,8,sand,g,dx,yy+4,dz,10);
    cyl(1.9,1.9,.7,bronze,g,dx,yy+8.3,dz,10);
   }
   for(const side of [-1,1]){
    const dx=side*25,dz=10,yy=localY(dx,dz);
+   if(!clearDecor(dx,dz,4.2))continue;
    registerCollider(x+dx,z+dz,3,4);
    box(3,2,15,sand,g,dx,yy+1,dz);
    spire(g,dx,yy+2,dz,1.7,3,bronze);
@@ -1611,6 +1647,7 @@ function district(x,z,kind){
    const dx=side*17;
    for(const dz of [-13,0,13]){
     const yy=localY(dx,dz);
+    if(!clearDecor(dx,dz,1.9))continue;
     registerCollider(x+dx,z+dz,.68,6);
     cyl(.45,.6,5,mats.wood,g,dx,yy+2.5,dz,8);
     sphere(1.35,scenicMoss,g,dx,yy+5.5,dz);
@@ -1619,7 +1656,7 @@ function district(x,z,kind){
   }
   for(let i=0;i<6;i++){
    const a=i*Math.PI/3,dx=Math.cos(a)*8.8,dz=Math.sin(a)*8.8;
-   spire(g,dx,.55,dz,.75,2.2,scenicGold);
+   if(clearDecor(dx,dz,1.2))spire(g,dx,.55,dz,.75,2.2,scenicGold);
   }
  }
  return g;
@@ -1891,29 +1928,9 @@ function buildSpawnHub(){
  registerCollider(-55*hubScale,-6*hubScale,13.5*hubScale,22);
  registerCollider(55*hubScale,-6*hubScale,13.5*hubScale,22);
 
- // Rear waterfalls are single, terrain-anchored water sheets over stone cliffs.
- // Subdivided sheets add texture without isolated, flickering panels.
- for(const side of [-1,1]){
-  const cx=side*61,cz=-39;
-  const area=new T.Group();area.position.set(cx,(ground(cx*hubScale,cz*hubScale)-base)/hubY,cz);root.add(area);
-  box(17,10,6,edge,area,0,4,-2.5);
-  for(let i=0;i<5;i++){
-   box(3.1,7+(i%3)*1.5,6.1,stone,area,(i-2)*3.1,4.1,-2.6);
-  }
-  const fallGeom=new T.PlaneGeometry(12.6,8.5,12,20);
-  const vertex=fallGeom.attributes.position;
-  for(let i=0;i<vertex.count;i++)
-   vertex.setZ(i,Math.sin(vertex.getX(i)*1.2+vertex.getY(i)*2.5)*.13);
-  fallGeom.computeVertexNormals();
-  const fall=mesh(fallGeom,fallingMaterial,area,0,4.5,1.2);
-  fall.castShadow=false;fall.receiveShadow=false;
-  cyl(8,8,.14,darkWater,area,0,.1,5.8,24);
-  const mist=torus(5.7,.18,cyan,area,0,.25,5.3);mist.castShadow=false;
-  for(let i=0;i<5;i++){
-   const a=i*1.256;
-   sphere(1.25,leaves,area,Math.cos(a)*10,1.7,Math.sin(a)*8);
-  }
- }
+ // Removed unsupported rear decorative falls and puddles. These appeared to
+ // start out of nowhere beside shops, separate from the mountain-fed river.
+ // The Origin fountain remains as an intentional architectural water feature.
  // A small number of deliberately placed ornamental trees frame the plaza.
  function ornamentalTree(x,z,pink){
   const g=new T.Group();g.position.set(x,(ground(x*hubScale,z*hubScale)-base)/hubY,z);root.add(g);
@@ -1948,7 +1965,8 @@ function buildSpawnHub(){
  for(const side of [-1,1]){
   const cx=side*48,cz=22;
   const bridgeGroup=new T.Group();bridgeGroup.position.set(cx,(ground(cx*hubScale,cz*hubScale)-base)/hubY,cz);root.add(bridgeGroup);
-  box(15,.14,10,darkWater,bridgeGroup,0,.17,0);
+  // Shallow stone-lined walkway instead of a floating blue water rectangle.
+  box(15,.14,10,stone,bridgeGroup,0,.17,0);
   for(let i=0;i<11;i++){
    const px=(i-5)*1.25;
    const plank=box(1.19,.34,8.5,timber,bridgeGroup,px,1.08+Math.cos(px/6.4*Math.PI/2)*.24,0);
@@ -2028,7 +2046,6 @@ function buildSpawnHub(){
   for(const xx of [-9,9])for(const zz of [-1,21])
    registerCollider((side*45+xx)*hubScale,zz*hubScale,1.22*hubScale,10);
   registerCollider(side*34*hubScale,20*hubScale,4.5*hubScale,5);
-  registerCollider(side*61*hubScale,-42*hubScale,8.7*hubScale,12);
   for(const zz of [0,10,22])
    registerCollider(side*54*hubScale,zz*hubScale,1.15*hubScale,8.5);
  }
@@ -2204,7 +2221,7 @@ function finishRiverBridges(){
   let previous=null;
   for(let i=0;i<=steps;i++){
    const u=i/steps,p=spline.getPoint(u),diff=p.z-riverPathZ(p.x);
-   if(previous&&previous.diff*diff<=0&&p.x>-302&&p.x<336){
+   if(previous&&previous.diff*diff<=0&&p.x>RIVER_START+8&&p.x<RIVER_END-8){
     const crossing=spline.getPoint(Math.max(0,(i-.5)/steps)),tangent=spline.getTangent(u);
     const len=Math.hypot(tangent.x,tangent.z)||1,tx=tangent.x/len,tz=tangent.z/len;
     if(riverCrossings.some(v=>Math.hypot(v.x-crossing.x,v.z-crossing.z)<17))break;
@@ -2262,16 +2279,15 @@ function addBridgeWaterwheels(){
    box(.68,.9,.7,brass,wheel,px,py,0).rotation.z=a;
   }
   cyl(.45,.55,3.1,timber,root,0,0,-1.45,8).rotation.x=Math.PI/2;
-  const water=torus(1.65,.1,scenicCyan,scene,x,riverWaterHeight(b.x)+.13,z);
-  water.castShadow=false;
-  animatedWaterwheels.push({wheel,water,phase:i});
+  animatedWaterwheels.push({wheel,phase:i});
  }
 }
-addBridgeWaterwheels();
+// Removed loose river-edge waterwheel props until a proper connected mill
+// and structural foundations exist; bridge crossings are fully retained.
 function animateWaterwheels(t){
  for(const o of animatedWaterwheels){
   o.wheel.rotation.z=-t*.52+o.phase;
-  o.water.scale.setScalar(1+Math.sin(t*2.8+o.phase)*.12);
+  // Detached ripple rings removed; only legacy wheels animate if explicitly used.
  }
 }
 
@@ -3596,9 +3612,9 @@ function conceptIsles(){
  cyl(8+i*2,5+i,3.2,mats.stoneDark,g,x,y,z,10);cyl(7+i*2,8+i*2,1.3,conceptLeaf,g,x,y+2.2,z,10);
  for(const side of [-1,1])cyl(.7,.9,8,mats.stone,g,x+side*3,y+6.5,z,8);box(8,1.3,2,conceptGold,g,x,y+10.5,z)}
 }
-// Keep only landmark silhouettes that complement the map; the old origin
-// plaza, floating isles and scattered towers clashed with the approved hub.
-conceptGrove();conceptTemple();conceptSky();
+// V18: remove three early, non-interactive landmark mockups whose pillars,
+// roots and plinths sat directly on the established walking routes.
+// Functional district architecture and challenge monuments remain intact.
 
 // Landmark-scale environmental silhouettes and designed traversal scenery.
 const worldWater=new T.MeshStandardMaterial({color:0x2683a5,metalness:.36,roughness:.19,transparent:true,opacity:.84,side:T.DoubleSide});
@@ -3620,17 +3636,15 @@ function riverPathZ(x){
    -15*Math.exp(-Math.pow((x-255)/42,2));
 }
 function riverWaterHeight(x){
- const z=riverPathZ(x);
- // The lower bank defines the level across the whole channel at this x.
- // A small lift makes the surface visible without hovering over either bank.
- const banks=Math.min(ground(x,z-8.3),ground(x,z+8.3));
- return Math.max(banks+.22,ground(x,z)+.2);
+ // Constant cross-channel water level, gentle west->east decline.
+ // Never sample the river's bank as its surface: that made blue wedges.
+ return riverBedElevation(x)+.82;
 }
 const riverFlowMaterial=new T.ShaderMaterial({
  uniforms:{uTime:{value:0}},
- transparent:false,depthWrite:true,depthTest:true,side:T.DoubleSide,
+ transparent:true,depthWrite:true,depthTest:true,side:T.DoubleSide,
  vertexShader:"varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
- fragmentShader:"uniform float uTime;varying vec2 vUv;void main(){float flow=vUv.y*5.2-uTime*.68;float ripple=sin(flow*2.4+sin(vUv.x*11.0)*.45)*.042;float fleck=pow(max(0.0,sin(flow*4.3+vUv.x*21.0)),14.0)*.095;float shore=1.0-smoothstep(.0,.14,min(vUv.x,1.0-vUv.x));vec3 deep=vec3(.045,.34,.49);vec3 light=vec3(.12,.56,.68);vec3 color=mix(deep,light,.42+.17*sin(vUv.x*6.283+flow*.12));color+=vec3(ripple*.65,ripple,ripple)+fleck*vec3(.6,.85,1.0)+shore*.095*vec3(.68,.85,.87);gl_FragColor=vec4(color,1.0);}"
+ fragmentShader:"uniform float uTime;varying vec2 vUv;void main(){float flow=vUv.y*5.2-uTime*.68;float ripple=sin(flow*2.4+sin(vUv.x*11.0)*.45)*.042;float fleck=pow(max(0.0,sin(flow*4.3+vUv.x*21.0)),14.0)*.095;float shore=1.0-smoothstep(.0,.14,min(vUv.x,1.0-vUv.x));vec3 deep=vec3(.035,.18,.25);vec3 light=vec3(.12,.40,.46);vec3 color=mix(deep,light,.42+.17*sin(vUv.x*6.283+flow*.12));color+=vec3(ripple*.45,ripple*.68,ripple*.7)+fleck*vec3(.35,.6,.76)+shore*.055*vec3(.65,.8,.8);gl_FragColor=vec4(color,.90);}"
 });
 function makeWaterSurface(positions,uvs,indices){
  const geo=new T.BufferGeometry();
@@ -3641,62 +3655,125 @@ function makeWaterSurface(positions,uvs,indices){
  water.castShadow=false;water.receiveShadow=false;water.frustumCulled=false;
  scene.add(water);return water;
 }
-function authoredRiver(){
- const first=-307,last=342,segments=230,width=8.4,lanes=6;
- const positions=[],uvs=[],indices=[];
+// One continuous river, from the western mountain waterfall to the eastern
+// boundary. Gravel and bank meshes are sampled from the same collision terrain.
+const bankMaterials=[
+ new T.MeshStandardMaterial({color:0x696964,roughness:1,map:mats.stone.map,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1}),
+ new T.MeshStandardMaterial({color:0x847863,roughness:1,map:mats.sand.map,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1})
+];
+function riverStripGeometry(first,last,segments,inner,outer,side,material){
+ const vertices=[],uvs=[],faces=[],lanes=4;
  for(let i=0;i<=segments;i++){
-  const x=first+(last-first)*i/segments,z=riverPathZ(x);
-  const bank=Math.min(ground(x,z-8.3),ground(x,z+8.3));
-  const mid=ground(x,z),highGround=Math.max(0,mid-bank);
-  // Narrow into a shallow stream where a landmark sits on high ground.
-  // No water sheets extend through the raised crystal or hub districts.
-  const narrowed=Math.max(.37,1-highGround*.105);
-  const taper=Math.min(1,Math.max(.05,(x-first)/19),Math.max(.05,(last-x)/19));
-  const halfWidth=width*taper*narrowed;
-  const waterY=riverWaterHeight(x);
-  const y=waterY*taper+(mid+.18)*(1-taper);
+  const x=first+(last-first)*i/segments,center=riverPathZ(x);
   for(let k=0;k<=lanes;k++){
-   const across=k/lanes*2-1;
-   const zz=z+halfWidth*across;
-   // Edge vertices meet the real shore rather than vanishing into its mesh.
-   const yy=Math.max(y,ground(x,zz)+.13);
-   positions.push(x,yy,zz);
+   const d=inner+(outer-inner)*k/lanes,z=center+side*d;
+   vertices.push(x,ground(x,z)+.075,z);
+   uvs.push(i/segments*19,k/lanes);
+   if(i<segments&&k<lanes){
+    const q=i*(lanes+1)+k;
+    faces.push(q,q+1,q+lanes+1,q+1,q+lanes+2,q+lanes+1);
+   }
+  }
+ }
+ const geo=new T.BufferGeometry();
+ geo.setAttribute("position",new T.Float32BufferAttribute(vertices,3));
+ geo.setAttribute("uv",new T.Float32BufferAttribute(uvs,2));
+ geo.setIndex(faces);geo.computeVertexNormals();
+ const obj=new T.Mesh(geo,material);
+ obj.castShadow=false;obj.receiveShadow=false;scene.add(obj);
+}
+function authoredRiver(){
+ const first=RIVER_START,last=RIVER_END,segments=304,width=8.45,lanes=8;
+ const positions=[],uvs=[],indices=[];
+ // Visible banks, sand and stones frame the river instead of flat cyan grass.
+ for(const side of [-1,1]){
+  riverStripGeometry(first,last,segments,8.25,16.5,side,bankMaterials[0]);
+  riverStripGeometry(first,last,segments,16.4,25.5,side,bankMaterials[1]);
+ }
+ for(let i=0;i<=segments;i++){
+  const x=first+(last-first)*i/segments,center=riverPathZ(x);
+  // The waterfall touches a broad headwater basin; no random river fade-in.
+  const headTaper=.72+.28*Math.min(1,Math.max(0,(x-first)/14));
+  const halfWidth=width*headTaper;
+  for(let k=0;k<=lanes;k++){
+   const across=k/lanes*2-1,z=center+halfWidth*across;
+   positions.push(x,riverWaterHeight(x)+.018*Math.sin(x*.15+across*3),z);
    uvs.push(k/lanes,i/segments*20);
    if(i<segments&&k<lanes){
-    const n=i*(lanes+1)+k;
-    indices.push(n,n+1,n+lanes+1,n+1,n+lanes+2,n+lanes+1);
+    const q=i*(lanes+1)+k;
+    indices.push(q,q+1,q+lanes+1,q+1,q+lanes+2,q+lanes+1);
    }
   }
  }
  return makeWaterSurface(positions,uvs,indices);
 }
-function groundedCascade(cx,cz,width=9,length=31){
- // A shallow tributary follows the triangulated ground throughout its width.
- // Multiple cross-width vertices avoid the old two-edge sheet cutting into hills.
- const count=46,lanes=6,p=[],uv=[],indices=[];
- for(let j=0;j<=count;j++){
-  const z=cz-length*.5+length*j/count;
-  const taper=Math.min(1,.18+j/5,.18+(count-j)/5);
-  for(let k=0;k<=lanes;k++){
-   const cross=(k/lanes*2-1);
-   const x=cx+cross*width*.5*taper;
-   p.push(x,ground(x,z)+.19,z);
-   uv.push(k/lanes,j/count*5);
-   if(j<count&&k<lanes){
-    const n=j*(lanes+1)+k;
-    indices.push(n,n+1,n+lanes+1,n+1,n+lanes+2,n+lanes+1);
-   }
+function buildRiverbankStones(){
+ // Boulders and gravel along the carved channel (never on roadways).
+ // One instanced draw call instead of hundreds of separate stone meshes.
+ const max=220;
+ const stones=new T.InstancedMesh(new T.DodecahedronGeometry(1,0),
+  new T.MeshStandardMaterial({color:0x898b85,roughness:1,flatShading:true}),max);
+ const dummy=new T.Object3D();
+ let count=0;
+ for(let i=0;i<220;i++){
+  const u=(i+.5)/220,x=RIVER_START+16+u*(RIVER_END-RIVER_START-32);
+  const side=i%2?1:-1;
+  const radius=19+(i%7)*.86,z=riverPathZ(x)+side*radius;
+  if(pathDistance(x,z)<11||worldColliders.some(o=>Math.hypot(x-o.x,z-o.z)<o.r+3))continue;
+  if(Math.abs(z)>414)continue;
+  const size=.52+(i*13%9)*.11;
+  dummy.position.set(x,ground(x,z)+.16*size,z);
+  dummy.scale.set(size*1.4,size*.57,size*.88);
+  dummy.rotation.set(0,i*2.399963,0);
+  dummy.updateMatrix();stones.setMatrixAt(count++,dummy.matrix);
+ }
+ stones.count=count;stones.castShadow=false;stones.receiveShadow=false;
+ stones.instanceMatrix.needsUpdate=true;
+ if(count)scene.add(stones);
+ return count;
+}
+function buildMountainHeadwaters(){
+ // Two falls descend from a single stone escarpment at the western border.
+ // Both curtains meet the actual river, rather than being isolated water art.
+ const startX=RIVER_START,centerZ=riverPathZ(startX),riverY=riverWaterHeight(startX);
+ const top=Math.max(ground(startX-13,centerZ)+6,riverY+17);
+ const rise=top-riverY;
+ const rockMat=new T.MeshStandardMaterial({color:0x526277,roughness:.97,
+   map:mats.stone.map,bumpMap:mats.stone.map,bumpScale:.2});
+ const ledgeMat=new T.MeshStandardMaterial({color:0x7a8896,roughness:.91,map:mats.stone.map});
+ const fallMat=new T.ShaderMaterial({
+  uniforms:{uTime:{value:0}},
+  transparent:true,depthWrite:false,side:T.DoubleSide,
+  vertexShader:"varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
+  fragmentShader:"uniform float uTime;varying vec2 vUv;void main(){float streak=sin(vUv.x*36.0+uTime*.8)*.17+sin(vUv.x*91.0-uTime*1.7)*.1;float flow=sin(vUv.y*33.0+uTime*8.5)*.1;float rim=smoothstep(0.,.12,vUv.x)*(1.-smoothstep(.88,1.,vUv.x));vec3 color=vec3(.42,.74,.8)+streak+flow;gl_FragColor=vec4(color,(.8+.11*flow)*rim);}"
+ });
+ // An integrated rock face closes the headwater opening into the backdrop.
+ const cliff=cyl(14,18,rise+5,rockMat,scene,startX-23,
+  riverY+(rise+5)*.5-1.1,centerZ,12);
+ cliff.scale.z=.82;cliff.castShadow=false;
+ box(18,1.7,24,ledgeMat,scene,startX-14,top+.2,centerZ).castShadow=false;
+ for(const side of [-1,1]){
+  const waterfall=mesh(new T.PlaneGeometry(6.5,rise,8,24),
+   fallMat,scene,startX-1.7,riverY+rise*.5+.18,centerZ+side*4);
+  waterfall.rotation.y=Math.PI/2;
+  waterfall.castShadow=false;
+  // Rocks at the base visually unite the falling sheets and river entrance.
+  for(let j=0;j<3;j++){
+   const rz=centerZ+side*(12+j*3),rx=startX+3+j*2;
+   const b=mesh(new T.DodecahedronGeometry(1.3+(j%2)*.6,0),
+     rockMat,scene,rx,ground(rx,rz)+.3,rz);
+   b.scale.y=.58;b.castShadow=false;
   }
  }
- const stream=makeWaterSurface(p,uv,indices);
- // Sparse rocks at the sides, sunk naturally into the real ground surface.
- for(const side of [-1,1])for(let i=0;i<4;i++){
-  const zz=cz-12+i*8,x=cx+side*(width*.8+1.6),y=ground(x,zz);
-  const b=sphere(1.15+(i%2)*.28,worldStone,scene,x,y+.12,zz);
-  b.scale.set(1.12,.72,1.05);b.castShadow=false;
- }
- return stream;
+ const rim=torus(7,.14,worldFoam,scene,startX+2,riverY+.14,centerZ,24);
+ rim.rotation.x=Math.PI/2;rim.castShadow=false;
+ return fallMat;
 }
+authoredRiver();
+const riverBankStoneCount=buildRiverbankStones();
+const mountainWaterfallMaterial=buildMountainHeadwaters();
+// All former isolated stream ribbons were removed in favor of the
+// continuous source-fed main river.
 function softRockRidge(cx,cz,span,count,mat,phase=0){
  // Rounded broad mountain shoulders, anchored to the exact existing terrain.
  // Stay beyond reserved gameplay sites and principal trails.
@@ -3722,10 +3799,8 @@ function softRockRidge(cx,cz,span,count,mat,phase=0){
   registerCollider(x,z,Math.min(7,radius*.4),height);
  }
 }
-authoredRiver();
-groundedCascade(-285,132,10,35);
-groundedCascade(285,120,10,31);
-groundedCascade(150,87,8,24);
+// Disconnected stream meshes removed: all flowing surface water now
+// belongs to the mountain-fed main river.
 softRockRidge(-320,-285,105,6,worldSnow,1.2);
 softRockRidge(-340,65,85,5,worldSnow,2.2);
 softRockRidge(265,95,75,5,worldStone,.5);
@@ -5509,6 +5584,7 @@ function animate() {
     for(const m of biomeAtmosphere)setWorldUniformTime(m,t,'biome particle effects');
     for(const fx of environmentFX)setWorldUniformTime(fx,t,'legacy environment FX');
     setWorldUniformTime(riverFlowMaterial,t,'river');
+    setWorldUniformTime(mountainWaterfallMaterial,t,'mountain headwaters');
     for (const c of cloudGroups) {
         c.g.position.x += c.speed * dt;
         if (c.g.position.x > 450) c.g.position.x = -450
@@ -5590,7 +5666,7 @@ function animate() {
         nz=Math.max(-404.7,Math.min(404.7,nz));
       }
       let ny=player.position.y+glideVel.y*dt;
-      const water=nx>-304&&nx<339&&Math.abs(nz-riverPathZ(nx))<8?
+      const water=nx>RIVER_START&&nx<RIVER_END&&Math.abs(nz-riverPathZ(nx))<8.3?
         riverWaterHeight(nx)-.65:-Infinity;
       const landingFloor=Math.max(ground(nx,nz),roadWalkHeight(nx,nz),
         waystationWalkHeight(nx,nz),hubWalkHeight(nx,nz),gameArenaWalkHeight(nx,nz),water);
@@ -5630,7 +5706,7 @@ function animate() {
     // Shallow wading keeps the player from sinking invisibly under the river.
     // Crossing a bridge still takes priority via its higher collision surface.
     const riverX=player.position.x,riverZ=player.position.z;
-    if(riverX>-304&&riverX<339&&Math.abs(riverZ-riverPathZ(riverX))<7.8)
+    if(riverX>RIVER_START&&riverX<RIVER_END&&Math.abs(riverZ-riverPathZ(riverX))<8.3)
       floor=Math.max(floor,riverWaterHeight(riverX)-.65);
     floor=Math.max(floor,roadWalkHeight(player.position.x,player.position.z));
     floor=Math.max(floor,waystationWalkHeight(player.position.x,player.position.z));
