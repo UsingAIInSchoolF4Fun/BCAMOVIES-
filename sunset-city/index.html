@@ -281,6 +281,53 @@ function rebuildRoadGrid(){
   }
  }
 }
+// Crossroads are a single ground-level intersection, not overlapping raised roads.
+// Only true nonparallel centerline crossings become junctions. Clustering merges
+// nearby T-junctions into one smooth street-plaza without duplicate layers.
+let roadJunctions=[];
+function buildRoadJunctions(){
+ roadJunctions=[];
+ const pieces=roadSegments;
+ for(let i=0;i<pieces.length;i++){
+  const a=pieces[i],adx=a.b.x-a.a.x,ady=a.b.y-a.a.y;
+  for(let j=i+1;j<pieces.length;j++){
+   const b=pieces[j];if(a.road===b.road)continue;
+   const reach=a.road.width+b.road.width+35;
+   if(Math.abs(a.a.x+a.b.x-b.a.x-b.b.x)>reach||
+      Math.abs(a.a.y+a.b.y-b.a.y-b.b.y)>reach)continue;
+   const bdx=b.b.x-b.a.x,bdy=b.b.y-b.a.y;
+   const cross=adx*bdy-ady*bdx,den=Math.hypot(adx,ady)*Math.hypot(bdx,bdy);
+   if(den<.01||Math.abs(cross)/den<.35)continue;
+   const vx=b.a.x-a.a.x,vy=b.a.y-a.a.y;
+   const t=(vx*bdy-vy*bdx)/cross,u=(vx*ady-vy*adx)/cross;
+   if(t<-.025||t>1.025||u<-.025||u>1.025)continue;
+   const x=a.a.x+adx*t,y=a.a.y+ady*t;
+   const old=roadJunctions.find(q=>Math.hypot(q.x-x,q.y-y)<34);
+   const roadWidth=Math.max(a.road.width,b.road.width);
+   const urban=['urban','roundabout','boulevard'].some(st=>st===a.road.style||st===b.road.style);
+   const paved=a.road.style!=='trail'||b.road.style!=='trail';
+   if(old){
+    old.n++;
+    old.x+=(x-old.x)/old.n;old.y+=(y-old.y)/old.n;
+    old.width=Math.max(old.width,roadWidth);
+    old.urban=old.urban||urban;old.paved=old.paved||paved;
+   }else roadJunctions.push({x,y,n:1,width:roadWidth,urban,paved});
+  }
+ }
+ for(const q of roadJunctions){
+  // Strip cutout is small; intersection patch extends over all corner edges.
+  q.cut=q.width*.47+4;
+  q.radius=q.width*.78+6;
+ }
+}
+function nearestJunction(x,y){
+ let nearest=null,dist=Infinity;
+ for(const j of roadJunctions){
+  const d=Math.hypot(x-j.x,y-j.y);
+  if(d<dist){nearest=j;dist=d;}
+ }
+ return nearest?{junction:nearest,dist}:null;
+}
 function roadSurfaceAt(x,y){
  if(!roadGridReady)return null;
  const list=roadGrid.get(roadKey(Math.floor(x/ROAD_CELL),Math.floor(y/ROAD_CELL)));
@@ -549,7 +596,7 @@ function buildWorld(){
   curveRoad('EAGLE FOREST TRACK',[[365,35],[410,-43],[458,-100],[475,-145],[495,-155]],14,'trail');
   curveRoad('CANYON RANGER TRACK',[[230,205],[292,260],[347,322],[366,388],[380,425]],13,'trail');
 
-  rebuildRoadGrid(); // Grade and index the complete road network before placing structures.
+  rebuildRoadGrid();buildRoadJunctions(); // Grade all roads, then unite true crossroads before scenery.
   // Rural landmarks. Most of the island is wilderness, not high-rises.
   addLandmark(83*CITY_COMPACT,218*CITY_COMPACT,73,46,.07,'market',DISTRICTS[0]);
   addLandmark(-5*CITY_COMPACT,175*CITY_COMPACT,76,51,0,'hotel',DISTRICTS[0]);
