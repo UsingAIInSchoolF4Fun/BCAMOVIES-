@@ -56,7 +56,17 @@ body:not(.compact-ui) #challengeStatus{display:block}
  .bottom{bottom:6px}
  .side{top:59px;right:6px;max-height:calc(100dvh - 92px)}
 }
-.flight-controls-help{display:none}body.show-tips .flight-controls-help{display:block}#flightHud{right:10px!important;top:92px!important;max-width:188px!important}/* V15 world overhaul: readable glass HUD and smooth panel transitions */
+.flight-controls-help{display:none}body.show-tips .flight-controls-help{display:block}#flightHud{right:10px!important;top:92px!important;max-width:188px!important}/* V17 roll anticipation, reward reveal and cohesive magic UI */
+#rollButton.rolling{animation:v17RollCharge 1.2s ease-in-out infinite}
+#result.rolling-value{animation:v17RollText .5s ease-in-out infinite alternate}
+#result.v17-landed{animation:v17ResultSettle .45s cubic-bezier(.16,1.7,.4,1) both}
+#rollProgress{box-shadow:0 0 12px #ae83ffab;background:linear-gradient(90deg,#8c69ed,#7be3ff,#f3bdff)}
+#inventoryButton,#mapButton,#settingsButton{transition:transform .16s,box-shadow .18s,filter .18s}
+#inventoryButton:hover,#mapButton:hover,#settingsButton:hover{transform:translateY(-2px);box-shadow:0 4px 16px #9571ff44}
+@keyframes v17RollCharge{0%,100%{box-shadow:0 0 8px #7e4ad844;transform:scale(1)}50%{box-shadow:0 0 21px #ac81ff99;transform:scale(1.018)}}
+@keyframes v17RollText{from{opacity:.72;filter:brightness(.9)}to{opacity:1;filter:brightness(1.16)}}
+@keyframes v17ResultSettle{from{opacity:.6;transform:translateY(5px) scale(.93);filter:blur(3px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+/* V15 world overhaul: readable glass HUD and smooth panel transitions */
 .top.panel{background:linear-gradient(115deg,#10172fdf,#201b39e8);border-color:#d0c0ff44;box-shadow:0 9px 26px #0007,0 0 18px #b88aff13}
 .brand{letter-spacing:.045em;text-shadow:0 2px 14px #b283ff66}
 .side.open{animation:v15MenuIn .22s ease-out both}
@@ -431,6 +441,9 @@ function roll() {
     if (busy) return;
     busy = true;
     $("rollButton").disabled = true;
+    $("rollButton").classList.add("rolling");
+    $("result").classList.remove("v17-landed");
+    $("result").classList.add("rolling-value");
     $("rollLabel").textContent = "THE UNIVERSE IS CHOOSING…";
     let start = performance.now(),
         duration = Date.now()<lavaSlowUntil ? 6500 : 2600;
@@ -458,6 +471,10 @@ function roll() {
         $("result").style.color = hex(auraColor(win));
         $("chance").textContent="1 IN "+wonOdds.toLocaleString()+(luckUsed>1?" · ×"+luckUsed+" LUCK USED":"")+(newAura?" · NEW DISCOVERY!":" · DUPLICATE");
         $("rollLabel").textContent = "YOUR DESTINY";
+        $("rollButton").classList.remove("rolling");
+        $("result").classList.remove("rolling-value");
+        void $("result").offsetWidth;
+        $("result").classList.add("v17-landed");
         $("rollProgress").style.width = "0%";
         save();
         updateHUD();
