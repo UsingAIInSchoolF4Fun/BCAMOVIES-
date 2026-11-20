@@ -678,7 +678,19 @@ function drawWorldBase(){
 function randomRoadSample(x=0,y=0,minD=120,maxD=1000){let choices=[];for(let j=0;j<80;j++){const p=roadSamples[Math.floor(Math.random()*roadSamples.length)],d=Math.hypot(p.x-x,p.y-y);if(d>minD&&d<maxD&&coastDistance(p.x,p.y)>35)choices.push(p)}return choices.length?choices[Math.floor(Math.random()*choices.length)]:roadSamples[Math.floor(Math.random()*roadSamples.length)]}
 function showBanner(title,desc,duration=1.8){$('bannerTitle').textContent=title;$('bannerDesc').textContent=desc;$('runbanner').classList.add('show');bannerEnd=now+duration}
 function carStats(c){return {maxSpeed:c.speed*PLAYER_SPEED_SCALE*(1+save.upgrades.engine*.063),accel:c.accel*.88*(1+save.upgrades.engine*.078),turn:c.turn*.94,health:c.armor*(1+save.upgrades.armor*.20),boost:c.boost*(1+save.upgrades.nitro*.22),grip:c.grip,offroad:Math.max(.82,c.offroad),brake:c.brake,turbo:c.turbo}}
-function spawnPlayer(){let template=CARS.find(c=>c.id===save.selected)||CARS[0],s=carStats(template);return {x:-65*CITY_COMPACT,y:137*CITY_COMPACT,a:0,speed:0,vx:0,vy:0,health:s.health,maxHealth:s.health,nitro:s.boost,maxNitro:s.boost,template,color:save.paint[template.id]||template.color,hitCooldown:0,driftScore:0,water:0,slip:0,lean:0,pitch:0,bump:0,wheelSpin:0,steer:0,lastTerrainWarn:-10,groundKind:'ROAD',suspension:0,damageStage:0,stuntChain:0}}
+function spawnPlayer(){
+ let template=CARS.find(c=>c.id===save.selected)||CARS[0],s=carStats(template);
+ // Spawn directly on Main Street, pointing along the asphalt rather than into a forest.
+ const main=roads.find(r=>r.id==='MAIN STREET')||roads.find(r=>r.style==='urban');
+ const idx=main?Math.floor(main.points.length*.35):0;
+ const pt=main?main.points[idx]:{x:-65*CITY_COMPACT,y:137*CITY_COMPACT};
+ const next=main?main.points[Math.min(main.points.length-1,idx+2)]:{x:pt.x+1,y:pt.y};
+ const heading=Math.atan2(next.x-pt.x,-(next.y-pt.y));
+ return {x:pt.x,y:pt.y,a:heading,speed:0,vx:0,vy:0,health:s.health,maxHealth:s.health,
+ nitro:s.boost,maxNitro:s.boost,template,color:save.paint[template.id]||template.color,
+ hitCooldown:0,driftScore:0,water:0,slip:0,lean:0,pitch:0,bump:0,wheelSpin:0,steer:0,
+ lastTerrainWarn:-10,groundKind:'ROAD',suspension:0,damageStage:0,stuntChain:0};
+}
 function roadLanePoint(v,index){
  const ps=v.roadRef.points,n=ps.length,i=clamp(index,0,n-1);
  const p=ps[i],q=ps[Math.max(0,i-1)],r=ps[Math.min(n-1,i+1)];
