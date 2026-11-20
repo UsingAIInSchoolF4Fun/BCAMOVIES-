@@ -1514,27 +1514,32 @@ function build3DCity(){
    return height;
  }
  let terrain=new Mesh3(),step=24;
+ // Recess the static land below paved corridors; road triangles are above
+ // the underlying ground even where coarse hillsides cross a bend.
+ function terrainBedY(x,z){const r=roadSurfaceAt(x,z);const t=r?1-clamp((r.edge+2)/19,0,1):0;return surfaceY(x,z)-1.5*t;}
  // Road surface is part of a single continuous height-mapped island mesh.
  // Roads are not overlapping floating strips: a junction is simply one asphalt surface.
  for(let z=-1350;z<1350;z+=step)for(let x=-1728;x<1728;x+=step){
    const near=roadSurfaceAt(x+step*.5,z+step*.5);
-   const slices=near&&near.edge<42?2:1;
+   const slices=near&&near.edge<30?3:near&&near.edge<65?2:1;
    const delta=step/slices;
    for(let iz=0;iz<slices;iz++)for(let ix=0;ix<slices;ix++){
      const left=x+ix*delta,top=z+iz*delta,cx=left+delta*.5,cz=top+delta*.5;
      if(coastDistance(cx,cz)<-8)continue;
      const points=[
-       [left,surfaceY(left,top),top],
-       [left+delta,surfaceY(left+delta,top),top],
-       [left+delta,surfaceY(left+delta,top+delta),top+delta],
-       [left,surfaceY(left,top+delta),top+delta]
+       [left,terrainBedY(left,top),top],
+       [left+delta,terrainBedY(left+delta,top),top],
+       [left+delta,terrainBedY(left+delta,top+delta),top+delta],
+       [left,terrainBedY(left,top+delta),top+delta]
      ];
      const path=roadSurfaceAt(cx,cz);
      // Keep terrain-colored triangles under the precisely rendered road ribbon:
      // painting asphalt in square terrain cells created the old spiky edges.
      const color=path&&path.edge<5?'#788980':terrainStyle(cx,cz,surfaceY(cx,cz));
-     terrain.tri(points[0],points[1],points[2],color);
-     terrain.tri(points[0],points[2],points[3],color);
+     // Correct upward-facing normal: downward-facing land normals had
+     // made terrain appear almost black where it cut through roads.
+     terrain.tri(points[0],points[2],points[1],color);
+     terrain.tri(points[0],points[3],points[2],color);
    }
  }
  g3.ground=upload3(terrain);
@@ -1568,23 +1573,25 @@ function build3DCity(){
    // Terrain at the actual corners is continuous across all road surfaces.
    // Small deterministic height separation prevents nearly coplanar
    // crossing ribbons from z-fighting without raising an entire intersection.
-   const bias=(roads.indexOf(road)%5)*.065;
-   const yA=surfaceY(a.x,a.y)+rise+bias,yB=surfaceY(b.x,b.y)+rise+bias;
-   const yC=surfaceY(c.x,c.y)+rise+bias,yD=surfaceY(d.x,d.y)+rise+bias;
+   // Keep each cross-section level to the centerline's graded height.
+   // Sampling four separate corner heights made spikes and asphalt tears.
+   const bias=(roads.indexOf(road)%4)*.032;
+   const yA=surfaceY(start.x,start.y)+rise+bias,yB=yA;
+   const yC=surfaceY(end.x,end.y)+rise+bias,yD=yC;
    tileAt((start.x+end.x)/2,(start.y+end.y)/2).roadQuad(
      [a.x,yA,a.y],[b.x,yB,b.y],[d.x,yD,d.y],[c.x,yC,c.y],color,glow);
  }
  for(const road of roads){
    const p=road.points,half=road.width*.5;
-   const asphalt=material(road);
    const verge=road.style==='trail'?MAT.dirtEdge:MAT.shoulder;
    for(let i=0;i<p.length-1;i++){
      const centerX=(p[i].x+p[i+1].x)*.5,centerY=(p[i].y+p[i+1].y)*.5;
      const junction=nearestJunction(centerX,centerY);
+     const asphalt=junction&&junction.dist<junction.junction.radius+13&&junction.junction.paved?MAT.paved:material(road);
      // Continuous ribbons through junctions prevent missing asphalt
      // triangles and avoid the giant circular patches from V10.2.
-     roadStrip(road,i,-half-2.25,half+2.25,verge,.58);
-     roadStrip(road,i,-half,half,asphalt,.71);
+     roadStrip(road,i,-half-2.75,half+2.75,verge,.68);
+     roadStrip(road,i,-half,half,asphalt,.86);
      // Markings vanish into the shared asphalt rather than crossing other lanes.
      const fade=junction?clamp((junction.dist-junction.junction.radius-6)/34,0,1):1;
      if(fade<.07)continue;
@@ -1592,18 +1599,33 @@ function build3DCity(){
      if(road.style==='trail'){
        if(i%9<6)for(const side of [-1,1]){
          const offset=side*half*.40;
-         roadStrip(road,i,offset-.38*fade,offset+.38*fade,hexBlend(MAT.dirt,'#c1ac86',fade),.82);
+         roadStrip(road,i,offset-.38*fade,offset+.38*fade,hexBlend(MAT.dirt,'#c1ac86',fade),1.01);
        }
      }else{
-       roadStrip(road,i,-half+2.0,-half+2+.72*fade,line,.82);
-       roadStrip(road,i,half-2-.72*fade,half-2,line,.82);
-       if(i%10<5)roadStrip(road,i,-.76*fade,.76*fade,centerline,.84);
+       roadStrip(road,i,-half+2.0,-half+2+.72*fade,line,1.04);
+       roadStrip(road,i,half-2-.72*fade,half-2,line,1.04);
+       if(i%10<5)roadStrip(road,i,-.76*fade,.76*fade,centerline,1.06);
      }
    }
  }
  // Intersections are now formed by continuous ribbons with tiny depth biases,
  // not giant raised disks. Lane markings fade as they approach a crossing.
  // The road network and junction metadata are still used for driving and props.
+ // Actual roadside steel rails align with physical cliff collision segments.
+ // Each ribbon slopes between its endpoints, avoiding floating horizontal bars.
+ for(let i=0;i<roadGuards.length;i++){
+   const g=roadGuards[i],ax=g.ax,az=g.ay,bx=g.bx,bz=g.by;
+   const mx=(ax+bx)*.5,mz=(az+bz)*.5,mesh=tileAt(mx,mz);
+   const a0=g.ha+2.4,b0=g.hb+2.4;
+   const col=g.style==='mountain'?'#d5d8ce':'#c8d4d7';
+   mesh.quad([ax,a0,az],[bx,b0,bz],[bx,b0+.64,bz],[ax,a0+.64,az],col);
+   mesh.quad([ax,a0-1.15,az],[bx,b0-1.15,bz],[bx,b0-.95,bz],[ax,a0-.95,az],'#78858b');
+   if(i%2===0){
+     const ground=surfaceY(ax,az),upper=Math.max(ground+2.8,a0+.65);
+     mesh.box(ax,(ground+upper)*.5,az,.70,upper-ground,.70,'#a4adb0');
+     mesh.box(ax,upper+.08,az,1.05,.22,1.05,'#e3e5d9');
+   }
+ }
  // Road reflectors along mountain and coastal curves.
  for(const road of roads){
   if(road.style!=='mountain'&&road.style!=='coastal')continue;
@@ -1970,8 +1992,8 @@ function renderSoftware3D(){
  for(let cell of cells){let x=cell.x,z=cell.z,s=step*.51;let ht=softwareHeight(x,z),fill=terrainStyle(x,z,ht);polygon([[x-s,softwareHeight(x-s,z-s),z-s],[x+s,softwareHeight(x+s,z-s),z-s],[x+s,softwareHeight(x+s,z+s),z+s],[x-s,softwareHeight(x-s,z+s),z+s]],fill)}
  // Chromebook roads use the same unified junction geometry as WebGL.
  function roadEdge(road,index,offset,rise=.4){
-   const pos=roadJoinPoint(road,index,offset);
-   return [pos.x,softwareHeight(pos.x,pos.y)+rise,pos.y];
+   const pos=roadJoinPoint(road,index,offset),center=road.points[index];
+   return [pos.x,softwareHeight(center.x,center.y)+rise,pos.y];
  }
  function roadPatch(road,i,j,half,color,rise=.4){
    const a=roadEdge(road,i,-half,rise),b=roadEdge(road,i,half,rise);
@@ -1984,29 +2006,21 @@ function renderSoftware3D(){
      const midX=(p[i].x+p[i+1].x)*.5,midY=(p[i].y+p[i+1].y)*.5;
      if(Math.hypot(midX-target.x,midY-target.y)>435)continue;
      const junction=nearestJunction(midX,midY);
-     if(junction&&junction.dist<junction.junction.cut+1)continue;
      if(Math.hypot(p[i+1].x-p[i].x,p[i+1].y-p[i].y)<.18)continue;
-     const asphalt=road.style==='trail'?'#857254':road.style==='coastal'?'#43535a':road.style==='mountain'?'#414d50':'#3e4b50';
-     roadPatch(road,i,i+1,half+2.25,road.style==='trail'?'#a09476':'#8b9387',.31);
-     roadPatch(road,i,i+1,half,asphalt,.40);
+     const asphalt=junction&&junction.dist<junction.junction.radius+13&&junction.junction.paved?'#59616a':road.style==='trail'?'#968265':road.style==='coastal'?'#576870':road.style==='mountain'?'#5a6167':'#59616a';
+     roadPatch(road,i,i+1,half+2.75,road.style==='trail'?'#aaa082':'#7e847e',.68);
+     roadPatch(road,i,i+1,half,asphalt,.86);
      const fade=junction?Math.max(0,Math.min(1,(junction.dist-junction.junction.radius-6)/34)):1;
      if(road.style!=='trail'&&i%10<5&&fade>.40)
-       roadPatch(road,i,i+1,.72*fade,'#d7c08c',.46);
+       roadPatch(road,i,i+1,.72*fade,'#efcf92',1.06);
    }
  }
- // A single shared patch hides approach overlaps and removes center lines.
- for(const j of roadJunctions){
-   if(Math.hypot(j.x-target.x,j.y-target.y)>425)continue;
-   const parts=20,r=j.radius;
-   for(let i=0;i<parts;i++){
-     const a=TAU*i/parts,b=TAU*(i+1)/parts,
-           x0=j.x+Math.cos(a)*r,z0=j.y+Math.sin(a)*r,
-           x1=j.x+Math.cos(b)*r,z1=j.y+Math.sin(b)*r;
-     polygon([[j.x,softwareHeight(j.x,j.y)+.65,j.y],
-              [x0,softwareHeight(x0,z0)+.65,z0],
-              [x1,softwareHeight(x1,z1)+.65,z1]],
-             j.paved?'#3e4b50':'#857254');
-   }
+ // The fallback uses the same continuous-road joins rather than circular asphalt disks.
+ for(const guard of roadGuards){
+   const mx=(guard.ax+guard.bx)*.5,mz=(guard.ay+guard.by)*.5;
+   if(Math.hypot(mx-target.x,mz-target.y)>330)continue;
+   polygon([[guard.ax,guard.ha+2.4,guard.ay],[guard.bx,guard.hb+2.4,guard.by],
+            [guard.bx,guard.hb+3.04,guard.by],[guard.ax,guard.ha+3.04,guard.ay]],'#d5d8ce');
  }
  let objects=[];for(let b of structures){let dx=b.x-target.x,dz=b.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<720&&Math.hypot(dx,dz)<780)objects.push({type:'b',obj:b,depth});}
  for(let i=0;i<trees.length;i++){let t=trees[i],dx=t.x-target.x,dz=t.y-target.y,depth=dx*si-dz*co,dist=Math.hypot(dx,dz);
