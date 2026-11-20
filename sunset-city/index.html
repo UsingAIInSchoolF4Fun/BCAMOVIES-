@@ -757,14 +757,14 @@ function drawWorldBase(){
  // Waves and ocean currents
  g.lineWidth=1.35;for(let row=-1100;row<1100;row+=33)for(let col=-1260;col<1260;col+=46){let h=hash(row*17+col*3),x=col+h*17,y=row+hash(col*11+row)*13;g.strokeStyle=h>.45?'#96e2e01d':'#83d1ea16';g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x+9,y-3,x+18,y);g.stroke();}
  pathIsland(g,0);g.fillStyle='#d7bd90';g.shadowBlur=23;g.shadowColor='#f7e1b48c';g.fill();g.shadowBlur=0;
- g.save();pathIsland(g,24);g.clip();g.fillStyle='#377f67';g.fillRect(-1200,-1000,2400,2000);
+ g.save();pathIsland(g,24);g.clip();g.fillStyle='#4d735e';g.fillRect(-1200,-1000,2400,2000);
  // Ground color zoning
  for(const d of DISTRICTS){const gr=g.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r*1.55);gr.addColorStop(0,d.name==='HARBOR WORKS'?'#78856b':d.name==='NEON QUARTER'?'#5c7772':d.name==='GOLD COAST'?'#95a280':'#699579');gr.addColorStop(1,'#60866f00');g.fillStyle=gr;g.fillRect(d.x-d.r*1.6,d.y-d.r*1.6,d.r*3.2,d.r*3.2)}
  // Terrain contours, visible on the atlas when WebGL is unavailable.
  for(const m of MOUNTAINS){
    for(let band=5;band>=1;band--){
      let scale=band/5;
-     g.fillStyle=band===1?'#9ba9a0':band===2?'#829a83':band===3?'#6a977a':'#559276';
+     g.fillStyle=band===1?'#a9ada1':band===2?'#819186':band===3?'#668272':'#4c725f';
      g.globalAlpha=.34;
      g.beginPath();g.ellipse(m.x,m.z,m.sx*1.15*scale,m.sz*1.15*scale,-.15,0,TAU);g.fill();
      g.globalAlpha=.68;g.lineWidth=2.6;g.strokeStyle='#d0d8b6';g.stroke();
@@ -773,36 +773,27 @@ function drawWorldBase(){
  }
  g.fillStyle='#ffffff09';for(let i=0;i<1800;i++){let x=hash(i*15+7)*2200-1100,y=hash(i*14+5)*1900-950,r=1+hash(i*9+6)*2.5;g.fillRect(x,y,r,r)}
  // Park, sports courts and roundabout greens
- g.fillStyle='#4c9977';g.beginPath();g.ellipse(-252*CITY_COMPACT,408*CITY_COMPACT,122*CITY_COMPACT,94*CITY_COMPACT,.25,0,TAU);g.fill();
+ g.fillStyle='#557d66';g.beginPath();g.ellipse(-252*CITY_COMPACT,408*CITY_COMPACT,122*CITY_COMPACT,94*CITY_COMPACT,.25,0,TAU);g.fill();
  g.strokeStyle='#ded3ab';g.lineWidth=5;g.beginPath();g.ellipse(-252*CITY_COMPACT,408*CITY_COMPACT,91*CITY_COMPACT,67*CITY_COMPACT,.25,0,TAU);g.stroke();
- g.fillStyle='#4c9a80';g.fillRect(-688,85,104,81);g.strokeStyle='#e5edd8';g.lineWidth=2;g.strokeRect(-684,89,96,73);g.beginPath();g.moveTo(-635,89);g.lineTo(-635,162);g.stroke();
+ g.fillStyle='#537e69';g.fillRect(-688,85,104,81);g.strokeStyle='#e5edd8';g.lineWidth=2;g.strokeRect(-684,89,96,73);g.beginPath();g.moveTo(-635,89);g.lineTo(-635,162);g.stroke();
  g.fillStyle='#9b9d8d';g.fillRect(-42,-678,183,95);g.fillStyle='#66737a';g.fillRect(-36,-668,166,75);g.strokeStyle='#f2d9ae';g.lineWidth=2;g.setLineDash([14,10]);g.beginPath();g.moveTo(-28,-630);g.lineTo(122,-630);g.stroke();g.setLineDash([]);
- // Roads: pavement, dark street, lane edges, dashes, glow-inset lane marking.
- for(const road of roads){let p=road.points;polyStroke(g,p,road.width+14,'#abb4a4');polyStroke(g,p,road.width+7,'#273c47');polyStroke(g,p,road.width,'#3b4b56');
-   polyStroke(g,p,road.width-4,'#465660');
-   if(road.style==='highway'){polyStroke(g,p,1.6,'#f2d891',[12,16]);polyStroke(g,p,road.width-12,'#8da9a777');}
-   else if(road.style==='coastal'){polyStroke(g,p,1.4,'#efd1a2',[9,15]);}
-   else if(road.style==='neon'){polyStroke(g,p,1.4,'#72e7db',[12,15]);}
-   else polyStroke(g,p,1.5,'#d2c6a5',[10,14]);
+ // Clean atlas roads without random crosswalks or artificial park circles.
+ for(const road of roads){
+   const p=road.points,trail=road.style==='trail';
+   polyStroke(g,p,road.width+7,trail?'#a09476':'#8b9387');
+   polyStroke(g,p,road.width,trail?'#857254':road.style==='coastal'?'#43535a':road.style==='mountain'?'#414d50':'#3e4b50');
+   if(!trail)polyStroke(g,p,1.4,'#edc986',[15,19]);
  }
- // Painted crosswalks and directional road markings, including diagonal crossing orientations.
- let crosspoints=[[-600,-490],[-300,-245],[0,0],[300,245],[600,490],[-300,0],[300,0],[-600,0],[0,-490],[0,490]];
- for(const [ax,ay] of crosspoints){let x=ax*CITY_COMPACT,y=ay*CITY_COMPACT;g.save();g.translate(x,y);g.rotate(hash(x+y)*.35);g.fillStyle='#f7ecd4b9';for(let i=-3;i<=3;i++){g.fillRect(i*5-1,-15,3.4,30);}g.restore()}
- // Inner planted circles visually break up square junctions.
- for(const c of [{x:40*CITY_COMPACT,y:25*CITY_COMPACT,r:65},{x:420*CITY_COMPACT,y:425*CITY_COMPACT,r:57},{x:525*CITY_COMPACT,y:-315*CITY_COMPACT,r:57}]){
-   g.fillStyle='#d9bea1';g.beginPath();g.arc(c.x,c.y,c.r,0,TAU);g.fill();
-   g.fillStyle='#518f74';g.beginPath();g.arc(c.x,c.y,c.r-9,0,TAU);g.fill();
-   g.strokeStyle='#c9d3c0';g.lineWidth=4;g.beginPath();g.arc(c.x,c.y,c.r-4,0,TAU);g.stroke();
-   g.fillStyle='#d9c392';g.beginPath();g.arc(c.x,c.y,12,0,TAU);g.fill();
+ // Draw intersecting roads as one continuous surface in the overview map.
+ for(const j of roadJunctions){
+   g.fillStyle=j.paved?'#3e4b50':'#857254';
+   g.beginPath();g.arc(j.x,j.y,j.radius,0,TAU);g.fill();
  }
- // Harbor loading area with offshore dock extending into sea; driveable pier remains open.
- g.fillStyle='#83999e';g.fillRect(-1087,-241,83,42);g.fillRect(-1081,-275,10,74);
- for(let i=0;i<6;i++){g.fillStyle=['#d38762','#8eb7b9','#e5cf92'][i%3];g.fillRect(480+i*30,542,26,13)}
  // Parking lots
  for(let p of parkingLots){g.save();g.translate(p.x,p.y);g.rotate(p.rot);g.fillStyle='#aeb4a9';g.fillRect(-p.w/2-3,-p.h/2-3,p.w+6,p.h+6);g.fillStyle='#53616b';g.fillRect(-p.w/2,-p.h/2,p.w,p.h);g.strokeStyle='#d7d9b196';g.lineWidth=1.4;for(let x=-p.w/2+10;x<p.w/2;x+=10){g.beginPath();g.moveTo(x,-p.h/2+4);g.lineTo(x,-p.h/2+18);g.stroke();}g.restore()}
  for(const b of structures)drawBuilding(g,b);
  for(const t of trees)drawTree(g,t);
- for(const p of streetProps){if(p.kind==='lamp'){g.fillStyle='#f9e4b36c';g.beginPath();g.arc(p.x,p.y,8,0,TAU);g.fill();g.fillStyle='#f5f3de';g.beginPath();g.arc(p.x,p.y,2,0,TAU);g.fill()}else{g.save();g.translate(p.x,p.y);g.rotate(p.a);g.fillStyle='#18283c';g.fillRect(-12,-5,24,10);g.fillStyle='#f7aa75';g.fillRect(-10,-3,20,6);g.restore()}};
+ for(const p of streetProps){if(p.kind==='lamp'){g.fillStyle='#f9e4b36c';g.beginPath();g.arc(p.x,p.y,8,0,TAU);g.fill();g.fillStyle='#f5f3de';g.beginPath();g.arc(p.x,p.y,2,0,TAU);g.fill()}else{g.save();g.translate(p.x,p.y);g.rotate(p.a);g.fillStyle='#18283c';g.fillRect(-12,-5,24,10);g.fillStyle='#c6b396';g.fillRect(-10,-3,20,6);g.restore()}};
  // Named districts and landmarks that sit on the city atlas.
  g.textAlign='center';g.textBaseline='middle';
  for(const d of DISTRICTS){g.fillStyle='#ebf7e72e';g.font='900 31px Arial';g.fillText(d.name,d.x,d.y+90)}
@@ -2062,7 +2053,7 @@ function drawAtlasCanvas(){
  g.fillStyle=ocean;g.fillRect(0,0,W,H);
  g.save();g.translate(W*.52,H*.52);g.scale(.28,.28);
  g.shadowColor='#051423';g.shadowBlur=32;pathIsland(g,0);g.fillStyle='#d1b18a';g.fill();g.shadowBlur=0;
- pathIsland(g,25);g.fillStyle='#527e68';g.fill();
+ pathIsland(g,25);g.fillStyle='#50735f';g.fill();
  g.save();pathIsland(g,27);g.clip();
  for(const m of MOUNTAINS){
   const gradient=g.createRadialGradient(m.x,m.z,8,m.x,m.z,m.sx*1.44);
@@ -2075,10 +2066,11 @@ function drawAtlasCanvas(){
  // Roads accurately match the drivable map.
  for(const road of roads){
   const ps=road.points;
-  polyStroke(g,ps,road.width+6,'#273f47a6');
-  polyStroke(g,ps,road.width,road.style==='trail'?'#a8825b':road.style==='mountain'?'#c8cebd':road.style==='coastal'?'#e0d1af':road.style==='urban'?'#909c9c':'#a9b8b3');
-  if(road.style==='mountain')polyStroke(g,ps,1.7,'#efe9d1',[16,16]);
+  polyStroke(g,ps,road.width+6,road.style==='trail'?'#a09476':'#a2a99b');
+  polyStroke(g,ps,road.width,road.style==='trail'?'#857254':road.style==='mountain'?'#414d50':road.style==='coastal'?'#43535a':'#3e4b50');
+  if(road.style!=='trail')polyStroke(g,ps,1.5,'#e2cc9b',[15,20]);
  }
+ for(const j of roadJunctions){g.beginPath();g.arc(j.x,j.y,j.radius,0,TAU);g.fillStyle=j.paved?'#3e4b50':'#857254';g.fill();}
  for(const trail of roads.filter(r=>r.style==='trail')){
    const mid=trail.points[Math.floor(trail.points.length*.47)];
    g.fillStyle='#ffdfac';g.strokeStyle='#284d4a';g.lineWidth=1.3;
