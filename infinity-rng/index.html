@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V15.1 SHADOW & RIVER UPDATE</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V15.2 CLEAR PATHS</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
 
 /* V14.4: focused gameplay HUD, with optional detail and true keyboard access */
@@ -65,7 +65,7 @@ body:not(.compact-ui) #challengeStatus{display:block}
 .top button:hover,.side button:hover,.bottom button:hover{transform:translateY(-2px);box-shadow:0 6px 17px #b482ff33}
 @keyframes v15MenuIn{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
 @media(max-width:600px){.version{font-size:8px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V15.1 · SHADOW & RIVER FIX</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find biome shrines and finish timed rune trials for themed auras</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V15.2 · CLEAR PATHS</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find biome shrines and finish timed rune trials for themed auras</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
  <h2>⚙ Settings</h2>
  <p>Keep your screen clean. Keyboard shortcuts still work.</p>
  <h3>DISPLAY</h3>
@@ -845,7 +845,8 @@ function clearForScenery(x,z,margin=0){
  if(Math.abs(x)>415||Math.abs(z)>415)return false;
  if(!waterFreeFootprint(x,z,margin+5))return false;
  if(reservedSites.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+margin))return false;
- if(typeof pathDistance==="function"&&pathDistance(x,z)<8+margin)return false;
+ // Every decorative footprint stays outside the paved route plus walking room.
+ if(typeof pathDistance==="function"&&pathDistance(x,z)<12+margin)return false;
  return true;
 }
 // Engineered foundations: footprint radius includes every column and porch.
@@ -1321,11 +1322,11 @@ for(const [kind,points] of [
  ["broad",[[172,305,2.3],[194,326,1.7],[216,310,2.5],[237,331,1.9],[259,312,2.1]]],
  ["pine",[[314,234,1.7],[335,249,2.4],[353,224,1.8],[377,254,2.1]]],
  ["pine",[[-375,20,2.1],[-390,48,1.5],[-359,70,2.2],[-401,92,1.9]]]
-])for(const [x,z,size] of points)if(clearForScenery(x,z,3))tree(x,z,size,kind);
+])for(const [x,z,size] of points)if(clearForScenery(x,z,6+size*2.2))tree(x,z,size,kind);
 for(const [x,z,size,mat] of [[-365,-125,2.5,mats.snow],[-345,-145,3.2,mats.snow],[155,-205,2.3,mats.stoneDark],[183,-220,3.5,mats.stoneDark]])
- if(clearForScenery(x,z,3))rock(x,z,size,mat);
+ if(clearForScenery(x,z,4+size*1.6))rock(x,z,size,mat);
 for(const [x,z,size] of [[170,125,3.1],[184,143,2.2],[203,128,4.1],[226,154,2.8]])
- if(clearForScenery(x,z,2))crystal(x,z,size);
+ if(clearForScenery(x,z,4+size*1.35))crystal(x,z,size);
 // Spawn details are now designed as a single coordinated hub below.
 // Removed old six-column ruins clusters; districts now use planned architecture.
 
@@ -2137,7 +2138,7 @@ function buildRoad(route,id){
   if(i%3===0)recordRoadSample(p.x,p.z,width);
   if(i>9&&i<count-8&&i%21===3){
    const side=(Math.floor(i/21)+id)%2?1:-1;
-   const x=p.x+nx*side*(width*.5+5.2),z=p.z+nz*side*(width*.5+5.2);
+   const x=p.x+nx*side*(width*.5+11.2),z=p.z+nz*side*(width*.5+11.2);
    if(clearForScenery(x,z,1)&&!worldColliders.some(o=>Math.hypot(x-o.x,z-o.z)<o.r+3))
     routePosts.push({x,y:ground(x,z),z});
   }
@@ -2339,11 +2340,18 @@ function buildWaystation(routeName,u,side=1){
  const curve=new T.CatmullRomCurve3(route.points.map(p=>new T.Vector3(p[0],0,p[1])),false,"centripetal",.45);
  const p=curve.getPoint(u),t=curve.getTangent(u),norm=Math.hypot(t.x,t.z)||1;
  const nx=-t.z/norm,nz=t.x/norm;
- let x=p.x+nx*side*19,z=p.z+nz*side*19;
- if(!clearForScenery(x,z,7)||worldColliders.some(o=>Math.hypot(x-o.x,z-o.z)<o.r+7)){
-  x=p.x-nx*side*19;z=p.z-nz*side*19;
+ // V15.2: choose an actual roadside foundation without crowding either path.
+ // Search farther out instead of constructing a pavilion on the road shoulder.
+ let x=null,z=null;
+ outer:for(const offset of [26,32,39,46])for(const facing of [side,-side]){
+  const tx=p.x+nx*facing*offset,tz=p.z+nz*facing*offset;
+  if(!clearForScenery(tx,tz,10))continue;
+  if(worldColliders.some(o=>Math.hypot(tx-o.x,tz-o.z)<o.r+9))continue;
+  const heightSamples=[ground(tx,tz),ground(tx+8,tz),ground(tx-8,tz),ground(tx,tz+8),ground(tx,tz-8)];
+  if(Math.max(...heightSamples)-Math.min(...heightSamples)>7.5)continue;
+  x=tx;z=tz;break outer;
  }
- if(!clearForScenery(x,z,7)||worldColliders.some(o=>Math.hypot(x-o.x,z-o.z)<o.r+7))return;
+ if(x===null)return;
  // Use the highest ground point within the footprint for a level platform,
  // and a stone foundation down to the lowest point for no floating edges.
  const samples=[ground(x,z)];
@@ -2431,7 +2439,25 @@ function animateWaystations(t){
  [woodPosts,flames,roofs].forEach(o=>{o.instanceMatrix.needsUpdate=true;o.castShadow=false;scene.add(o);});
 })();
 function worldSign(x,z,label,color){
+ // Keep the signs close to their planned positions, but never in a walkway.
+ // A smaller sign footprint fits safely beside the route and plaza.
+ if(pathDistance(x,z)<16||!waterFreeFootprint(x,z,5)||
+    worldColliders.some(o=>Math.hypot(x-o.x,z-o.z)<o.r+3)){
+  let moved=null;
+  outer:for(const offset of [8,13,19,26,34])for(let i=0;i<16;i++){
+   const a=i*Math.PI/8,tx=x+Math.cos(a)*offset,tz=z+Math.sin(a)*offset;
+   if(!waterFreeFootprint(tx,tz,5)||pathDistance(tx,tz)<16)continue;
+   if(Math.abs(tx)>408||Math.abs(tz)>408)continue;
+   if(worldColliders.some(o=>Math.hypot(tx-o.x,tz-o.z)<o.r+4))continue;
+   const base=ground(tx,tz),slope=Math.max(Math.abs(ground(tx+3,tz)-ground(tx-3,tz)),Math.abs(ground(tx,tz+3)-ground(tx,tz-3)));
+   if(!Number.isFinite(base)||slope>3.5)continue;
+   moved=[tx,tz];break outer;
+  }
+  if(!moved)return;
+  [x,z]=moved;
+ }
  const g=new T.Group();g.position.set(x,ground(x,z),z);scene.add(g);
+ registerCollider(x,z,.7,5.8);
  cyl(.23,.35,5.6,mats.wood,g,0,2.8,0,8);box(6,2.35,.4,mats.stoneDark,g,0,5.55,0);
  const can=document.createElement("canvas");can.width=512;can.height=192;
  const c=can.getContext("2d");c.fillStyle="#252139";c.fillRect(0,0,512,192);
@@ -2672,8 +2698,9 @@ function layeredMountainRange(cx,cz,style,count=7){
  for(let i=0;i<count;i++){
   const a=i*2.399,rad=22+Math.sqrt(i)*14;
   const x=cx+Math.cos(a)*rad,z=cz+Math.sin(a)*rad;
-  if(!clearForScenery(x,z,2))continue;
   const h=15+(i%5)*6,r=8+(i%4)*3;
+  // Use the full hill footprint, not just its center, when excluding paths.
+  if(!clearForScenery(x,z,r+5))continue;
   if(!waterFreeFootprint(x,z,r+7))continue;
   const cliff=sculptedCliff(x,z,r,h,i*7+11,color);
   if(style==="frost")spire(scene,x,cliff.top-2,z,3,h*.35,scenicCyan);
@@ -2779,7 +2806,7 @@ const biomeMotion=[];
    const x=zone.x-zone.rx+col*spacing+(row%2)*spacing*.5+jitterX;
    const z=zone.z-zone.rz+row*spacing+jitterZ;
    const theta=(x-zone.x)/zone.rx,phi=(z-zone.z)/zone.rz;
-   if(theta*theta+phi*phi>1||!clearForScenery(x,z,7))continue;
+   if(theta*theta+phi*phi>1||!clearForScenery(x,z,9))continue;
    if(trialSites.some(p=>Math.hypot(x-p.x,z-p.z)<37))continue;
    if(worldColliders.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+5))continue;
    if(occupied.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+4))continue;
@@ -3515,8 +3542,8 @@ function softRockRidge(cx,cz,span,count,mat,phase=0){
  for(let n=0;n<count;n++){
   const a=phase+n*2.399963,rad=span*(.32+.1*(n%3));
   const x=cx+Math.cos(a)*rad,z=cz+Math.sin(a)*rad;
-  if(!clearForScenery(x,z,17))continue;
   const radius=17+(n%4)*4,height=9+(n%3)*3,rings=8,sides=24;
+  if(!clearForScenery(x,z,radius+5))continue;
   if(!waterFreeFootprint(x,z,radius+5))continue;
   const coords=[],indexes=[];
   for(let j=0;j<=rings;j++){
