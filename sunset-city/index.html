@@ -326,7 +326,7 @@ function buildRoadJunctions(){
  }
  for(const q of roadJunctions){
   // Strip cutout is small; intersection patch extends over all corner edges.
-  q.cut=q.width*.34+5;
+  q.cut=q.width*.18+3; // Small safe cutout: every removed quad stays covered by the asphalt patch.
   q.radius=q.width*.65+5;
  }
 }
