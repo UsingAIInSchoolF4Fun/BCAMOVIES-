@@ -344,9 +344,23 @@ function terrainHeight(x,z){
  }
  return h;
 }
+const cliffColorCache=new Map();
+function cliffColorGrade(x,z){
+ const ix=Math.round(x/22),iz=Math.round(z/22),key=ix+','+iz;
+ const old=cliffColorCache.get(key);if(old!==undefined)return old;
+ const cx=ix*22,cz=iz*22,delta=11;
+ const dx=(rawTerrainHeight(cx+delta,cz)-rawTerrainHeight(cx-delta,cz))/(2*delta);
+ const dz=(rawTerrainHeight(cx,cz+delta)-rawTerrainHeight(cx,cz-delta))/(2*delta);
+ const slope=Math.hypot(dx,dz);
+ if(cliffColorCache.size>18000)cliffColorCache.clear();
+ cliffColorCache.set(key,slope);return slope;
+}
 function terrainStyle(x,z,h){
  const patch=hash(Math.floor(x/44)*17+Math.floor(z/44)*71+53);
  if(coastDistance(x,z)<42)return patch>.56?'#e7cba4':'#d2b78c';
+ if(h>45&&!roadsNear(x,z,13)&&cliffColorGrade(x,z)>.43){
+   return patch>.73?'#9ca49b':patch>.40?'#78887f':'#697b72';
+ }
  if(h>118)return patch>.55?'#c4cbbd':'#a5b5b1';
  if(h>92)return patch>.52?'#a9a99b':'#849b90';
  if(h>58)return patch>.55?'#799476':'#648c77';
@@ -1076,7 +1090,7 @@ function updatePlaying(dt){runningSeconds+=dt;now+=dt;updateCar(dt);if(mode!=='p
  hudTick+=dt;if(hudTick>.08){hudTick=0;updateHud()}
 }
 function updateHud(){if(!car)return;$('survive').textContent=timeFmt(runningSeconds);$('earn').textContent='$'+fmt(earned);$('heatLabel').textContent='LEVEL '+wave+' · '+cops.length+' COP'+(cops.length===1?'':'S');$('stars').textContent=wave<=5?'★'.repeat(wave)+'☆'.repeat(5-wave):'★★★★★ ×'+wave;$('healthText').textContent=Math.ceil(car.health/car.maxHealth*100)+'%';$('healthbar').style.width=clamp(car.health/car.maxHealth*100,0,100)+'%';$('boostText').textContent=Math.ceil(car.nitro/car.maxNitro*100)+'%';$('boostbar').style.width=clamp(car.nitro/car.maxNitro*100,0,100)+'%';$('speed').textContent=Math.floor(Math.abs(car.speed)*.65);$('carName').textContent=car.template.name+' · '+(isWater(car.x,car.y)?'OCEAN HAZARD':car.groundKind==='TRAIL'?'DIRT TRAIL':car.groundKind==='ROAD'?'PAVED ROAD':car.groundKind==='SHOULDER'?'SHOULDER':terrainHeight(car.x,car.y)>45?'ROCKY HIGHLANDS':'OPEN GROUND');$('terrainStatus').textContent=isWater(car.x,car.y)?'OCEAN HAZARD':(climateAt(now).rain?'RAIN · WET ROADS':climateAt(now).night?'NIGHT DRIVE':webgl?'3D · WILDLANDS':'3D · LOW GRAPHICS');$('heatProgress').style.width=(runningSeconds%HEAT_SECONDS/HEAT_SECONDS*100)+'%';drawRadar()}
-function drawRadar(){let g=rctx,W=180,H=180;g.clearRect(0,0,W,H);g.fillStyle='#0a2a41';g.fillRect(0,0,W,H);g.save();g.translate(W/2,H/2);let s=.10;g.scale(s,s);g.translate(-car.x,-car.y);pathIsland(g);g.fillStyle='#428c70';g.fill();for(const m of MOUNTAINS){for(let ring=1;ring<=4;ring++){g.strokeStyle=ring%2?'#c8d6a1':'#779c80';g.lineWidth=6;g.beginPath();g.ellipse(m.x,m.z,m.sx*ring/4,m.sz*ring/4,0,0,TAU);g.stroke();}}for(let r of roads){polyStroke(g,r.points,r.width+6,'#9ba6a7');polyStroke(g,r.points,r.width,'#455767')}for(let b of structures){g.fillStyle='#b7b29b';g.fillRect(b.x-b.w/2,b.y-b.h/2,b.w,b.h)}for(let p of pickups){if(p.claimed)continue;g.fillStyle=p.kind==='repair'?'#7affd5':'#ffdb79';g.beginPath();g.arc(p.x,p.y,18,0,TAU);g.fill()}for(let c of cops){g.fillStyle='#ff647d';g.beginPath();g.arc(c.x,c.y,22,0,TAU);g.fill()}g.restore();g.save();g.translate(90,90);g.rotate(car.a);g.fillStyle='#ffffff';g.strokeStyle='#031422';g.lineWidth=2;g.beginPath();g.moveTo(0,-12);g.lineTo(8,10);g.lineTo(0,6);g.lineTo(-8,10);g.closePath();g.fill();g.stroke();g.restore();g.strokeStyle='#ffffff66';g.lineWidth=2;g.strokeRect(1,1,178,178)}
+function drawRadar(){let g=rctx,W=180,H=180;g.clearRect(0,0,W,H);g.fillStyle='#0a2a41';g.fillRect(0,0,W,H);g.save();g.translate(W/2,H/2);let s=.10;g.scale(s,s);g.translate(-car.x,-car.y);pathIsland(g);g.fillStyle='#428c70';g.fill();for(const m of MOUNTAINS){for(let ring=1;ring<=4;ring++){g.strokeStyle=ring%2?'#c8d6a1':'#779c80';g.lineWidth=6;g.beginPath();g.ellipse(m.x,m.z,m.sx*ring/4,m.sz*ring/4,0,0,TAU);g.stroke();}}for(let r of roads){polyStroke(g,r.points,r.width+6,r.style==='trail'?'#c2a17b':'#9ba6a7');polyStroke(g,r.points,r.width,r.style==='trail'?'#9f764d':'#455767')}for(let b of structures){g.fillStyle='#b7b29b';g.fillRect(b.x-b.w/2,b.y-b.h/2,b.w,b.h)}for(let p of pickups){if(p.claimed)continue;g.fillStyle=p.kind==='repair'?'#7affd5':'#ffdb79';g.beginPath();g.arc(p.x,p.y,18,0,TAU);g.fill()}for(let c of cops){g.fillStyle='#ff647d';g.beginPath();g.arc(c.x,c.y,22,0,TAU);g.fill()}g.restore();g.save();g.translate(90,90);g.rotate(car.a);g.fillStyle='#ffffff';g.strokeStyle='#031422';g.lineWidth=2;g.beginPath();g.moveTo(0,-12);g.lineTo(8,10);g.lineTo(0,6);g.lineTo(-8,10);g.closePath();g.fill();g.stroke();g.restore();g.strokeStyle='#ffffff66';g.lineWidth=2;g.strokeRect(1,1,178,178)}
 function drawVehicle(g,v,police=false,player=false){let x=v.x,y=v.y,a=v.a,col=police?(v.type==='heavy'?'#394651':'#e4edf0'):v.color;g.save();g.translate(x,y);g.rotate(a);
  if(player&&car.hitCooldown>0&&Math.floor(now*13)%2)g.globalAlpha=.55;
  g.fillStyle='#041d2d77';g.beginPath();g.ellipse(4,6,12,20,0,0,TAU);g.fill();
@@ -1246,6 +1260,20 @@ function build3DCity(){
     mesh.box(x,h+2.3,z,1,.25,1,road.style==='mountain'?'#ffd38e':'#70d5cb',0,.65);
    }
   }
+ }
+ // Visible trailheads: wooden ranger signs show where off-road driving is intended.
+ for(const trail of roads.filter(r=>r.style==='trail')){
+   for(const i of [0,trail.points.length-1]){
+     const pt=roadJoinPoint(trail,i,trail.width*.5+9),h=surfaceY(pt.x,pt.y);
+     if(isWater(pt.x,pt.y))continue;
+     const mesh=tileAt(pt.x,pt.y);
+     mesh.box(pt.x,h+3.3,pt.y,.75,6.6,.75,'#654c39');
+     mesh.box(pt.x,h+6.1,pt.y,11.0,2.8,.7,'#8f6c48');
+     mesh.box(pt.x,h+6.2,pt.y,8.2,.45,.77,'#e7c68d');
+     mesh.box(pt.x,h+4.8,pt.y,6.8,.32,.8,'#a7d0b4');
+     // Boulder cairn makes the trail entrance recognizable even at speed.
+     mesh.boulder(pt.x+5.1,h+1.0,pt.y+2.8,2.5);
+   }
  }
  for(const park of parkingLots){let m=tileAt(park.x,park.y),base=surfaceY(park.x,park.y);m.box(park.x,base+.18,park.y,park.w+4,.16,park.h+4,'#9eafa4',park.rot);m.box(park.x,base+.275,park.y,park.w,.07,park.h,'#485665',park.rot);for(let j=-2;j<=2;j++)m.box(park.x+j*8,base+.317,park.y,0.4,.03,12,'#e8d3ad',park.rot)}
  // Physical building geometry follows the very same rotated rectangles used by building collision code.
@@ -1744,6 +1772,13 @@ function drawAtlasCanvas(){
   polyStroke(g,ps,road.width+6,'#273f47a6');
   polyStroke(g,ps,road.width,road.style==='trail'?'#a8825b':road.style==='mountain'?'#c8cebd':road.style==='coastal'?'#e0d1af':road.style==='urban'?'#909c9c':'#a9b8b3');
   if(road.style==='mountain')polyStroke(g,ps,1.7,'#efe9d1',[16,16]);
+ }
+ for(const trail of roads.filter(r=>r.style==='trail')){
+   const mid=trail.points[Math.floor(trail.points.length*.47)];
+   g.fillStyle='#ffdfac';g.strokeStyle='#284d4a';g.lineWidth=1.3;
+   g.beginPath();g.arc(mid.x,mid.y,11,0,TAU);g.fill();g.stroke();
+   g.fillStyle='#243d39';g.font='bold 18px Arial';g.textAlign='center';
+   g.fillText('DIRT SHORTCUT',mid.x,mid.y-20);
  }
  for(const b of structures){g.fillStyle='#ddd6bdb8';g.save();g.translate(b.x,b.y);g.rotate(b.rot);g.fillRect(-b.w/2,-b.h/2,b.w,b.h);g.restore();}
  g.restore();
