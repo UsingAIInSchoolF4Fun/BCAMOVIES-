@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V15.0 WORLD OVERHAUL</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V15.1 SHADOW & RIVER UPDATE</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
 
 /* V14.4: focused gameplay HUD, with optional detail and true keyboard access */
@@ -65,7 +65,7 @@ body:not(.compact-ui) #challengeStatus{display:block}
 .top button:hover,.side button:hover,.bottom button:hover{transform:translateY(-2px);box-shadow:0 6px 17px #b482ff33}
 @keyframes v15MenuIn{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
 @media(max-width:600px){.version{font-size:8px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V15.0 · WORLD OVERHAUL</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find biome shrines and finish timed rune trials for themed auras</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V15.1 · SHADOW & RIVER FIX</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find biome shrines and finish timed rune trials for themed auras</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
  <h2>⚙ Settings</h2>
  <p>Keep your screen clean. Keyboard shortcuts still work.</p>
  <h3>DISPLAY</h3>
@@ -522,7 +522,7 @@ renderer.outputEncoding = T.sRGBEncoding;
 renderer.toneMapping = T.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.92;
 document.body.prepend(renderer.domElement);
-scene.add(new T.HemisphereLight(0xb9d7eb, 0x31453c, 0.59));
+scene.add(new T.HemisphereLight(0x9bbbd2, 0x263c38, 0.43));
 const sun = new T.DirectionalLight(0xffd4a8, 1.05);
 sun.position.set(-80, 150, 90);
 sun.castShadow = true;
@@ -533,14 +533,15 @@ sun.shadow.camera.top = 125;
 sun.shadow.camera.bottom = -125;
 sun.shadow.bias = -.0005;
 scene.add(sun);
-const ambient = new T.AmbientLight(0x7e88ac, 0.33);
+const ambient = new T.AmbientLight(0x68708a, 0.21);
 scene.add(ambient);
-scene.background.setHex(0x93a9c3);
-scene.fog.color.setHex(0xa7b6bc);
-sun.color.setHex(0xffe4c2);
-sun.intensity = 1.24;
+scene.background.setHex(0x415574);
+scene.fog.color.setHex(0x667a8b);
+sun.color.setHex(0xffca9b);
+sun.intensity = 1.07;
+sun.position.set(-110,130,78);
 sun.shadow.mapSize.set(lowPowerDevice?512:1536,lowPowerDevice?512:1536);
-renderer.toneMappingExposure = 1.04;
+renderer.toneMappingExposure = .88;
 
 // A continuous painted twilight sky replaces the featureless solid horizon.
 // One large background sphere, one shader draw call and no expensive post FX.
@@ -548,7 +549,7 @@ const skyDomeMaterial=new T.ShaderMaterial({
  uniforms:{uTime:{value:0}},
  side:T.BackSide,depthWrite:false,depthTest:false,fog:false,
  vertexShader:"varying vec3 vDirection;void main(){vDirection=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}",
- fragmentShader:"uniform float uTime;varying vec3 vDirection;void main(){vec3 d=normalize(vDirection);float h=d.y;vec3 peach=vec3(.95,.70,.57);vec3 lilac=vec3(.61,.70,.84);vec3 indigo=vec3(.22,.40,.65);vec3 sky=mix(peach,lilac,smoothstep(-.15,.37,h));sky=mix(sky,indigo,smoothstep(.28,.89,h));float sun=max(dot(d,normalize(vec3(-.65,.21,.48))),0.0);sky+=vec3(.51,.23,.06)*pow(sun,11.0);float haze=sin(d.x*47.0+uTime*.025+sin(d.z*23.0)*1.8)*sin(d.z*31.0-uTime*.012);sky+=vec3(.055,.035,.075)*haze*(1.0-smoothstep(.35,.9,h));gl_FragColor=vec4(sky,1.0);}"
+ fragmentShader:"uniform float uTime;varying vec3 vDirection;void main(){vec3 d=normalize(vDirection);float h=d.y;vec3 peach=vec3(.81,.51,.42);vec3 lilac=vec3(.45,.51,.67);vec3 indigo=vec3(.10,.19,.35);vec3 sky=mix(peach,lilac,smoothstep(-.15,.37,h));sky=mix(sky,indigo,smoothstep(.28,.89,h));float sun=max(dot(d,normalize(vec3(-.65,.21,.48))),0.0);sky+=vec3(.33,.19,.09)*pow(sun,11.0);float haze=sin(d.x*47.0+uTime*.025+sin(d.z*23.0)*1.8)*sin(d.z*31.0-uTime*.012);sky+=vec3(.055,.035,.075)*haze*(1.0-smoothstep(.35,.9,h));gl_FragColor=vec4(sky,1.0);}"
 });
 const skySphere=new T.Mesh(new T.SphereGeometry(1050,36,20),skyDomeMaterial);
 skySphere.renderOrder=-1000;skySphere.frustumCulled=false;skySphere.castShadow=false;
@@ -830,8 +831,18 @@ const reservedSites=[
  {x:75,z:65,r:24},{x:-235,z:50,r:24},{x:230,z:-35,r:24},{x:45,z:-240,r:24},{x:20,z:250,r:24},
  {x:318,z:-295,r:93}
 ];
+// Keep banks genuinely clear: no trees, boulders, cliff props or floating hills
+// within the riverbed. Bridges and authored paths are the only exceptions.
+function waterFreeFootprint(x,z,radius=0){
+ if(x<-319-radius||x>354+radius)return true;
+ const reach=11+radius,dx=Math.min(30,radius);
+ return Math.abs(z-riverPathZ(x))>reach&&
+        Math.abs(z-riverPathZ(x-dx))>reach&&
+        Math.abs(z-riverPathZ(x+dx))>reach;
+}
 function clearForScenery(x,z,margin=0){
  if(Math.abs(x)>415||Math.abs(z)>415)return false;
+ if(!waterFreeFootprint(x,z,margin+5))return false;
  if(reservedSites.some(p=>Math.hypot(x-p.x,z-p.z)<p.r+margin))return false;
  if(typeof pathDistance==="function"&&pathDistance(x,z)<8+margin)return false;
  return true;
@@ -894,10 +905,10 @@ function rawHeight(x,z){
  y+=dome(0,0,140,140,-13);
  y+=dome(0,0,62,62,13);
  // Ravines and water corridors: wide, curving, readable from a distance.
- const river=Math.abs(z-(65+24*Math.sin(x*.014)+12*Math.sin(x*.035)));
- if(x>-310&&x<345&&river<28){
-  const f=1-river/28;
-  y-=9*f*f;
+ const river=Math.abs(z-riverPathZ(x));
+ if(x>-310&&x<345&&river<30){
+  const f=1-river/30;
+  y-=11*f*f;
  }
  return y;
 }
@@ -1064,17 +1075,24 @@ for (let j = 0; j < verts.length; j += 3) {
     // Soft biome transitions: no harsh color borders between landscapes.
     const blend=(a,b,value)=>{let u=Math.max(0,Math.min(1,(value-a)/(b-a)));return u*u*(3-2*u)};
     // Distinct biome palettes, with blended transitions instead of hard edges.
-    tone.setHex(h>6?0x78a18b:0x4f9b77);
-    if(z>75)tone.lerp(new T.Color(h>5?0x4b916a:0x51b27b),blend(75,190,z));
-    if(z< -75)tone.lerp(new T.Color(h>6?0x706dae:0x676faa),blend(75,185,-z));
-    if(x< -90)tone.lerp(new T.Color(h>5?0xe7f4ff:0xb9d8ed),blend(90,195,-x));
-    if(x>90)tone.lerp(new T.Color(h>6?0x8c62c8:0x7755b3),blend(90,200,x));
-    if(x>162&&z>118)tone.lerp(new T.Color(h>6?0xe5b978:0xeacb8b),blend(118,215,z));
-    if(x>155&&z< -85)tone.lerp(new T.Color(h>6?0x84536f:0x68505e),blend(85,190,-z));
+    tone.setHex(h>6?0x678775:0x347b5d);
+    if(z>75)tone.lerp(new T.Color(h>5?0x32674c:0x368d61),blend(75,190,z));
+    if(z< -75)tone.lerp(new T.Color(h>6?0x45477e:0x4b5297),blend(75,185,-z));
+    if(x< -90)tone.lerp(new T.Color(h>5?0xbcd5ee:0x779fbc),blend(90,195,-x));
+    if(x>90)tone.lerp(new T.Color(h>6?0x65458f:0x724ba7),blend(90,200,x));
+    if(x>162&&z>118)tone.lerp(new T.Color(h>6?0xb78b56:0xcfad6e),blend(118,215,z));
+    if(x>155&&z< -85)tone.lerp(new T.Color(h>6?0x663c45:0x794b4a),blend(85,190,-z));
     if(pathDistance(x,z)<6.7)tone.lerp(new T.Color(0xb7a396),.24);
     // Tiny variations keep terrain from looking like one flat paint color.
-    tone.offsetHSL(0,0,noise*.24);
-    groundColors.push(tone.r * .92, tone.g * .92, tone.b * .92)
+    // Baked directional shade gives Chromebooks hillside shadows even with
+    // performance mode's real-time shadow map disabled.
+    const normal=geo.attributes.normal,vi=j/3;
+    const nx=normal.getX(vi),ny=normal.getY(vi),nz=normal.getZ(vi);
+    const sunSide=Math.max(0,nx*(-.57)+ny*.75+nz*.34);
+    const valleyShade=Math.min(.07,Math.max(0,(7-h)*.005));
+    const colorShade=Math.max(.50,.57+.29*sunSide-valleyShade);
+    tone.offsetHSL(0,.075,noise*.14-.012);
+    groundColors.push(tone.r*colorShade,tone.g*colorShade,tone.b*colorShade)
 }
 geo.setAttribute("color", new T.Float32BufferAttribute(groundColors, 3)); // Use vertex-color-only unlit ground to avoid washed-out lighting and guarantee distinct biomes.
 const terrainMat = new T.MeshStandardMaterial({
@@ -1248,8 +1266,8 @@ function ruins(x, z) {
 // Animated grass clumps & flowers (density tuned for Chromebooks)
 const grassClumps = [];
 const flowerGroups = [];
-const grassMat = new T.MeshStandardMaterial({ color: 0x3d7a5c, roughness: 0.95, side: T.DoubleSide });
-const grassMat2 = new T.MeshStandardMaterial({ color: 0x2e6b4e, roughness: 0.95, side: T.DoubleSide });
+const grassMat = new T.MeshStandardMaterial({ color: 0x35694a, roughness: 0.95, side: T.DoubleSide });
+const grassMat2 = new T.MeshStandardMaterial({ color: 0x245a3b, roughness: 0.95, side: T.DoubleSide });
 const flowerMats = [
     new T.MeshStandardMaterial({ color: 0xe8a0b8, roughness: 0.6 }),
     new T.MeshStandardMaterial({ color: 0xf0d878, roughness: 0.55 }),
@@ -2655,6 +2673,7 @@ function layeredMountainRange(cx,cz,style,count=7){
   const x=cx+Math.cos(a)*rad,z=cz+Math.sin(a)*rad;
   if(!clearForScenery(x,z,2))continue;
   const h=15+(i%5)*6,r=8+(i%4)*3;
+  if(!waterFreeFootprint(x,z,r+7))continue;
   const cliff=sculptedCliff(x,z,r,h,i*7+11,color);
   if(style==="frost")spire(scene,x,cliff.top-2,z,3,h*.35,scenicCyan);
   if(style==="ember")spire(scene,x,cliff.top-2,z,2.5,h*.28,scenicPink);
@@ -3376,7 +3395,14 @@ const worldBridges=[];
 // V14.4 WATER REPAIR: a continuous river surface with stable depth and
 // subtle UV flow. Previously each bank sampled a different height so the
 // river twisted into broken triangles and intersected the terrain.
-function riverPathZ(x){return 65+24*Math.sin(x*.014)+12*Math.sin(x*.035);}
+// Rerouted upstream of the plaza and challenge shrines: never through their pads.
+// Keeps a continuous river with crossings automatically rebuilt on the new line.
+function riverPathZ(x){
+ return 153+10*Math.sin(x*.008)+4*Math.sin(x*.04)
+   -16*Math.exp(-Math.pow((x-110)/80,2))
+   +12*Math.exp(-Math.pow((x+36)/47,2))
+   -15*Math.exp(-Math.pow((x-255)/42,2));
+}
 function riverWaterHeight(x){
  const z=riverPathZ(x);
  // The lower bank defines the level across the whole channel at this x.
@@ -3463,6 +3489,7 @@ function softRockRidge(cx,cz,span,count,mat,phase=0){
   const x=cx+Math.cos(a)*rad,z=cz+Math.sin(a)*rad;
   if(!clearForScenery(x,z,17))continue;
   const radius=17+(n%4)*4,height=9+(n%3)*3,rings=8,sides=24;
+  if(!waterFreeFootprint(x,z,radius+5))continue;
   const coords=[],indexes=[];
   for(let j=0;j<=rings;j++){
    const u=j/rings,r=radius*u,alt=height*Math.pow(Math.max(0,1-u*u),2);
@@ -3492,7 +3519,8 @@ softRockRidge(325,-300,85,5,worldStone,1.5);
 // actual terrain; their feet cannot float above a hill or sink through it.
 const cliffBeaconRigs=[];
 function builtRockButtress(x,z,radius,height,theme,seed){
- if(!clearForScenery(x,z,6))return;
+ if(!waterFreeFootprint(x,z,radius+7))return;
+ if(!clearForScenery(x,z,radius+3))return;
  if(pathDistance(x,z)<radius+6)return;
  const palette={
   frost:[0x7894b2,0xdae9fa],forest:[0x44685c,0x7ea37e],
