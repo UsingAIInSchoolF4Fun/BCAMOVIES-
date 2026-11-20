@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V16.1 EXPANDED PLATFORMS</title><style>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INFINITY RNG — V17.0 WORLD & ANIMATION POLISH</title><style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050816;color:#f7f4ff;font-family:Inter,system-ui,Arial}canvas{display:block}button{font:inherit;font-weight:850;cursor:pointer;border:1px solid #ffffff32;background:linear-gradient(135deg,#5c31b5,#8c4deb);color:white;border-radius:12px;padding:11px 16px;transition:filter .2s,transform .2s}button:hover{filter:brightness(1.2)}button:disabled{opacity:.5;cursor:default}.ghost{background:#17162d}.panel{background:#0a0c21df;border:1px solid #9d82d14d;box-shadow:0 12px 50px #0009, inset 0 1px #ffffff13;backdrop-filter:blur(14px);border-radius:18px}.hud{position:fixed;inset:0;pointer-events:none}.hud button,.hud input,.hud a{pointer-events:auto}.top{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;gap:12px;padding:13px 18px}.brand{font-size:22px;font-weight:1000;letter-spacing:.035em;background:linear-gradient(90deg,#e7d4ff,#8deaff);color:transparent;background-clip:text}.version{font-size:10px;color:#c3aaff;margin-left:7px}.stats{margin-left:auto;text-align:right;font-size:12px;color:#c7c6db;line-height:1.6}.stats b{color:white}.actions{display:flex;gap:8px}.bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(390px,calc(100vw - 24px));padding:11px 14px;text-align:center}.bottom .eyebrow{font-size:9px}.bottom .result{font-size:clamp(17px,3vw,25px);min-height:26px;margin:4px 0}.bottom .chance{font-size:11px}.bottom .buttons{margin:7px 0}.bottom .buttons button{padding:8px 13px;font-size:12px}.bottom .roll{min-width:100px}.bottom .equipline{font-size:10px}.bottom .progress{margin-top:7px}.eyebrow{font-size:10px;letter-spacing:.25em;color:#b2a1d9;font-weight:900}.result{font-size:clamp(24px,5vw,39px);font-weight:1000;margin:8px 0 4px;text-shadow:0 0 25px currentColor;min-height:45px}.chance{color:#c8c3e3;font-size:13px}.buttons{display:flex;justify-content:center;gap:9px;margin:13px 0}.roll{min-width:150px;font-size:17px;background:linear-gradient(120deg,#7439ee,#c057ff)}.auto{background:#282342}.equipline{color:#c7c1d9;font-size:12px}.toast{position:absolute;top:105px;left:50%;transform:translateX(-50%);padding:12px 24px;text-align:center;opacity:0;transition:opacity .4s;white-space:nowrap}.toast.show{opacity:1}.sprint-control{position:absolute;right:18px;bottom:30px;pointer-events:auto}.sprint-control button.active{background:#147d94}.parkour-hud{position:absolute;top:105px;right:18px;padding:12px;max-width:230px;font-size:12px}.hint{position:absolute;left:18px;bottom:20px;font-size:12px;color:#d7d3e9;text-shadow:0 2px 5px black}.location{position:absolute;top:100px;left:18px;padding:11px 16px;font-size:12px}.location b{display:block;font-size:15px}.side{display:none;position:absolute;top:86px;right:14px;width:min(400px,calc(100vw - 28px));max-height:calc(100dvh - 190px);overflow:auto;padding:18px;pointer-events:auto}.side.open{display:block}.side h2{margin:0 0 6px}.side p{font-size:12px;color:#c6bed7}.inventory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.item{min-height:82px;border:1px solid var(--color);background:linear-gradient(125deg,#1b1731,#111526);text-align:left;padding:12px;position:relative}.item strong{display:block;font-size:14px;color:var(--color)}.item small{display:block;font-size:11px;color:#bfb7d2;margin-top:6px}.item.active{box-shadow:inset 0 0 18px #ffffff12,0 0 16px var(--color)}.empty{padding:25px;color:#a7a0c3;text-align:center}.overlay{position:absolute;inset:0;background:radial-gradient(circle at center,#25134dd9,#050613e8);display:none;align-items:center;justify-content:center;flex-direction:column;z-index:4;pointer-events:none}.overlay .revealhint{letter-spacing:.22em;color:#ffe6aa;font-weight:900}.overlay .revealodds{font-weight:900;font-size:24px}.overlay .reveal{max-width:90vw}.overlay.tease .reveal{font-size:clamp(26px,5vw,50px);color:#ffe6a8;text-shadow:0 0 25px #f8c15e}.overlay.tease .burst{animation-duration:.7s}.overlay.tease{background:radial-gradient(circle,#4a2a50ee,#060616f5)}.overlay.show{display:flex}.burst{position:absolute;width:260px;height:260px;border:3px solid var(--burst,#c084fc);border-radius:50%;box-shadow:0 0 60px var(--burst),inset 0 0 65px var(--burst);animation:burst 1.4s ease-out infinite}.burst.two{animation-delay:.5s}.reveal{font-size:clamp(30px,8vw,72px);font-weight:1000;letter-spacing:.12em;text-shadow:0 0 30px var(--burst),0 0 70px var(--burst);z-index:2;text-align:center}.revealodds{font-size:18px;z-index:2;color:#fff;margin-top:12px}.revealhint{font-size:12px;color:#bfb6d7;margin-top:30px;z-index:2}.flash{animation:flash .25s linear}.reveal.show .reveal{animation:reveal .7s both}@keyframes burst{from{transform:scale(.2);opacity:1}to{transform:scale(2.7);opacity:0}}@keyframes reveal{from{transform:scale(.3);opacity:0;filter:blur(15px)}to{transform:scale(1);opacity:1;filter:blur(0)}}@keyframes flash{from{filter:brightness(4)}to{filter:brightness(1)}}.loading{position:absolute;inset:0;background:#070916;display:grid;place-items:center;z-index:10;font-weight:900;color:#c4aaff}.loading.hidden{display:none}.crosshair{position:absolute;top:50%;left:50%;width:4px;height:4px;border-radius:50%;background:#ffffff55}.progress{height:4px;background:#30254a;border-radius:10px;overflow:hidden;margin-top:12px}.progress div{height:100%;width:0;background:#b87cff;transition:width .08s}.muted{color:#b5a7d4;font-size:12px}.notice{font-size:11px;color:#b2a5ca}@media(max-width:720px){.brand{font-size:15px}.top{padding:9px;gap:5px}.stats{font-size:10px}.top button{padding:8px;font-size:11px}.hint{display:none}.location{top:75px;left:9px}.bottom{bottom:7px;padding:11px}.buttons{margin:8px 0}.side{top:68px}.result{min-height:35px}}
 
 /* V14.4: focused gameplay HUD, with optional detail and true keyboard access */
@@ -65,7 +65,7 @@ body:not(.compact-ui) #challengeStatus{display:block}
 .top button:hover,.side button:hover,.bottom button:hover{transform:translateY(-2px);box-shadow:0 6px 17px #b482ff33}
 @keyframes v15MenuIn{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
 @media(max-width:600px){.version{font-size:8px}}
-</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V16.1 · EXPANDED PLATFORMS</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Find biome shrines and finish timed rune trials for themed auras</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
+</style></head><body><div class="loading" id="loading">BUILDING THE INFINITY WORLD…</div><div class="hud"><div class="top panel"><div class="brand">∞ INFINITY RNG <span class="version">V17.0 · ANIMATION & WORLD POLISH</span></div><div class="stats" id="stats"></div><div class="actions"><button id="inventoryButton" title="Open your aura collection">Auras</button><button id="mapButton" title="World map (M)">Map</button><button id="settingsButton" title="Settings and redeem codes">⚙ Settings</button></div></div><div class="location panel"><span class="eyebrow">NOW EXPLORING</span><b id="biome">The Origin</b><span id="coords" class="muted"></span><div id="luckStatus" style="margin-top:5px;color:#ffdc8e">Luck ×1</div><div id="challengeStatus" style="margin-top:5px;color:#b5e9ff">Explore the giant jumping trials to earn themed auras and luck</div></div><div class="parkour-hud panel" id="parkourHud">Skybridge Parkour · 0/12</div><div id="mouseHint" style="position:absolute;left:50%;top:28%;transform:translateX(-50%);background:#13293dcc;color:#e5f4ff;padding:12px 19px;border:1px solid #8bd5ee66;border-radius:12px;pointer-events:none;font-size:13px;z-index:4">Click the world to lock your mouse · Esc to use menus</div><div class="hint">WASD / Arrows — Move · E — Sprint · Space — Jump · G — Deploy wings from height · Flight: W dive, S climb, A/D steer, Shift boost, Space flare · M — Map · Esc — Cursor</div><div class="bottom panel"><div class="eyebrow" id="rollLabel">DISCOVER YOUR DESTINY</div><div class="result" id="result">READY TO ROLL</div><div class="chance" id="chance">2,088 auras · 28 exclusive biome variants</div><div class="progress"><div id="rollProgress"></div></div><div class="buttons"><button id="rollButton" class="roll">✦ ROLL</button><button id="autoButton" class="auto">AUTO: OFF</button></div><div class="equipline" id="equipped"></div></div><div class="side panel" id="inventory"><h2>✦ Aura Collection</h2><p>Choose or search for an aura to equip.</p><input id="inventorySearch" type="text" placeholder="Search your auras..." autocomplete="off" aria-label="Search your auras"><div id="auraPreview" style="margin:10px 0;padding:11px 12px;border-radius:11px;border:1px solid #8068a7;background:#191832;color:#e8e0f8;font-size:11px;line-height:1.45"></div><div id="inventoryCount"></div><div class="inventory-grid" id="items"></div><button id="inventoryMore" class="ghost" style="display:none">Show more auras</button><p class="notice">Progress saves to this browser.</p><button id="closeInventory" class="ghost">Close</button></div><div class="side panel" id="settingsPanel" role="dialog" aria-label="Game settings">
  <h2>⚙ Settings</h2>
  <p>Keep your screen clean. Keyboard shortcuts still work.</p>
  <h3>DISPLAY</h3>
@@ -483,13 +483,13 @@ if (!window.THREE) {
 }
 window.addEventListener("error",e=>{
  const l=document.getElementById("loading");
- if(l){const message=e.message||"Unknown error";l.innerHTML="<strong>V14.6 BROWSER ERROR</strong><div style='font-size:12px;white-space:pre-wrap;text-align:left;max-width:80vw;max-height:50vh;overflow:auto;margin:8px 0'>"+
+ if(l){const message=e.message||"Unknown error";l.innerHTML="<strong>V17.0 BROWSER ERROR</strong><div style='font-size:12px;white-space:pre-wrap;text-align:left;max-width:80vw;max-height:50vh;overflow:auto;margin:8px 0'>"+
  [message, "at "+(e.filename||"inline script")+":"+(e.lineno||"?")+":"+(e.colno||"?"), e.error&&e.error.stack?e.error.stack:""].join("\n").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]))+
  "</div><a style='color:#bcfaff' href='./'>Play stable version</a>";l.classList.remove("hidden");}
 });
 window.addEventListener("unhandledrejection",e=>{
  const l=document.getElementById("loading");
- if(l){l.textContent="V14 async error: "+String(e.reason);l.classList.remove("hidden");}
+ if(l){l.textContent="V17.0 async error: "+String(e.reason);l.classList.remove("hidden");}
 });
 const T = THREE,
     scene = new T.Scene();
@@ -534,6 +534,10 @@ sun.shadow.camera.bottom = -125;
 sun.shadow.bias = -.0005;
 scene.add(sun);
 scene.add(sun.target); // moving shadow frustum stays with the player.
+// Cool edge light separates trees, architecture and the avatar from warm dusk.
+const skylineRim=new T.DirectionalLight(0x8aaad9,.18);
+skylineRim.position.set(155,85,-140);
+skylineRim.castShadow=false;scene.add(skylineRim);
 const ambient = new T.AmbientLight(0x68708a, 0.21);
 scene.add(ambient);
 scene.background.setHex(0x415574);
@@ -4049,12 +4053,54 @@ for (let s of [-1, 1]) {
     legs.push(leg)
 }
 box(.95, .28, .64, trim, rig, 0, 1.52, 0);
+// Low-poly armor details add silhouette without loading an external model.
+const gauntlet=new T.MeshStandardMaterial({color:0x475476,metalness:.38,roughness:.51});
+for(let i=0;i<2;i++){
+ const arm=arms[i],leg=legs[i];
+ box(.39,.25,.44,gauntlet,arm,0,-.82,-.01);
+ box(.29,.13,.33,trim,arm,0,-.65,-.22);
+ box(.53,.18,.68,gauntlet,leg,0,-1.13,-.13);
+ box(.25,.12,.68,trim,leg,0,-1.06,-.13);
+}
+for(const side of [-1,1]){
+ const brow=box(.22,.05,.085,hair,rig,side*.18,3.61,-.41);
+ brow.rotation.z=side*.13;
+}
+const clasp=mesh(new T.OctahedronGeometry(.16,0),trim,rig,0,2.66,-.43);
+clasp.scale.set(.85,1.25,.48);
 const cape = mesh(new T.PlaneGeometry(1.25, 1.65, 6, 8), new T.MeshStandardMaterial({
     color: 0x4c338a,
     side: T.DoubleSide,
     roughness: .85
 }), rig, 0, 1.88, .38);
 cape.rotation.x = -.14;
+// Scene-based animation state: visual motion never alters actual collision.
+let visualLandingPulse=0,visualCameraKick=0,previousVisualGround=true;
+let equipCeremonyTimer=0,lastRenderedAura=null;
+const equipCeremony=new T.Group();player.add(equipCeremony);
+const equipMat=new T.MeshBasicMaterial({
+ color:0xc8a1ff,transparent:true,opacity:0,depthWrite:false,
+ blending:T.AdditiveBlending,side:T.DoubleSide
+});
+for(let i=0;i<3;i++){
+ const hoop=new T.Mesh(new T.TorusGeometry(1.5+i*.46,.065,6,40),equipMat);
+ hoop.rotation.x=Math.PI/2;hoop.position.y=.7+i*.75;equipCeremony.add(hoop);
+}
+equipCeremony.visible=false;
+function updateEquipCeremony(dt,t){
+ if(equipCeremonyTimer<=0){equipCeremony.visible=false;return;}
+ equipCeremonyTimer=Math.max(0,equipCeremonyTimer-dt);
+ const k=1-equipCeremonyTimer/1.1;
+ equipCeremony.visible=true;
+ equipMat.opacity=.52*Math.sin(Math.PI*Math.min(1,k));
+ equipCeremony.rotation.y=t*1.4;
+ equipCeremony.scale.setScalar(.65+k*.95);
+ for(let i=0;i<equipCeremony.children.length;i++){
+  const ring=equipCeremony.children[i];
+  ring.position.y=.65+i*.85+k*.38;
+  ring.rotation.z=Math.sin(t*.8+i*.8)*.22;
+ }
+}
 const aura = new T.Group();
 player.add(aura);
 const auraParts = [];
@@ -4151,6 +4197,12 @@ function animateAuraSpectrum(t){
  }
 }
 function updateAuraPose(t,dt,moving,onGround,gliding,stride){
+ // Walking, sprinting, rising, falling and landing now blend between poses.
+ const sprinting=moving&&(sprintToggle||keys.ShiftLeft||keys.ShiftRight);
+ const airborne=!onGround&&!gliding;
+ const descent=airborne&&velocityY<-.8;
+ const idle=!moving&&onGround&&!gliding;
+ const stridePower=sprinting?1.35:1;
  const p=equippedAuraProfile,active=!!state.owned[state.equipped];
  const float=active&&p.hover&&hudPrefs.auraFX&&!gliding;
  const settled=onGround&&!moving;
@@ -4173,8 +4225,10 @@ function updateAuraPose(t,dt,moving,onGround,gliding,stride){
  const poseStrength=active?Math.min(1,.28+p.tier*.16):0;
  // Pose coordinates are targets rather than instant snaps. The shoulder
  // groups pivot properly, and feet remain grounded in the physics engine.
- const ax=[stride,-stride],az=[0,0],lx=[-stride,stride],lz=[0,0];
- let torsoTilt=0;
+ const ax=[stride*stridePower,-stride*stridePower],az=[0,0];
+ const lx=[-stride*stridePower,stride*stridePower],lz=[0,0];
+ let torsoTilt=sprinting?.035:0;
+ let torsoPitch=sprinting?-.11:moving?-.045:0;
  if(!moving&&onGround&&!gliding){
   if(displayPose==="drift"){
    ax[0]=-.25;ax[1]=.25;az[0]=-.22;az[1]=.22;
@@ -4198,6 +4252,12 @@ function updateAuraPose(t,dt,moving,onGround,gliding,stride){
  }else if(gliding){
    ax[0]=-1.15;ax[1]=-1.15;az[0]=-.72;az[1]=.72;
    lx[0]=.33;lx[1]=.33;torsoTilt=-.12;
+ }else if(airborne){
+   // Arms open as the character falls; legs tuck during the jump ascent.
+   ax[0]=descent?-.66:-.95;ax[1]=descent?-.66:-.95;
+   az[0]=descent?-.43:-.2;az[1]=descent?.43:.2;
+   lx[0]=descent?.27:.54;lx[1]=descent?.27:.54;
+   torsoPitch=descent?.08:-.095;
  }
  for(let i=0;i<2;i++){
   if(!moving&&!gliding){
@@ -4210,7 +4270,14 @@ function updateAuraPose(t,dt,moving,onGround,gliding,stride){
   legs[i].rotation.z=easeAura(legs[i].rotation.z,lz[i],dt,7);
  }
  rig.rotation.z=easeAura(rig.rotation.z,gliding?glideBank*.12:torsoTilt,dt,5);
- cape.rotation.x=easeAura(cape.rotation.x,-.15+.055*Math.sin(t*3)+(moving?-.22:float?-.32:0),dt,6);
+ rig.rotation.x=easeAura(rig.rotation.x,torsoPitch,dt,7);
+ const breathe=idle?.007*Math.sin(t*2.3):0;
+ const compression=visualLandingPulse*.09;
+ rig.scale.y=easeAura(rig.scale.y,1+breathe-compression,dt,13);
+ rig.scale.x=easeAura(rig.scale.x,1+compression*.35,dt,13);
+ rig.scale.z=easeAura(rig.scale.z,1+compression*.35,dt,13);
+ head.rotation.z=easeAura(head.rotation.z,idle?Math.sin(t*.86)*.018:0,dt,3);
+ cape.rotation.x=easeAura(cape.rotation.x,-.15+.055*Math.sin(t*3)+(moving?-.27:float?-.32:0),dt,6);
 }
 renderAura = () => {
     // Sharing particle geometries/materials keeps the GPU light; dispose
@@ -4236,6 +4303,12 @@ renderAura = () => {
         name = data[0];
     activeColor=auraColor(data);
     equippedAuraProfile=auraVisualProfile(data);
+    if(lastRenderedAura!==null&&lastRenderedAura!==state.equipped&&
+       state.owned[state.equipped]&&hudPrefs.auraFX){
+      equipCeremonyTimer=1.1;
+      equipMat.color.setHex(activeColor);
+    }
+    lastRenderedAura=state.equipped;
     auraGroundMat.color.setHex(activeColor);auraGroundMat.emissive.setHex(activeColor);
     const trimColor=new T.Color(activeColor).lerp(new T.Color(0xd9d5e5),.28).getHex();
     trim.color.setHex(trimColor);
@@ -5524,8 +5597,17 @@ function animate() {
       lavaSlowUntil=Date.now()+300000;lastLavaDamage=Date.now();save();$("challengeStatus").textContent="LAVA HIT! Roll speed slowed for 5 minutes!";
     }
     if(Math.floor(t*3)%3===0){const remaining=Math.ceil((volcano.cycle-elapsed)/1000),mm=Math.floor(remaining/60),ss=String(remaining%60).padStart(2,"0");volcanoLabel.textContent=erupting?"VOLCANO ERUPTING! Avoid the lava!":"VOLCANO · eruption in "+mm+":"+ss+(volcanoZoneActive?" · CRATER":"");}
-    let stride = moving ? Math.sin(t * ((keys.ShiftLeft || keys.ShiftRight) ? 17 : 11)) * .65 : 0;
+    // Ground contact triggers a subtle impact on animation only, not physics.
+    if(!previousVisualGround&&onGround&&!gliding){
+      visualLandingPulse=1;
+      visualCameraKick=.72;
+    }
+    previousVisualGround=onGround;
+    visualLandingPulse=Math.max(0,visualLandingPulse-dt*3.2);
+    visualCameraKick=Math.max(0,visualCameraKick-dt*3.8);
+    let stride = moving&&onGround ? Math.sin(t * ((sprintToggle||keys.ShiftLeft||keys.ShiftRight) ? 16.5 : 10.5)) * .65 : 0;
     updateAuraPose(t,dt,moving,onGround,gliding,stride);
+    updateEquipCeremony(dt,t);
     if(frameN%2===0)animateAuraSpectrum(t);
     // Rarity controls the tempo and scope of each effect: slow common dust,
     // layered uncommon glow, energetic legendary auras, and fast mythic runes.
@@ -5661,6 +5743,8 @@ function animate() {
     target.y=Math.max(target.y,ground(target.x,target.z)+1.45);
     camera.position.lerp(target,1-Math.exp(-dt*(gliding?4.4:11)));
     camera.position.y=Math.max(camera.position.y,ground(camera.position.x,camera.position.z)+1.45);
+    // Brief, restrained landing dip without a costly postprocessing pass.
+    camera.position.y-=visualCameraKick*.11;
     camera.lookAt(eye);
     const desiredFov=gliding?65+Math.max(0,glideSpeed-32)*.35:58;
     camera.fov+=(desiredFov-camera.fov)*(1-Math.exp(-dt*2.5));
