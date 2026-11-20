@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V9.3 — ENDLESS PURSUIT & SMOOTH ROADS</title>
+<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V10 — FOUNDATION & FEEL</title>
 <style>
 :root{--ink:#0c1a2b;--panel:#101f30f2;--line:#ffffff29;--cyan:#63e6e5;--orange:#ffb36b;--muted:#a8bbc9;--green:#89f4ac}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#081b2b;color:#fff;font-family:Inter,Arial,Helvetica,sans-serif;user-select:none;touch-action:none}
@@ -123,7 +123,7 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 <body>
 <canvas id="game" aria-label="3D third-person police chase driving game"></canvas><div id="tint"></div>
 <div id="hud">
-  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V9.3 ENDLESS CHASE</small></div><div class="hudMid">
+  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V10 FOUNDATION & FEEL</small></div><div class="hudMid">
    <div class="pill"><label>SURVIVAL</label><strong id="survive">00:00</strong></div><div class="pill cash"><label>RUN EARNINGS</label><strong id="earn">$0</strong></div><div class="pill heat"><label id="heatLabel">LEVEL 1 · 1 COP</label><strong id="stars">★☆☆☆☆</strong></div></div></div>
   <div id="hudLeft"><div class="meter"><div class="meterhead"><span>CAR INTEGRITY</span><span id="healthText">100%</span></div><div class="track"><div class="fill" id="healthbar"></div></div></div><div class="meter"><div class="meterhead"><span>NITRO</span><span id="boostText">100%</span></div><div class="track"><div class="fill boost" id="boostbar"></div></div></div><div class="tips"><b>W/S</b> accelerate / brake<br><b>A/D</b> steer &nbsp; <b>SHIFT</b> boost<br><b>SPACE</b> handbrake drift<br><b>ESC</b> pause<br><b>M</b> island map · <b>C</b> camera<br><b>MOUNTAINS</b> earn ridge bonuses<br><b>OCEAN</b> ends your run</div></div>
   <button id="escapeBtn" type="button">Ⅱ PAUSE</button>
@@ -354,7 +354,7 @@ function terrainStyle(x,z,h){
 }
 function slopeAt(x,z,angle){const d=10,fx=Math.sin(angle),fz=-Math.cos(angle);return (terrainHeight(x+fx*d,z+fz*d)-terrainHeight(x-fx*d,z-fz*d))/(2*d);}
 function pathIsland(g,inset=0){let count=300;g.beginPath();for(let i=0;i<=count;i++){let a=(i/count)*TAU,R=shorelineRadius(a)-inset,x=Math.cos(a)*R*1.23,y=Math.sin(a)*R*.92;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}g.closePath();}
-function makeRoad(id,points,width=27,style='urban'){roads.push({id,points,width,style});for(let i=0;i<points.length-1;i++){let a=points[i],b=points[i+1],d=Math.hypot(b.x-a.x,b.y-a.y),n=Math.max(1,Math.floor(d/20));for(let j=0;j<n;j++){let t=j/n,pt={x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),a:Math.atan2(b.y-a.y,b.x-a.x),id};if(coastDistance(pt.x,pt.y)>36)roadSamples.push(pt)}}}
+function makeRoad(id,points,width=27,style='urban'){roads.push({id,points,width,style});for(let i=0;i<points.length-1;i++){let a=points[i],b=points[i+1],d=Math.hypot(b.x-a.x,b.y-a.y),n=Math.max(1,Math.floor(d/20));for(let j=0;j<n;j++){let t=j/n,pt={x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),a:Math.atan2(b.y-a.y,b.x-a.x),id};if(style!=='trail'&&coastDistance(pt.x,pt.y)>36)roadSamples.push(pt)}}}
 function line(points){return points.map(p=>({x:p[0],y:p[1]}))}
 function curveRoad(id,points,width,style){const ps=[];const src=points.map(p=>({x:p[0]*CITY_COMPACT,y:p[1]*CITY_COMPACT}));for(let i=0;i<src.length-1;i++){let p0=src[Math.max(0,i-1)],p1=src[i],p2=src[i+1],p3=src[Math.min(src.length-1,i+2)];for(let j=0;j<18;j++){let t=j/18,t2=t*t,t3=t2*t;ps.push({x:.5*((2*p1.x)+(-p0.x+p2.x)*t+(2*p0.x-5*p1.x+4*p2.x-p3.x)*t2+(-p0.x+3*p1.x-3*p2.x+p3.x)*t3),y:.5*((2*p1.y)+(-p0.y+p2.y)*t+(2*p0.y-5*p1.y+4*p2.y-p3.y)*t2+(-p0.y+3*p1.y-3*p2.y+p3.y)*t3)})}}ps.push(src.at(-1));makeRoad(id,ps,width,style)}
 function ringRoad(id,cx,cy,rx,ry,w=30,style='boulevard'){cx*=CITY_COMPACT;cy*=CITY_COMPACT;rx*=CITY_COMPACT;ry*=CITY_COMPACT;const pts=[];for(let i=0;i<=170;i++){let a=TAU*i/170;pts.push({x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry})}makeRoad(id,pts,w,style)}
@@ -450,6 +450,13 @@ function buildWorld(){
   curveRoad('HIGHLAND CUT-THROUGH',[[-215,-245],[-60,-350],[70,-475],[210,-420],[320,-370]],22,'mountain');
   curveRoad('WEST VALLEY ROAD',[[-710,-415],[-690,-255],[-675,-90],[-625,60],[-525,145],[-435,285],[-425,390]],22,'rural');
   curveRoad('EAST CLIFF ROAD',[[700,-510],[795,-320],[805,-80],[770,145],[730,480]],23,'coastal');
+  // Deliberate mountain shortcuts: narrow dirt corridors with carved grades.
+  // The surrounding ungraded mountains are not unrestricted driving surfaces.
+  curveRoad('TIMBER LOGGING TRACK',[[-270,310],[-205,375],[-190,425],[-260,470],[-295,470]],14,'trail');
+  curveRoad('CLOUD QUARRY CUT',[[-155,245],[-185,146],[-243,93],[-280,22],[-310,-60]],15,'trail');
+  curveRoad('EAGLE FOREST TRACK',[[365,35],[410,-43],[458,-100],[475,-145],[495,-155]],14,'trail');
+  curveRoad('CANYON RANGER TRACK',[[230,205],[292,260],[347,322],[366,388],[380,425]],13,'trail');
+
   rebuildRoadGrid(); // Grade and index the complete road network before placing structures.
   // Rural landmarks. Most of the island is wilderness, not high-rises.
   addLandmark(83*CITY_COMPACT,218*CITY_COMPACT,73,46,.07,'market',DISTRICTS[0]);
@@ -660,7 +667,8 @@ function spawnTraffic(n=17){
  traffic=[];
  const palette=['#f6b969','#dde9ee','#7db8c6','#cb8e87','#7e97c5','#edcfa7','#c0afdf'];
  for(let k=0;k<n;k++){
-  const road=roads[Math.floor(Math.random()*roads.length)];
+  const highwayRoads=roads.filter(r=>r.style!=='trail');
+  const road=highwayRoads[Math.floor(Math.random()*highwayRoads.length)];
   if(!road||road.points.length<8)continue;
   const dir=Math.random()<.5?1:-1,idx=Math.floor(rand(2,road.points.length-3));
   const v={road:road.id,roadRef:road,pathIndex:idx,dir,lane:dir*road.width*.20,
@@ -1020,14 +1028,22 @@ function build3DCity(){
  }
  for(let index=0;index<roads.length;index++){
    const road=roads[index],p=road.points,half=road.width*.5,lift=index*.012;
-   const asphalt=road.style==='mountain'?'#40515a':road.style==='coastal'?'#415661':road.style==='urban'?'#384957':'#3c4d58';
-   const verge=road.style==='mountain'?'#8b9d8c':road.style==='coastal'?'#b8b49b':'#899991';
+   const asphalt=road.style==='trail'?'#7d6348':road.style==='mountain'?'#40515a':road.style==='coastal'?'#415661':road.style==='urban'?'#384957':'#3c4d58';
+   const verge=road.style==='trail'?'#9a8d6b':road.style==='mountain'?'#8b9d8c':road.style==='coastal'?'#b8b49b':'#899991';
    for(let i=0;i<p.length-1;i++){
      roadStrip(road,i,-half-2.8,half+2.8,verge,.31+lift);
      roadStrip(road,i,-half,half,asphalt,.37+lift);
-     roadStrip(road,i,-half+2.0,-half+2.65,'#dddcd1',.425+lift,.09);
-     roadStrip(road,i,half-2.65,half-2.0,'#dddcd1',.425+lift,.09);
-     if(i%9<5)roadStrip(road,i,-.62,.62,road.style==='mountain'?'#e7cb9c':'#f0d3a2',.46+lift,.10);
+     if(road.style==='trail'){
+       // Gravel ruts, not city lane lines.
+       if(i%6<4){
+         roadStrip(road,i,-half*.38-.3,-half*.38+.3,'#b49b70',.425+lift);
+         roadStrip(road,i,half*.38-.3,half*.38+.3,'#b49b70',.425+lift);
+       }
+     }else{
+       roadStrip(road,i,-half+2.0,-half+2.65,'#dddcd1',.425+lift,.09);
+       roadStrip(road,i,half-2.65,half-2.0,'#dddcd1',.425+lift,.09);
+       if(i%9<5)roadStrip(road,i,-.62,.62,road.style==='mountain'?'#e7cb9c':'#f0d3a2',.46+lift,.10);
+     }
    }
  }
  // Road reflectors along mountain and coastal curves.
@@ -1323,8 +1339,8 @@ function renderSoftware3D(){
      if(Math.hypot(mid.x-target.x,mid.y-target.y)>440)continue;
      if(Math.hypot(p[j].x-p[i].x,p[j].y-p[i].y)<.4)continue;
      roadPatch(road,i,j,half+2.8,road.style==='mountain'?'#89998d':'#97a59b',.31);
-     roadPatch(road,i,j,half,road.style==='mountain'?'#40515a':'#394e59',.38);
-     if(i%10<4)roadPatch(road,i,j,.65,'#e9d5a6',.44);
+     roadPatch(road,i,j,half,road.style==='trail'?'#826a4e':road.style==='mountain'?'#40515a':'#394e59',.38);
+     if(road.style!=='trail'&&i%10<4)roadPatch(road,i,j,.65,'#e9d5a6',.44);
    }
  }
  let objects=[];for(let b of structures){let dx=b.x-target.x,dz=b.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<720&&Math.hypot(dx,dz)<780)objects.push({type:'b',obj:b,depth});}
@@ -1400,7 +1416,7 @@ function renderHome(){
  mode='home';paused=false;$('hud').classList.remove('show');
  const selected=CARS.find(c=>c.id===save.selected)||CARS[0];
  showOverlay(`<section class="homeStage">
- <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V9.3 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
+ <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V10.0 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
  <div class="heroLine"></div>
  <div class="heroLogo"><span>ISLAND</span><strong>PURSUIT<span class="heroDot">.</span></strong><em>WILDLANDS</em></div>
  <p class="homeTagline">OUTRUN THE LAW. OWN THE MOUNTAINS.</p>
@@ -1501,7 +1517,7 @@ function drawAtlasCanvas(){
  for(const road of roads){
   const ps=road.points;
   polyStroke(g,ps,road.width+6,'#273f47a6');
-  polyStroke(g,ps,road.width,road.style==='mountain'?'#c8cebd':road.style==='coastal'?'#e0d1af':road.style==='urban'?'#909c9c':'#a9b8b3');
+  polyStroke(g,ps,road.width,road.style==='trail'?'#a8825b':road.style==='mountain'?'#c8cebd':road.style==='coastal'?'#e0d1af':road.style==='urban'?'#909c9c':'#a9b8b3');
   if(road.style==='mountain')polyStroke(g,ps,1.7,'#efe9d1',[16,16]);
  }
  for(const b of structures){g.fillStyle='#ddd6bdb8';g.save();g.translate(b.x,b.y);g.rotate(b.rot);g.fillRect(-b.w/2,-b.h/2,b.w,b.h);g.restore();}
