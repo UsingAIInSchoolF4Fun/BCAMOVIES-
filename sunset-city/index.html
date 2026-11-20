@@ -865,7 +865,13 @@ function recoverVehicle(auto=false){
   if(cops.some(v=>Math.hypot(v.x-pt.x,v.y-pt.y)<21))continue;
   const near=roadSurfaceAt(pt.x,pt.y);
   if(!near||near.seg.road.style==='trail'||near.edge>1)continue;
-  if(distance<score){score=distance;best=pt;}
+  if(distance<score){
+   score=distance;
+   // Road samples store standard map bearing; vehicle physics uses a north-up bearing.
+   const forward=pt.a+Math.PI/2;
+   const heading=Math.cos(forward-car.a)>=0?forward:forward+Math.PI;
+   best={x:pt.x,y:pt.y,a:heading};
+  }
  }
  if(!best){
   if(!Number.isFinite(car.safeX)||!Number.isFinite(car.safeY))return false;
