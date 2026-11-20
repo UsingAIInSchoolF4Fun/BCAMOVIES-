@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V10.1 — OPEN ROADS & BIGGER MOUNTAINS</title>
+<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V10.2 — COASTLINES & CLEAN INTERSECTIONS</title>
 <style>
 :root{--ink:#0c1a2b;--panel:#101f30f2;--line:#ffffff29;--cyan:#63e6e5;--orange:#ffb36b;--muted:#a8bbc9;--green:#89f4ac}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#081b2b;color:#fff;font-family:Inter,Arial,Helvetica,sans-serif;user-select:none;touch-action:none}
@@ -123,7 +123,7 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 <body>
 <canvas id="game" aria-label="3D third-person police chase driving game"></canvas><div id="tint"></div>
 <div id="hud">
-  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V10.1 OPEN ROADS</small></div><div class="hudMid">
+  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V10.2 THE WILDLANDS</small></div><div class="hudMid">
    <div class="pill"><label>SURVIVAL</label><strong id="survive">00:00</strong></div><div class="pill cash"><label>RUN EARNINGS</label><strong id="earn">$0</strong></div><div class="pill heat"><label id="heatLabel">LEVEL 1 · 1 COP</label><strong id="stars">★☆☆☆☆</strong></div></div></div>
   <div id="hudLeft"><div class="meter"><div class="meterhead"><span>CAR INTEGRITY</span><span id="healthText">100%</span></div><div class="track"><div class="fill" id="healthbar"></div></div></div><div class="meter"><div class="meterhead"><span>NITRO</span><span id="boostText">100%</span></div><div class="track"><div class="fill boost" id="boostbar"></div></div></div><div class="tips"><b>W/S</b> accelerate / brake<br><b>A/D</b> steer &nbsp; <b>SHIFT</b> boost<br><b>SPACE</b> handbrake drift<br><b>ESC</b> pause<br><b>M</b> map · <b>C</b> camera · <b>R</b> recover · <b>V</b> sound<br><b>MOUNTAINS</b> earn ridge bonuses<br><b>OCEAN</b> ends your run</div></div>
   <button id="escapeBtn" type="button">Ⅱ PAUSE</button>
@@ -161,8 +161,8 @@ let car=null,cops=[],traffic=[],particles=[],pickups=[],skidMarks=[],camera={x:0
 const view={w:innerWidth,h:innerHeight,dpr:1};
 function resize(){view.dpr=Math.min(1.25,window.devicePixelRatio||1);view.w=innerWidth;view.h=innerHeight;let w=Math.round(view.w*view.dpr),h=Math.round(view.h*view.dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;if(webgl)webgl.viewport(0,0,w,h);} }
 const CITY_COMPACT=1.18; // Preserve island footprint and saved player/world coordinates.
-const ROAD_SCALE=1.72, WILDERNESS_SCALE=1.30, MOUNTAIN_HEIGHT_SCALE=1.32, NPC_SCALE=.76;
-const STATIC={canvas:null,bounds:{minX:-1500,minY:-1200,maxX:1500,maxY:1200},scale:1};
+const ROAD_SCALE=1.72, WILDERNESS_SCALE=1.40, MOUNTAIN_HEIGHT_SCALE=1.49, NPC_SCALE=.76;
+const STATIC={canvas:null,bounds:{minX:-1750,minY:-1350,maxX:1750,maxY:1350},scale:1};
 let roads=[],roadSamples=[],structures=[],trees=[],streetProps=[],parkingLots=[];
 const OBSTACLE_CELL=64,obstacleGrid=new Map();
 const landmarks=[
@@ -185,7 +185,17 @@ const DISTRICTS=[
  {name:'BAYFRONT PORT',x:630,y:420,r:180,colors:['#6a8b9b','#a4a29a','#8a9a9f','#a2a48b'],roof:'#3d5769'},
  {name:'HIGHLAND STRIP',x:700,y:-180,r:130,colors:['#b2a99b','#a49b8d','#b1c2c0'],roof:'#77857a'}
 ].map(d=>({...d,x:d.x*CITY_COMPACT,y:d.y*CITY_COMPACT,r:d.r*CITY_COMPACT}));
-function shorelineRadius(a){return CITY_COMPACT*(850+42*Math.sin(3*a+.25)+24*Math.cos(7*a-.7)+23*Math.sin(11*a+.9)+15*Math.cos(16*a))}
+function shorelineRadius(a){
+ // Characterful coastline with distinct western headlands, sheltered coves,
+ // a northern peninsula, eastern hook, southern cape and narrow sandy bays.
+ // Coast belt and mountain roads remain dry inside this outline.
+ const bump=(center,width)=>{const d=Math.atan2(Math.sin(a-center),Math.cos(a-center));return Math.exp(-.5*(d/width)**2);};
+ return CITY_COMPACT*(850
+   +32*Math.sin(3*a+.28)+18*Math.cos(9*a-.7)+12*Math.sin(17*a+.55)
+   +235*bump(-2.66,.24)+150*bump(-1.43,.27)
+   +225*bump(-.08,.25)+142*bump(1.42,.21)
+   +240*bump(2.68,.28)+95*bump(.73,.16));
+}
 function coastDistance(x,y){let xx=x/1.23,yy=y/.92,a=Math.atan2(yy,xx);return shorelineRadius(a)-Math.hypot(xx,yy)}
 function isWater(x,y){return coastDistance(x,y)<0}
 const MOUNTAINS=[
@@ -1354,7 +1364,7 @@ function build3DCity(){
  let terrain=new Mesh3(),step=24;
  // Road surface is part of a single continuous height-mapped island mesh.
  // Roads are not overlapping floating strips: a junction is simply one asphalt surface.
- for(let z=-1200;z<1200;z+=step)for(let x=-1500;x<1500;x+=step){
+ for(let z=-1350;z<1350;z+=step)for(let x=-1728;x<1728;x+=step){
    const near=roadSurfaceAt(x+step*.5,z+step*.5);
    const slices=near&&near.edge<42?2:1;
    const delta=step/slices;
@@ -1732,14 +1742,14 @@ function render3D(){if(!g3.ready)return;
  let anchorA=playing?target.a:showroom?now*.23+1.0:now*.07+.55;
  let cg=g3.camera,angleDelta=Math.atan2(Math.sin(anchorA-cg.heading),Math.cos(anchorA-cg.heading));
  cg.heading+=angleDelta*(playing?.095:showroom?.058:.019);
- let span=playing?((cameraMode?94:76)+Math.min(15,Math.abs(target.speed)*.055)):showroom?77:132;
- let ht=playing?(cameraMode?48:34):showroom?42:79;
+ let span=playing?((cameraMode?83:53)+Math.min(10,Math.abs(target.speed)*.045)):showroom?77:127;
+ let ht=playing?(cameraMode?44:25):showroom?42:76;
  let xGoal=target.x-Math.sin(cg.heading)*span,zGoal=target.y+Math.cos(cg.heading)*span;
  let yGoal=Math.max(terrainHeight(target.x,target.y)+ht,terrainHeight(xGoal,zGoal)+(playing?13:20));
  let smooth=playing?.19:showroom?.10:.036;
  cg.x=lerp(cg.x,xGoal,smooth);cg.y=lerp(cg.y,yGoal,smooth);cg.z=lerp(cg.z,zGoal,smooth);
  let fwdX=target.x+Math.sin(cg.heading)*(playing?21:showroom?0:38),fwdZ=target.y-Math.cos(cg.heading)*(playing?21:showroom?0:38);
- gl.uniformMatrix4fv(g3.loc.vp,false,new Float32Array(mul3(perspective3(.83,w/h,.2,1050),look3([cg.x,cg.y,cg.z],[fwdX,terrainHeight(fwdX,fwdZ)+(playing?3:showroom?4:18),fwdZ]))));
+ gl.uniformMatrix4fv(g3.loc.vp,false,new Float32Array(mul3(perspective3(.79,w/h,.2,1150),look3([cg.x,cg.y,cg.z],[fwdX,terrainHeight(fwdX,fwdZ)+(playing?3:showroom?4:18),fwdZ]))));
  gl.uniform3f(g3.loc.eye,cg.x,cg.y,cg.z);gl.uniform1f(g3.loc.tick,now);
  // Water is redrawn around the camera, with no invisible world boundary.
  let ocean=new Mesh3();ocean.box(cg.x,-.46,cg.z,2600,.34,2600,'#1c7397');
@@ -1798,8 +1808,8 @@ function renderSoftware3D(){
  sky.addColorStop(1,weather.night?'#173047':'#165879');
  g.fillStyle=sky;g.fillRect(0,0,W,H);
  let showing=mode==='garage',showPreview=showing?{x:120*CITY_COMPACT,y:175*CITY_COMPACT,a:now*.24,template:CARS.find(c=>c.id===garageFocus)||CARS[0],color:save.paint[garageFocus]||(CARS.find(c=>c.id===garageFocus)||CARS[0]).color}:null;
- let live=mode==='playing'||mode==='pause'||mode==='over';let target=live?(car||{x:80,y:20,a:0,speed:0}):showing?showPreview:{x:-465*CITY_COMPACT+Math.sin(now*.08)*75,y:-330*CITY_COMPACT,a:.65+now*.02,speed:0};let ang=target.a,co=Math.cos(ang),si=Math.sin(ang),focal=Math.min(W*1.12,H*1.22),eyeY=softwareHeight(target.x,target.y)+(live?(cameraMode?45:29):showing?33:58);
- function proj(x,y,z){let xx=x-target.x,zz=z-target.y,depth=xx*si-zz*co+(live?(cameraMode?82:52):showing?64:100);
+ let live=mode==='playing'||mode==='pause'||mode==='over';let target=live?(car||{x:80,y:20,a:0,speed:0}):showing?showPreview:{x:-465*CITY_COMPACT+Math.sin(now*.08)*75,y:-330*CITY_COMPACT,a:.65+now*.02,speed:0};let ang=target.a,co=Math.cos(ang),si=Math.sin(ang),focal=Math.min(W*1.12,H*1.22),eyeY=softwareHeight(target.x,target.y)+(live?(cameraMode?44:22):showing?33:58);
+ function proj(x,y,z){let xx=x-target.x,zz=z-target.y,depth=xx*si-zz*co+(live?(cameraMode?80:39):showing?64:100);
   if(depth<13)return null;let s=focal/depth;return [W/2+(xx*co+zz*si)*s,H*.16+(eyeY-y)*s,depth,s];}
  function polygon(pts,color){let points=[];for(let p of pts){let q=proj(...p);if(!q)return;points.push(q)}g.fillStyle=color;g.beginPath();g.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);g.closePath();g.fill();}
  function outline(pts,color,width=1){let points=[];for(let p of pts){let q=proj(...p);if(!q)return;points.push(q)}g.strokeStyle=color;g.lineWidth=width;g.beginPath();g.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)g.lineTo(points[i][0],points[i][1]);g.closePath();g.stroke();}
@@ -1938,7 +1948,7 @@ function renderHome(){
  mode='home';paused=false;$('hud').classList.remove('show');
  const selected=CARS.find(c=>c.id===save.selected)||CARS[0];
  showOverlay(`<section class="homeStage">
- <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V10.1 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
+ <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V10.2 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
  <div class="heroLine"></div>
  <div class="heroLogo"><span>ISLAND</span><strong>PURSUIT<span class="heroDot">.</span></strong><em>WILDLANDS</em></div>
  <p class="homeTagline">OUTRUN THE LAW. OWN THE MOUNTAINS.</p>
@@ -2023,7 +2033,7 @@ function drawAtlasCanvas(){
  const ocean=g.createLinearGradient(0,0,W,H);
  ocean.addColorStop(0,'#092844');ocean.addColorStop(.55,'#0f5067');ocean.addColorStop(1,'#071e38');
  g.fillStyle=ocean;g.fillRect(0,0,W,H);
- g.save();g.translate(W*.52,H*.52);g.scale(.36,.36);
+ g.save();g.translate(W*.52,H*.52);g.scale(.28,.28);
  g.shadowColor='#051423';g.shadowBlur=32;pathIsland(g,0);g.fillStyle='#d1b18a';g.fill();g.shadowBlur=0;
  pathIsland(g,25);g.fillStyle='#527e68';g.fill();
  g.save();pathIsland(g,27);g.clip();
