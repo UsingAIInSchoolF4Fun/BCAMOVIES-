@@ -856,9 +856,9 @@ const landmarkPads = [
 function rawHeight(x,z){
  // Sculpted regions: one continent, dramatic ridge-lines, lowland basins and a raised volcanic massif.
  const r=Math.hypot(x,z);
- const broad=Math.sin(x*.009+Math.cos(z*.006))*Math.cos(z*.011)*9;
- const ridge=Math.sin(x*.018+z*.009)*Math.cos(z*.016-x*.007)*2.7;
- const detail=Math.sin(x*.042+z*.018)*.55+Math.cos(z*.048-x*.027)*.4;
+ const broad=Math.sin(x*.009+Math.cos(z*.006))*Math.cos(z*.011)*8.3;
+ const ridge=Math.sin(x*.018+z*.009)*Math.cos(z*.016-x*.007)*2.1;
+ const detail=Math.sin(x*.042+z*.018)*.32+Math.cos(z*.048-x*.027)*.23;
  let y=(broad+ridge+detail)*Math.min(1,r/82);
  const dome=(cx,cz,rx,rz,amp)=>{
   const d=Math.hypot((x-cx)/rx,(z-cz)/rz);
@@ -894,7 +894,14 @@ function rawHeight(x,z){
 }
 
 function height(x,z){
- const original=rawHeight(x,z);
+ let original=rawHeight(x,z);
+ // Smooth the ground beneath paved routes instead of placing floating strips.
+ const nearRoute=pathDistance(x,z);
+ if(nearRoute<13.5){
+  const smoothed=(original*4+rawHeight(x-7,z)+rawHeight(x+7,z)+rawHeight(x,z-7)+rawHeight(x,z+7))/8;
+  const blend=Math.max(0,Math.min(1,(13.5-nearRoute)/9));
+  original+=(smoothed-original)*(blend*blend*(3-2*blend))*.91;
+ }
  let total=0,weightedLevel=0;
  for(const [cx,cz,r] of landmarkPads){
   const d=Math.hypot(x-cx,z-cz),feather=28;
@@ -929,8 +936,18 @@ authoredRoutes.push(
  {name:"Village Square",theme:"forest",width:7,points:[[105,230],[105,254],[124,276]]},
  {name:"Flight Training",theme:"astral",width:7.5,points:[[-72,-45],[-106,-64],[-137,-81]]}
 );
+// V15: route geometry, ground shaping and clearance share these centerlines.
 const pathSegments=[];
-for(const route of authoredRoutes){for(let i=1;i<route.points.length;i++)pathSegments.push([...route.points[i-1],...route.points[i]]);}
+for(const route of authoredRoutes){
+ const curve=new T.CatmullRomCurve3(route.points.map(p=>new T.Vector3(p[0],0,p[1])),false,"centripetal",.45);
+ const steps=Math.max(8,Math.ceil(curve.getLength()/5.5));
+ let previous=curve.getPoint(0);
+ for(let i=1;i<=steps;i++){
+  const next=curve.getPoint(i/steps);
+  pathSegments.push([previous.x,previous.z,next.x,next.z]);
+  previous=next;
+ }
+}
 function pathDistance(x, z) {
     let best = 1e9;
     for (const [ax, az, bx, bz] of pathSegments) {
@@ -942,7 +959,7 @@ function pathDistance(x, z) {
     return best
 }
 const SIZE = 880,
-    GRID = 160,
+    GRID = 184,
     verts = [],
     uv = [],
     idx = [];
@@ -971,7 +988,7 @@ for (let z = 0; z < GRID; z++)
    verts[(z*n+x)*3+1]=(center+cardinal+diagonal)/16;
   }
  }
- const maxRise=SIZE/GRID*.93;
+ const maxRise=SIZE/GRID*.86;
  for(let pass=0;pass<3;pass++){
   const h=verts.slice();
   for(let z=1;z<GRID;z++)for(let x=1;x<GRID;x++){
@@ -1019,8 +1036,8 @@ for (let j = 0; j < verts.length; j += 3) {
     // Soft biome transitions: no harsh color borders between landscapes.
     const blend=(a,b,value)=>{let u=Math.max(0,Math.min(1,(value-a)/(b-a)));return u*u*(3-2*u)};
     // Distinct biome palettes, with blended transitions instead of hard edges.
-    tone.setHex(h>6?0x689b75:0x4caa77);
-    if(z>75)tone.lerp(new T.Color(h>5?0x3a925b:0x3aa76b),blend(75,190,z));
+    tone.setHex(h>6?0x78a18b:0x4f9b77);
+    if(z>75)tone.lerp(new T.Color(h>5?0x4b916a:0x51b27b),blend(75,190,z));
     if(z< -75)tone.lerp(new T.Color(h>6?0x726ac1:0x5e65ae),blend(75,185,-z));
     if(x< -90)tone.lerp(new T.Color(h>5?0xe7f3ff:0xb7d9eb),blend(90,195,-x));
     if(x>90)tone.lerp(new T.Color(h>6?0x8c62c8:0x7755b3),blend(90,200,x));
@@ -1959,7 +1976,7 @@ function pavedRoadTexture(){
   const offset=(row%2)*w*.5;
   for(let col=-1;col<cols+1;col++){
    const x=col*w+offset,y=row*h;
-   const tint=Math.floor(165+rnd()*65);
+   const tint=Math.floor(162+rnd()*44);
    g.fillStyle="rgb("+tint+","+Math.floor(tint*.985)+","+Math.floor(tint*.98)+")";
    g.fillRect(x+3,y+3,w-6,h-5);
    g.fillStyle="rgba(255,255,255,.20)";
@@ -2033,8 +2050,8 @@ const roadShoulderMat=new T.MeshStandardMaterial({
 function buildRoad(route,id){
  const pts=route.points.map(p=>new T.Vector3(p[0],0,p[1]));
  const curve=new T.CatmullRomCurve3(pts,false,"centripetal",.45);
- const length=curve.getLength(),count=Math.max(16,Math.ceil(length/2.1));
- const lanes=8,width=route.width;
+ const length=curve.getLength(),count=Math.max(20,Math.ceil(length/1.65));
+ const lanes=12,width=route.width;
  const colors=roadBorders[route.theme];
  const v=[],uv=[],idx=[],shoulderV=[],shoulderUV=[],shoulderIdx=[];
  const edgeV=[[],[]],edgeUV=[[],[]],edgeIdx=[[],[]];
@@ -2044,12 +2061,12 @@ function buildRoad(route,id){
   const len=Math.hypot(tangent.x,tangent.z)||1,nx=-tangent.z/len,nz=tangent.x/len;
   for(let l=0;l<=lanes;l++){
    const side=l/lanes*2-1,x=p.x+nx*side*width*.5,z=p.z+nz*side*width*.5;
-   v.push(x,ground(x,z)+.24,z);
+   v.push(x,ground(x,z)+.275,z);
    uv.push(l/lanes,t*length/8.5);
   }
   for(const side of [-1,1]){
    const x=p.x+nx*side*(width*.5+1.1),z=p.z+nz*side*(width*.5+1.1);
-   shoulderV.push(x,ground(x,z)+.065,z);
+   shoulderV.push(x,ground(x,z)+.075,z);
    shoulderUV.push(side<0?0:1,t*length/7);
   }
   for(let e=0;e<2;e++){
@@ -2057,7 +2074,7 @@ function buildRoad(route,id){
    for(const d of [-.14,.14]){
     const x=p.x+nx*(side*(width*.5-.37)+d);
     const z=p.z+nz*(side*(width*.5-.37)+d);
-    edgeV[e].push(x,ground(x,z)+.305,z);
+    edgeV[e].push(x,ground(x,z)+.328,z);
     edgeUV[e].push(d<0?0:1,t*length/9);
    }
   }
@@ -2089,7 +2106,7 @@ function buildRoad(route,id){
  make(v,uv,idx,roadMats[route.theme]);
  const lineMat=new T.MeshStandardMaterial({
   color:colors,roughness:.66,metalness:route.theme==="crystal"?.18:0,
-  emissive:colors,emissiveIntensity:route.theme==="crystal"?.28:.055,
+  emissive:colors,emissiveIntensity:route.theme==="crystal"?.16:.025,
   side:T.DoubleSide
  });
  for(let e=0;e<2;e++)make(edgeV[e],edgeUV[e],edgeIdx[e],lineMat);
