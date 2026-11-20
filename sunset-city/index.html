@@ -751,7 +751,7 @@ function drawBuilding(g,b){
  g.restore();
 }
 function drawWorldBase(){
- const wc=document.createElement('canvas'),scale=1.28,W=Math.ceil((STATIC.bounds.maxX-STATIC.bounds.minX)*scale),H=Math.ceil((STATIC.bounds.maxY-STATIC.bounds.minY)*scale);wc.width=W;wc.height=H;const g=wc.getContext('2d',{alpha:false});
+ const wc=document.createElement('canvas'),scale=1.04,W=Math.ceil((STATIC.bounds.maxX-STATIC.bounds.minX)*scale),H=Math.ceil((STATIC.bounds.maxY-STATIC.bounds.minY)*scale);wc.width=W;wc.height=H;const g=wc.getContext('2d',{alpha:false});
  g.setTransform(scale,0,0,scale,-STATIC.bounds.minX*scale,-STATIC.bounds.minY*scale);
  g.fillStyle='#1b607c';g.fillRect(STATIC.bounds.minX,STATIC.bounds.minY,W/scale,H/scale);
  // Waves and ocean currents
