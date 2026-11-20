@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V10.2 — COASTLINES & CLEAN INTERSECTIONS</title>
+<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V10.3 — ROADS & GOLDEN HOUR</title>
 <style>
 :root{--ink:#0c1a2b;--panel:#101f30f2;--line:#ffffff29;--cyan:#63e6e5;--orange:#ffb36b;--muted:#a8bbc9;--green:#89f4ac}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#081b2b;color:#fff;font-family:Inter,Arial,Helvetica,sans-serif;user-select:none;touch-action:none}
@@ -1321,7 +1321,29 @@ function init3D(){
  if(!webgl)return;
  const gl=webgl;
  const vs=`attribute vec3 p;attribute vec3 n;attribute vec3 col;attribute float emit;uniform mat4 vp;varying vec3 vn;varying vec3 vc;varying vec3 pos;varying float ve;void main(){vn=n;vc=col;ve=emit;pos=p;gl_Position=vp*vec4(p,1.0);}`;
- const fs=`precision mediump float;varying vec3 vn;varying vec3 vc;varying vec3 pos;varying float ve;uniform vec3 eye;uniform float tick;uniform float daylight;uniform float storm;void main(){vec3 l=normalize(vec3(-0.48,0.93,0.35));float lam=max(0.,dot(normalize(vn),l));float bright=.35+.28*daylight+.41*daylight*lam;vec3 c=vc*bright;float warm=.038*daylight*max(0.,dot(normalize(vn),vec3(.2,.9,-.1)));c+=vec3(warm,warm*.5,warm*.22);float wetHighlight=storm*.065*max(0.,dot(normalize(vn),vec3(.0,1.,0.)));c+=vec3(wetHighlight*.55,wetHighlight*.8,wetHighlight);c=mix(c,min(vec3(1.),vc*1.65),clamp(ve,0.,1.));float d=distance(pos,eye);float f=clamp((d-180.)/(470.-storm*90.),0.,.77);vec3 fog=mix(vec3(.12,.18,.27),vec3(.55,.67,.75),daylight);fog=mix(fog,vec3(.47,.57,.61),storm*.36);c=mix(c,fog,f*.65);gl_FragColor=vec4(c,1.);}`;
+ const fs=`precision mediump float;
+varying vec3 vn;varying vec3 vc;varying vec3 pos;varying float ve;
+uniform vec3 eye;uniform float tick;uniform float daylight;uniform float storm;
+void main(){
+ vec3 n=normalize(vn),sun=normalize(vec3(-.72,.76,.28));
+ float diffuse=max(0.,dot(n,sun));
+ float fill=.39+.13*daylight;
+ float direct=.40*daylight*diffuse;
+ vec3 c=vc*(fill+direct);
+ c+=vc*vec3(.095,.045,.009)*diffuse*daylight;
+ float wet=storm*.035*max(0.,n.y);
+ c+=vec3(wet*.65,wet*.85,wet);
+ c=mix(c,min(vec3(1.),vc*1.60),clamp(ve,0.,1.));
+ float dist=distance(pos,eye);
+ float haze=clamp((dist-155.)/(710.-storm*110.),0.,.87);
+ float elevation=clamp((pos.y+15.)/235.,0.,1.);
+ vec3 warmHorizon=mix(vec3(.085,.14,.23),vec3(.74,.54,.47),daylight);
+ vec3 coolHaze=mix(vec3(.07,.115,.19),vec3(.46,.61,.70),daylight);
+ vec3 fog=mix(warmHorizon,coolHaze,elevation*.72);
+ fog=mix(fog,vec3(.43,.52,.57),storm*.52);
+ c=mix(c,fog,haze*.78);
+ gl_FragColor=vec4(c,1.);
+}`;
  function compile(type,src){let s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error('WebGL shader: '+gl.getShaderInfoLog(s));return s}
  let prog=gl.createProgram();gl.attachShader(prog,compile(gl.VERTEX_SHADER,vs));gl.attachShader(prog,compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(prog);if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw Error('WebGL program: '+gl.getProgramInfoLog(prog));gl.useProgram(prog);
  g3.p=prog;g3.loc={vp:gl.getUniformLocation(prog,'vp'),eye:gl.getUniformLocation(prog,'eye'),tick:gl.getUniformLocation(prog,'tick'),daylight:gl.getUniformLocation(prog,'daylight'),storm:gl.getUniformLocation(prog,'storm')};g3.attr=[gl.getAttribLocation(prog,'p'),gl.getAttribLocation(prog,'n'),gl.getAttribLocation(prog,'col'),gl.getAttribLocation(prog,'emit')];
@@ -1336,6 +1358,10 @@ class Mesh3{
  v(p,n,c,e){this.d.push(p[0],p[1],p[2],n[0],n[1],n[2],c[0],c[1],c[2],e)}
  tri(a,b,c,color,em=0){let u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]],n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],m=Math.hypot(...n)||1,co=color3(color);n=n.map(q=>q/m);this.v(a,n,co,em);this.v(b,n,co,em);this.v(c,n,co,em)}
  quad(a,b,c,d,color,em=0){this.tri(a,b,c,color,em);this.tri(a,c,d,color,em)}
+ // Pavement is always lit from its upward surface normal. Road strip joins
+ // can produce flipped triangle normals at curves; that caused dark blotches.
+ roadTri(a,b,c,color,em=0){const n=[0,1,0],co=color3(color);this.v(a,n,co,em);this.v(b,n,co,em);this.v(c,n,co,em)}
+ roadQuad(a,b,c,d,color,em=0){this.roadTri(a,b,c,color,em);this.roadTri(a,c,d,color,em)}
  box(x,y,z,w,h,d,color,angle=0,em=0){if(w<=0||h<=0||d<=0)return;let ca=Math.cos(angle),sa=Math.sin(angle),pts=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]].map(v=>[x+(v[0]*w*ca+v[2]*d*sa)/2,y+v[1]*h/2,z+(-v[0]*w*sa+v[2]*d*ca)/2]);for(let a of [[0,1,2,3],[5,4,7,6],[1,5,6,2],[4,0,3,7],[3,2,6,7],[4,5,1,0]])this.quad(pts[a[0]],pts[a[1]],pts[a[2]],pts[a[3]],color,em)}
  boulder(x,y,z,r){
   const top=[x-r*.17,y+r*.66,z+r*.10],bottom=[x,y-r*.12,z],n=7;
@@ -1365,7 +1391,7 @@ function roadJoinPoint(road,index,offset){
  let mx=n0[0]+n1[0],my=n0[1]+n1[1],length=Math.hypot(mx,my);
  if(length<.3){mx=n1[0];my=n1[1];length=Math.hypot(mx,my)||1;}
  mx/=length;my/=length;
- const correction=Math.min(1.24,1/Math.max(.42,Math.abs(mx*n1[0]+my*n1[1])));
+ const correction=Math.min(1.12,1/Math.max(.52,Math.abs(mx*n1[0]+my*n1[1])));
  return {x:p.x+mx*offset*correction,y:p.y+my*offset*correction};
 }
 function build3DCity(){
@@ -1410,9 +1436,9 @@ function build3DCity(){
  // Roads and T-junctions use a shared asphalt palette and a single intersection
  // mesh. Stripes taper out before the junction, not through or on top of each other.
  const MAT={
-   paved:'#3e4b50',mountain:'#414d50',coastal:'#43535a',
-   dirt:'#857254',shoulder:'#8b9387',dirtEdge:'#a09476',
-   white:'#e1dfd0',yellow:'#edc986'
+   paved:'#59616a',mountain:'#5a6167',coastal:'#576870',
+   dirt:'#968265',shoulder:'#7e847e',dirtEdge:'#aaa082',
+   white:'#e9e6d9',yellow:'#efcf92'
  };
  function hexBlend(from,to,f){
    const blend=clamp(f,0,1),channels=[1,3,5].map(i=>{
@@ -1434,9 +1460,12 @@ function build3DCity(){
    const a=roadJoinPoint(road,i,left),b=roadJoinPoint(road,i,right);
    const c=roadJoinPoint(road,i+1,left),d=roadJoinPoint(road,i+1,right);
    // Terrain at the actual corners is continuous across all road surfaces.
-   const yA=surfaceY(a.x,a.y)+rise,yB=surfaceY(b.x,b.y)+rise;
-   const yC=surfaceY(c.x,c.y)+rise,yD=surfaceY(d.x,d.y)+rise;
-   tileAt((start.x+end.x)/2,(start.y+end.y)/2).quad(
+   // Small deterministic height separation prevents nearly coplanar
+   // crossing ribbons from z-fighting without raising an entire intersection.
+   const bias=(roads.indexOf(road)%5)*.065;
+   const yA=surfaceY(a.x,a.y)+rise+bias,yB=surfaceY(b.x,b.y)+rise+bias;
+   const yC=surfaceY(c.x,c.y)+rise+bias,yD=surfaceY(d.x,d.y)+rise+bias;
+   tileAt((start.x+end.x)/2,(start.y+end.y)/2).roadQuad(
      [a.x,yA,a.y],[b.x,yB,b.y],[d.x,yD,d.y],[c.x,yC,c.y],color,glow);
  }
  for(const road of roads){
@@ -1446,9 +1475,10 @@ function build3DCity(){
    for(let i=0;i<p.length-1;i++){
      const centerX=(p[i].x+p[i+1].x)*.5,centerY=(p[i].y+p[i+1].y)*.5;
      const junction=nearestJunction(centerX,centerY);
-     if(junction&&junction.dist<junction.junction.cut+1)continue;
-     roadStrip(road,i,-half-2.25,half+2.25,verge,.31);
-     roadStrip(road,i,-half,half,asphalt,.39);
+     // Continuous ribbons through junctions prevent missing asphalt
+     // triangles and avoid the giant circular patches from V10.2.
+     roadStrip(road,i,-half-2.25,half+2.25,verge,.58);
+     roadStrip(road,i,-half,half,asphalt,.71);
      // Markings vanish into the shared asphalt rather than crossing other lanes.
      const fade=junction?clamp((junction.dist-junction.junction.radius-6)/34,0,1):1;
      if(fade<.07)continue;
@@ -1456,36 +1486,18 @@ function build3DCity(){
      if(road.style==='trail'){
        if(i%9<6)for(const side of [-1,1]){
          const offset=side*half*.40;
-         roadStrip(road,i,offset-.38*fade,offset+.38*fade,hexBlend(MAT.dirt,'#c1ac86',fade),.46);
+         roadStrip(road,i,offset-.38*fade,offset+.38*fade,hexBlend(MAT.dirt,'#c1ac86',fade),.82);
        }
      }else{
-       roadStrip(road,i,-half+2.0,-half+2+.72*fade,line,.455);
-       roadStrip(road,i,half-2-.72*fade,half-2,line,.455);
-       if(i%10<5)roadStrip(road,i,-.76*fade,.76*fade,centerline,.47);
+       roadStrip(road,i,-half+2.0,-half+2+.72*fade,line,.82);
+       roadStrip(road,i,half-2-.72*fade,half-2,line,.82);
+       if(i%10<5)roadStrip(road,i,-.76*fade,.76*fade,centerline,.84);
      }
    }
  }
- // Fill each junction ONCE. A gently rounded continuous patch covers the
- // incoming road cross-sections and hides double pavements at crossings.
- for(const j of roadJunctions){
-   const m=tileAt(j.x,j.y),n=24,outer=j.radius+2.4,inner=j.radius;
-   const pavement=j.paved?MAT.paved:MAT.dirt;
-   const border=j.paved?MAT.shoulder:MAT.dirtEdge;
-   for(let i=0;i<n;i++){
-     const a=TAU*i/n,b=TAU*(i+1)/n;
-     const rim1=[j.x+Math.cos(a)*outer,j.y+Math.sin(a)*outer];
-     const rim2=[j.x+Math.cos(b)*outer,j.y+Math.sin(b)*outer];
-     const q1=[j.x+Math.cos(a)*inner,j.y+Math.sin(a)*inner];
-     const q2=[j.x+Math.cos(b)*inner,j.y+Math.sin(b)*inner];
-     m.quad([q1[0],surfaceY(...q1)+.56,q1[1]],
-            [rim1[0],surfaceY(...rim1)+.50,rim1[1]],
-            [rim2[0],surfaceY(...rim2)+.50,rim2[1]],
-            [q2[0],surfaceY(...q2)+.56,q2[1]],border);
-     m.tri([j.x,surfaceY(j.x,j.y)+.57,j.y],
-           [q1[0],surfaceY(...q1)+.56,q1[1]],
-           [q2[0],surfaceY(...q2)+.56,q2[1]],pavement);
-   }
- }
+ // Intersections are now formed by continuous ribbons with tiny depth biases,
+ // not giant raised disks. Lane markings fade as they approach a crossing.
+ // The road network and junction metadata are still used for driving and props.
  // Road reflectors along mountain and coastal curves.
  for(const road of roads){
   if(road.style!=='mountain'&&road.style!=='coastal')continue;
@@ -1743,8 +1755,22 @@ function render3D(){if(!g3.ready)return;
  const gl=webgl;
  const w=canvas.width,h=canvas.height,weather=climateAt(now);
  gl.viewport(0,0,w,h);
- gl.clearColor(.018+weather.day*.10,.048+weather.day*.19,.11+weather.day*.27,1);
- gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+ // Cheap sunset sky gradient: colored clears, no textures or post-processing.
+ // OpenGL's bottom-to-top scissor bands run only 14 passes on Chromebook GPUs.
+ gl.enable(gl.SCISSOR_TEST);
+ const bands=14;
+ for(let b=0;b<bands;b++){
+   const t=(b+.5)/bands;
+   const horizon=[.69,.45,.39],zenith=[.18,.36,.58];
+   const nightLow=[.055,.105,.17],nightHigh=[.018,.045,.105];
+   const color=[0,1,2].map(i=>lerp(lerp(nightLow[i],nightHigh[i],t),lerp(horizon[i],zenith[i],t),weather.day)*(weather.rain?.74:1));
+   const y=Math.floor(h*b/bands),top=Math.ceil(h*(b+1)/bands);
+   gl.scissor(0,y,w,top-y);
+   gl.clearColor(color[0],color[1],color[2],1);
+   gl.clear(gl.COLOR_BUFFER_BIT);
+ }
+ gl.disable(gl.SCISSOR_TEST);
+ gl.clear(gl.DEPTH_BUFFER_BIT);
  gl.uniform1f(g3.loc.daylight,weather.day);
  gl.uniform1f(g3.loc.storm,weather.rain?1:0);
  let playing=mode==='playing'||mode==='pause'||mode==='over';
@@ -1760,8 +1786,8 @@ function render3D(){if(!g3.ready)return;
  let anchorA=playing?target.a:showroom?now*.23+1.0:now*.07+.55;
  let cg=g3.camera,angleDelta=Math.atan2(Math.sin(anchorA-cg.heading),Math.cos(anchorA-cg.heading));
  cg.heading+=angleDelta*(playing?.095:showroom?.058:.019);
- let span=playing?((cameraMode?83:53)+Math.min(10,Math.abs(target.speed)*.045)):showroom?77:127;
- let ht=playing?(cameraMode?44:25):showroom?42:76;
+ let span=playing?((cameraMode?78:46)+Math.min(9,Math.abs(target.speed)*.04)):showroom?77:127;
+ let ht=playing?(cameraMode?40:21):showroom?42:76;
  let xGoal=target.x-Math.sin(cg.heading)*span,zGoal=target.y+Math.cos(cg.heading)*span;
  let yGoal=Math.max(terrainHeight(target.x,target.y)+ht,terrainHeight(xGoal,zGoal)+(playing?13:20));
  let smooth=playing?.19:showroom?.10:.036;
