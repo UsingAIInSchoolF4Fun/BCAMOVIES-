@@ -1458,17 +1458,18 @@ function mul3(a,b){let r=new Array(16).fill(0);for(let c=0;c<4;c++)for(let row=0
 function vehicle3(mesh,v,kind='traffic'){
  const police=kind==='cop',me=kind==='me';
  const style=me?v.template.style:police?(v.type==='heavy'?'armored':'sedan'):(v.shape||'sedan');
- const width=me?v.template.width*PLAYER_CAR_SCALE:(style==='armored'?12:style==='muscle'?10.7:style==='hatch'?8.4:9.7)*NPC_SCALE;
- const len=me?v.template.length*PLAYER_CAR_SCALE:(style==='armored'?23:style==='hatch'?15:19)*NPC_SCALE;
+ const modelScale=me?PLAYER_CAR_SCALE:NPC_SCALE;
+ const width=me?v.template.width:(style==='armored'?12:style==='muscle'?10.7:style==='hatch'?8.4:9.7);
+ const len=me?v.template.length:(style==='armored'?23:style==='hatch'?15:19);
  const x=v.x,z=v.y,a=v.a,co=Math.cos(a),si=Math.sin(a);
  const groundY=terrainHeight(x,z),color=police?(style==='armored'?'#526579':'#e9f0ee'):me?v.color:v.color;
  const sway=me?(v.lean||0):0,tilt=me?(v.pitch||0):0;
  const bounce=me?((v.bump||0)*Math.sin(now*11)*.2+(v.suspension||0)*.46):0;
  function part(lx,ly,lz,w,h,d,paint,glow=0){
-  const xx=x+lx*co-lz*si,zz=z+lx*si+lz*co;
-  mesh.box(xx,groundY+ly+bounce+sway*lx/width+tilt*lz/len,zz,w,h,d,paint,-a,glow);
+  const xx=x+(lx*co-lz*si)*modelScale,zz=z+(lx*si+lz*co)*modelScale;
+  mesh.box(xx,groundY+(ly+bounce+sway*lx/width+tilt*lz/len)*modelScale,zz,w*modelScale,h*modelScale,d*modelScale,paint,-a,glow);
  }
- function point(lx,ly,lz){return [x+lx*co-lz*si,groundY+ly+bounce+sway*lx/width+tilt*lz/len,z+lx*si+lz*co]}
+ function point(lx,ly,lz){return [x+(lx*co-lz*si)*modelScale,groundY+(ly+bounce+sway*lx/width+tilt*lz/len)*modelScale,z+(lx*si+lz*co)*modelScale]}
  function panel(a,b,c,d,col,glow=0){mesh.quad(point(...a),point(...b),point(...c),point(...d),col,glow)}
 
  const lift=style==='rally'?1.1:style==='armored'?1.25:style==='super'||style==='hyper'?-.35:0;
@@ -1588,11 +1589,11 @@ function vehicle3(mesh,v,kind='traffic'){
 // recognizable silhouettes and police strobes with a fraction of the triangles.
 function vehicle3LOD(mesh,v,kind='traffic'){
  const police=kind==='cop',style=v.shape||(police&&v.type==='heavy'?'armored':'sedan');
- const w=(style==='armored'?11.5:style==='hatch'?8.4:9.6)*NPC_SCALE,leg=(style==='armored'?23:style==='hatch'?15.4:18.8)*NPC_SCALE;
+ const w=style==='armored'?11.5:style==='hatch'?8.4:9.6,leg=style==='armored'?23:style==='hatch'?15.4:18.8;
  const x=v.x,z=v.y,a=v.a,h=terrainHeight(x,z),co=Math.cos(a),sn=Math.sin(a);
  const col=police?'#e1e9e8':v.color||'#bccad0';
  function block(lx,y,lz,ww,hh,ll,c,em=0){
-   mesh.box(x+lx*co-lz*sn,h+y,z+lx*sn+lz*co,ww,hh,ll,c,-a,em);
+   mesh.box(x+(lx*co-lz*sn)*NPC_SCALE,h+y*NPC_SCALE,z+(lx*sn+lz*co)*NPC_SCALE,ww*NPC_SCALE,hh*NPC_SCALE,ll*NPC_SCALE,c,-a,em);
  }
  block(0,2.5,0,w,2.8,leg,col);
  block(0,5.1,0,w*.75,2.25,leg*.5,police?'#7a919c':'#456478');
@@ -1768,13 +1769,14 @@ function renderSoftware3D(){
 function vehicle(v,type){
   const style=type==='player'?v.template.style:type==='cop'?(v.type==='heavy'?'armored':'sedan'):(v.shape||'sedan');
   const x=v.x,z=v.y,a=v.a,co=Math.cos(a),si=Math.sin(a),ground=softwareHeight(x,z);
-  const width=type==='player'?v.template.width*PLAYER_CAR_SCALE:(style==='armored'?12:style==='hatch'?8.3:9.5)*NPC_SCALE;
-  const length=type==='player'?v.template.length*PLAYER_CAR_SCALE:(style==='armored'?23:style==='hatch'?15:19)*NPC_SCALE;
+  const modelScale=type==='player'?PLAYER_CAR_SCALE:NPC_SCALE;
+  const width=type==='player'?v.template.width:(style==='armored'?12:style==='hatch'?8.3:9.5);
+  const length=type==='player'?v.template.length:(style==='armored'?23:style==='hatch'?15:19);
   const body=type==='player'?v.color:type==='cop'?'#dceaf0':v.color;
   const low=style==='super'||style==='hyper',high=style==='armored'||style==='rally';
   const h=low?3.1:high?5.3:4.2,roof=low?4.9:high?8.1:6.5;
   const cabinSize=style==='hatch'?.69:style==='armored'?.61:low?.43:.54;
-  const local=(lx,y,lz)=>[x+lx*co-lz*si,ground+y,z+lx*si+lz*co],b=width/2,t=length/2;
+  const local=(lx,y,lz)=>[x+(lx*co-lz*si)*modelScale,ground+y*modelScale,z+(lx*si+lz*co)*modelScale],b=width/2,t=length/2;
   // Color-shaded body with characteristic ride height.
   polygon([local(-b,0,-t),local(b,0,-t),local(b,h,-t),local(-b,h,-t)],shade(body,.70));
   polygon([local(b,0,-t),local(b,0,t),local(b,h,t),local(b,h,-t)],shade(body,.68));
