@@ -1808,12 +1808,10 @@ function renderSoftware3D(){
  const cells=[];let step=90,anchorX=Math.round(target.x/step)*step,anchorZ=Math.round(target.y/step)*step;for(let dx=-810;dx<=810;dx+=step)for(let dz=-810;dz<=810;dz+=step){let x=anchorX+dx,z=anchorZ+dz,center=coastDistance(x,z);if(center<-40)continue;let depth=dx*si-dz*co;if(depth<-70||depth>1100)continue;cells.push({x,z,depth,center})}
  cells.sort((a,b)=>b.depth-a.depth);
  for(let cell of cells){let x=cell.x,z=cell.z,s=step*.51;let ht=softwareHeight(x,z),fill=terrainStyle(x,z,ht);polygon([[x-s,softwareHeight(x-s,z-s),z-s],[x+s,softwareHeight(x+s,z-s),z-s],[x+s,softwareHeight(x+s,z+s),z+s],[x-s,softwareHeight(x-s,z+s),z+s]],fill)}
- // School Chromebook fallback: continuous roadside quads with shared endpoints.
- // The previous per-segment perpendiculars folded over on sharp switchbacks.
- // Chromebook fallback shares the same safe, smooth joins as WebGL.
+ // Chromebook roads use the same unified junction geometry as WebGL.
  function roadEdge(road,index,offset,rise=.4){
-   const pos=roadJoinPoint(road,index,offset),c=road.points[index];
-   return [pos.x,softwareHeight(c.x,c.y)+rise,pos.y];
+   const pos=roadJoinPoint(road,index,offset);
+   return [pos.x,softwareHeight(pos.x,pos.y)+rise,pos.y];
  }
  function roadPatch(road,i,j,half,color,rise=.4){
    const a=roadEdge(road,i,-half,rise),b=roadEdge(road,i,half,rise);
@@ -1822,13 +1820,32 @@ function renderSoftware3D(){
  }
  for(const road of roads){
    const p=road.points,half=road.width*.5;
-   for(let i=0;i<p.length-1;i+=2){
-     const j=Math.min(i+2,p.length-1),mid=p[Math.min(i+1,p.length-1)];
-     if(Math.hypot(mid.x-target.x,mid.y-target.y)>440)continue;
-     if(Math.hypot(p[j].x-p[i].x,p[j].y-p[i].y)<.4)continue;
-     roadPatch(road,i,j,half+2.8,road.style==='mountain'?'#89998d':'#97a59b',.31);
-     roadPatch(road,i,j,half,road.style==='trail'?'#826a4e':road.style==='mountain'?'#40515a':'#394e59',.38);
-     if(road.style!=='trail'&&i%10<4)roadPatch(road,i,j,.65,'#e9d5a6',.44);
+   for(let i=0;i<p.length-1;i++){
+     const midX=(p[i].x+p[i+1].x)*.5,midY=(p[i].y+p[i+1].y)*.5;
+     if(Math.hypot(midX-target.x,midY-target.y)>435)continue;
+     const junction=nearestJunction(midX,midY);
+     if(junction&&junction.dist<junction.junction.cut+1)continue;
+     if(Math.hypot(p[i+1].x-p[i].x,p[i+1].y-p[i].y)<.18)continue;
+     const asphalt=road.style==='trail'?'#857254':road.style==='coastal'?'#43535a':road.style==='mountain'?'#414d50':'#3e4b50';
+     roadPatch(road,i,i+1,half+2.25,road.style==='trail'?'#a09476':'#8b9387',.31);
+     roadPatch(road,i,i+1,half,asphalt,.40);
+     const fade=junction?Math.max(0,Math.min(1,(junction.dist-junction.junction.radius-6)/34)):1;
+     if(road.style!=='trail'&&i%10<5&&fade>.40)
+       roadPatch(road,i,i+1,.72*fade,'#d7c08c',.46);
+   }
+ }
+ // A single shared patch hides approach overlaps and removes center lines.
+ for(const j of roadJunctions){
+   if(Math.hypot(j.x-target.x,j.y-target.y)>425)continue;
+   const parts=20,r=j.radius;
+   for(let i=0;i<parts;i++){
+     const a=TAU*i/parts,b=TAU*(i+1)/parts,
+           x0=j.x+Math.cos(a)*r,z0=j.y+Math.sin(a)*r,
+           x1=j.x+Math.cos(b)*r,z1=j.y+Math.sin(b)*r;
+     polygon([[j.x,softwareHeight(j.x,j.y)+.65,j.y],
+              [x0,softwareHeight(x0,z0)+.65,z0],
+              [x1,softwareHeight(x1,z1)+.65,z1]],
+             j.paved?'#3e4b50':'#857254');
    }
  }
  let objects=[];for(let b of structures){let dx=b.x-target.x,dz=b.y-target.y,depth=dx*si-dz*co;if(depth>-75&&depth<720&&Math.hypot(dx,dz)<780)objects.push({type:'b',obj:b,depth});}
