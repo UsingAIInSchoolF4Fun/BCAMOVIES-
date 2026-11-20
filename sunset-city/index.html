@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V10 — FOUNDATION & FEEL</title>
+<meta name="theme-color" content="#0a192a"><title>SUNSET CITY V10.1 — OPEN ROADS & BIGGER MOUNTAINS</title>
 <style>
 :root{--ink:#0c1a2b;--panel:#101f30f2;--line:#ffffff29;--cyan:#63e6e5;--orange:#ffb36b;--muted:#a8bbc9;--green:#89f4ac}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#081b2b;color:#fff;font-family:Inter,Arial,Helvetica,sans-serif;user-select:none;touch-action:none}
@@ -123,7 +123,7 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 <body>
 <canvas id="game" aria-label="3D third-person police chase driving game"></canvas><div id="tint"></div>
 <div id="hud">
-  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V10 FOUNDATION & FEEL</small></div><div class="hudMid">
+  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V10.1 OPEN ROADS</small></div><div class="hudMid">
    <div class="pill"><label>SURVIVAL</label><strong id="survive">00:00</strong></div><div class="pill cash"><label>RUN EARNINGS</label><strong id="earn">$0</strong></div><div class="pill heat"><label id="heatLabel">LEVEL 1 · 1 COP</label><strong id="stars">★☆☆☆☆</strong></div></div></div>
   <div id="hudLeft"><div class="meter"><div class="meterhead"><span>CAR INTEGRITY</span><span id="healthText">100%</span></div><div class="track"><div class="fill" id="healthbar"></div></div></div><div class="meter"><div class="meterhead"><span>NITRO</span><span id="boostText">100%</span></div><div class="track"><div class="fill boost" id="boostbar"></div></div></div><div class="tips"><b>W/S</b> accelerate / brake<br><b>A/D</b> steer &nbsp; <b>SHIFT</b> boost<br><b>SPACE</b> handbrake drift<br><b>ESC</b> pause<br><b>M</b> map · <b>C</b> camera · <b>V</b> sound<br><b>MOUNTAINS</b> earn ridge bonuses<br><b>OCEAN</b> ends your run</div></div>
   <button id="escapeBtn" type="button">Ⅱ PAUSE</button>
@@ -160,7 +160,8 @@ let mode='home',paused=false,keys={},now=0,last=0,runningSeconds=0,earned=0,comb
 let car=null,cops=[],traffic=[],particles=[],pickups=[],skidMarks=[],camera={x:0,y:0,zoom:1};let runInfo={nearMisses:0,drifts:0,rammed:0,trails:0};
 const view={w:innerWidth,h:innerHeight,dpr:1};
 function resize(){view.dpr=Math.min(1.25,window.devicePixelRatio||1);view.w=innerWidth;view.h=innerHeight;let w=Math.round(view.w*view.dpr),h=Math.round(view.h*view.dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;if(webgl)webgl.viewport(0,0,w,h);} }
-const CITY_COMPACT=1.18; // Expanded island, 47.5% larger than V6.1.
+const CITY_COMPACT=1.18; // Preserve island footprint and saved player/world coordinates.
+const ROAD_SCALE=1.72, WILDERNESS_SCALE=1.30, MOUNTAIN_HEIGHT_SCALE=1.32, NPC_SCALE=.76;
 const STATIC={canvas:null,bounds:{minX:-1500,minY:-1200,maxX:1500,maxY:1200},scale:1};
 let roads=[],roadSamples=[],structures=[],trees=[],streetProps=[],parkingLots=[];
 const OBSTACLE_CELL=64,obstacleGrid=new Map();
@@ -195,7 +196,7 @@ const MOUNTAINS=[
  {x:500*CITY_COMPACT,z:365*CITY_COMPACT,sx:315*CITY_COMPACT,sz:285*CITY_COMPACT,h:157},
  {x:-450*CITY_COMPACT,z:455*CITY_COMPACT,sx:300*CITY_COMPACT,sz:320*CITY_COMPACT,h:158},
  {x:100*CITY_COMPACT,z:555*CITY_COMPACT,sx:280*CITY_COMPACT,sz:215*CITY_COMPACT,h:99}
-];
+] .map(m=>({...m,sx:m.sx*WILDERNESS_SCALE,sz:m.sz*WILDERNESS_SCALE,h:m.h*MOUNTAIN_HEIGHT_SCALE}));
 // Shared elevation model for roads, cars, scenery and mountains.
 // Spatial road lookup: exact segment checks replace the old skipped-point search.
 // Also stores a smoothed height profile, so roads are physically cut into hillsides.
@@ -417,7 +418,11 @@ function driveSurface(x,y,template){
 }
 function slopeAt(x,z,angle){const d=10,fx=Math.sin(angle),fz=-Math.cos(angle);return (terrainHeight(x+fx*d,z+fz*d)-terrainHeight(x-fx*d,z-fz*d))/(2*d);}
 function pathIsland(g,inset=0){let count=300;g.beginPath();for(let i=0;i<=count;i++){let a=(i/count)*TAU,R=shorelineRadius(a)-inset,x=Math.cos(a)*R*1.23,y=Math.sin(a)*R*.92;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}g.closePath();}
-function makeRoad(id,points,width=27,style='urban'){roads.push({id,points,width,style});for(let i=0;i<points.length-1;i++){let a=points[i],b=points[i+1],d=Math.hypot(b.x-a.x,b.y-a.y),n=Math.max(1,Math.floor(d/20));for(let j=0;j<n;j++){let t=j/n,pt={x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),a:Math.atan2(b.y-a.y,b.x-a.x),id};if(style!=='trail'&&coastDistance(pt.x,pt.y)>36)roadSamples.push(pt)}}}
+function makeRoad(id,points,width=27,style='urban'){
+ // Wide modern highway scale: a proper two-lane road plus generous shoulders.
+ const roadWidth=width*ROAD_SCALE*(style==='trail'?.90:style==='roundabout'?.93:1);
+ roads.push({id,points,width:roadWidth,style});
+for(let i=0;i<points.length-1;i++){let a=points[i],b=points[i+1],d=Math.hypot(b.x-a.x,b.y-a.y),n=Math.max(1,Math.floor(d/20));for(let j=0;j<n;j++){let t=j/n,pt={x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),a:Math.atan2(b.y-a.y,b.x-a.x),id};if(style!=='trail'&&coastDistance(pt.x,pt.y)>36)roadSamples.push(pt)}}}
 function line(points){return points.map(p=>({x:p[0],y:p[1]}))}
 function curveRoad(id,points,width,style){const ps=[];const src=points.map(p=>({x:p[0]*CITY_COMPACT,y:p[1]*CITY_COMPACT}));for(let i=0;i<src.length-1;i++){let p0=src[Math.max(0,i-1)],p1=src[i],p2=src[i+1],p3=src[Math.min(src.length-1,i+2)];for(let j=0;j<18;j++){let t=j/18,t2=t*t,t3=t2*t;ps.push({x:.5*((2*p1.x)+(-p0.x+p2.x)*t+(2*p0.x-5*p1.x+4*p2.x-p3.x)*t2+(-p0.x+3*p1.x-3*p2.x+p3.x)*t3),y:.5*((2*p1.y)+(-p0.y+p2.y)*t+(2*p0.y-5*p1.y+4*p2.y-p3.y)*t2+(-p0.y+3*p1.y-3*p2.y+p3.y)*t3)})}}ps.push(src.at(-1));makeRoad(id,ps,width,style)}
 function ringRoad(id,cx,cy,rx,ry,w=30,style='boulevard'){cx*=CITY_COMPACT;cy*=CITY_COMPACT;rx*=CITY_COMPACT;ry*=CITY_COMPACT;const pts=[];for(let i=0;i<=170;i++){let a=TAU*i/170;pts.push({x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry})}makeRoad(id,pts,w,style)}
@@ -771,7 +776,7 @@ function roadLanePoint(v,index){
 // limited only for rendering performance: later levels become more aggressive,
 // more numerous up to the active pool, and more damaging instead of slowing down.
 const HEAT_SECONDS=30, MAX_ACTIVE_COPS=18;
-const PLAYER_CAR_SCALE=.84, PLAYER_SPEED_SCALE=.79;
+const PLAYER_CAR_SCALE=.67, PLAYER_SPEED_SCALE=.74;
 function heatLevelAt(seconds){return 1+Math.floor(Math.max(0,seconds)/HEAT_SECONDS);}
 function maxCopsAt(level){return Math.min(MAX_ACTIVE_COPS,Math.max(1,level));}
 function copTopSpeed(level,heavy=false){return Math.max(24,38+(level-1)*11+Math.max(0,level-12)*2-(heavy?13:0));}
@@ -1083,7 +1088,7 @@ function updateCops(dt){
  }
 }
 function bodyVelocity(v){return v===car?[car.vx,car.vy]:[Math.sin(v.a)*v.speed+(v.knockVX||0),-Math.cos(v.a)*v.speed+(v.knockVY||0)]}
-function vehicleRadius(v){return v===car?clamp((v.template.width+v.template.length)*PLAYER_CAR_SCALE*.35,7,11.2):v.type==='heavy'?12.5:10.2}
+function vehicleRadius(v){return v===car?clamp((v.template.width+v.template.length)*PLAYER_CAR_SCALE*.34,5.5,9.3):(v.type==='heavy'?12.5:10.2)*NPC_SCALE}
 function resolveVehicleContacts(dt){
  if(!car)return;
  const all=[car,...cops,...traffic];
@@ -1129,7 +1134,7 @@ function drawRadar(){let g=rctx,W=180,H=180;g.clearRect(0,0,W,H);g.fillStyle='#0
 function drawVehicle(g,v,police=false,player=false){let x=v.x,y=v.y,a=v.a,col=police?(v.type==='heavy'?'#394651':'#e4edf0'):v.color;g.save();g.translate(x,y);g.rotate(a);
  if(player&&car.hitCooldown>0&&Math.floor(now*13)%2)g.globalAlpha=.55;
  g.fillStyle='#041d2d77';g.beginPath();g.ellipse(4,6,12,20,0,0,TAU);g.fill();
- let length=police&&v.type==='heavy'?38:player?v.template.length*PLAYER_CAR_SCALE*1.6:34,width=police&&v.type==='heavy'?23:player?v.template.width*PLAYER_CAR_SCALE*1.9:19;
+ let length=police&&v.type==='heavy'?38*NPC_SCALE:player?v.template.length*PLAYER_CAR_SCALE*1.6:34*NPC_SCALE,width=police&&v.type==='heavy'?23*NPC_SCALE:player?v.template.width*PLAYER_CAR_SCALE*1.9:19*NPC_SCALE;
  g.fillStyle='#14202a';for(let sx of [-1,1])for(let sy of [-1,1]){g.fillRect(sx*width*.42-3,sy*length*.33-5,6,10)}
  g.beginPath();rectRound(g,-width/2,-length/2,width,length,5);g.fillStyle=col;g.fill();
  g.fillStyle='#102c41';g.beginPath();rectRound(g,-width*.42,-length*.20,width*.84,length*.39,3);g.fill();
@@ -1384,8 +1389,8 @@ function mul3(a,b){let r=new Array(16).fill(0);for(let c=0;c<4;c++)for(let row=0
 function vehicle3(mesh,v,kind='traffic'){
  const police=kind==='cop',me=kind==='me';
  const style=me?v.template.style:police?(v.type==='heavy'?'armored':'sedan'):(v.shape||'sedan');
- const width=me?v.template.width*PLAYER_CAR_SCALE:style==='armored'?12:style==='muscle'?10.7:style==='hatch'?8.4:9.7;
- const len=me?v.template.length*PLAYER_CAR_SCALE:style==='armored'?23:style==='hatch'?15:19;
+ const width=me?v.template.width*PLAYER_CAR_SCALE:(style==='armored'?12:style==='muscle'?10.7:style==='hatch'?8.4:9.7)*NPC_SCALE;
+ const len=me?v.template.length*PLAYER_CAR_SCALE:(style==='armored'?23:style==='hatch'?15:19)*NPC_SCALE;
  const x=v.x,z=v.y,a=v.a,co=Math.cos(a),si=Math.sin(a);
  const groundY=terrainHeight(x,z),color=police?(style==='armored'?'#526579':'#e9f0ee'):me?v.color:v.color;
  const sway=me?(v.lean||0):0,tilt=me?(v.pitch||0):0;
@@ -1514,7 +1519,7 @@ function vehicle3(mesh,v,kind='traffic'){
 // recognizable silhouettes and police strobes with a fraction of the triangles.
 function vehicle3LOD(mesh,v,kind='traffic'){
  const police=kind==='cop',style=v.shape||(police&&v.type==='heavy'?'armored':'sedan');
- const w=style==='armored'?11.5:style==='hatch'?8.4:9.6,leg=style==='armored'?23:style==='hatch'?15.4:18.8;
+ const w=(style==='armored'?11.5:style==='hatch'?8.4:9.6)*NPC_SCALE,leg=(style==='armored'?23:style==='hatch'?15.4:18.8)*NPC_SCALE;
  const x=v.x,z=v.y,a=v.a,h=terrainHeight(x,z),co=Math.cos(a),sn=Math.sin(a);
  const col=police?'#e1e9e8':v.color||'#bccad0';
  function block(lx,y,lz,ww,hh,ll,c,em=0){
@@ -1556,21 +1561,21 @@ function render3D(){if(!g3.ready)return;
  let anchorA=playing?target.a:showroom?now*.23+1.0:now*.07+.55;
  let cg=g3.camera,angleDelta=Math.atan2(Math.sin(anchorA-cg.heading),Math.cos(anchorA-cg.heading));
  cg.heading+=angleDelta*(playing?.095:showroom?.058:.019);
- let span=playing?((cameraMode?89:59)+Math.min(12,Math.abs(target.speed)*.055)):showroom?73:115;
- let ht=playing?(cameraMode?43:27):showroom?39:69;
+ let span=playing?((cameraMode?94:76)+Math.min(15,Math.abs(target.speed)*.055)):showroom?77:132;
+ let ht=playing?(cameraMode?48:34):showroom?42:79;
  let xGoal=target.x-Math.sin(cg.heading)*span,zGoal=target.y+Math.cos(cg.heading)*span;
  let yGoal=Math.max(terrainHeight(target.x,target.y)+ht,terrainHeight(xGoal,zGoal)+(playing?13:20));
  let smooth=playing?.19:showroom?.10:.036;
  cg.x=lerp(cg.x,xGoal,smooth);cg.y=lerp(cg.y,yGoal,smooth);cg.z=lerp(cg.z,zGoal,smooth);
  let fwdX=target.x+Math.sin(cg.heading)*(playing?21:showroom?0:38),fwdZ=target.y-Math.cos(cg.heading)*(playing?21:showroom?0:38);
- gl.uniformMatrix4fv(g3.loc.vp,false,new Float32Array(mul3(perspective3(.79,w/h,.2,820),look3([cg.x,cg.y,cg.z],[fwdX,terrainHeight(fwdX,fwdZ)+(playing?3:showroom?4:18),fwdZ]))));
+ gl.uniformMatrix4fv(g3.loc.vp,false,new Float32Array(mul3(perspective3(.83,w/h,.2,1050),look3([cg.x,cg.y,cg.z],[fwdX,terrainHeight(fwdX,fwdZ)+(playing?3:showroom?4:18),fwdZ]))));
  gl.uniform3f(g3.loc.eye,cg.x,cg.y,cg.z);gl.uniform1f(g3.loc.tick,now);
  // Water is redrawn around the camera, with no invisible world boundary.
  let ocean=new Mesh3();ocean.box(cg.x,-.46,cg.z,2600,.34,2600,'#1c7397');
  for(let i=0;i<50;i++){let ix=(i*173+Math.floor(cg.x/400)*53)%1000-500,iz=(i*379+Math.floor(cg.z/400)*83)%1000-500;let wx=cg.x+ix,wz=cg.z+iz;if(coastDistance(wx,wz)<-10){ocean.box(wx,.015+Math.sin(now*1.8+i)*.06,wz,18+(i%4)*5,.027,.4,i%3?'#4e9dbb':'#74b9c9',.23,.2)}}
  draw3Immediate(ocean);
  draw3Buffer(g3.ground);
- let cells=0;for(let cell of g3.tiles.values()){if(Math.abs(cell.x-target.x)>470||Math.abs(cell.z-target.y)>470)continue;draw3Buffer(cell.draw);cells++}g3.stats.visible=cells;
+ let cells=0;for(let cell of g3.tiles.values()){if(Math.abs(cell.x-target.x)>545||Math.abs(cell.z-target.y)>545)continue;draw3Buffer(cell.draw);cells++}g3.stats.visible=cells;
  let dynamic=new Mesh3();
  if(playing&&car&&weather.rain){
    for(let i=0;i<46;i++){
@@ -1694,8 +1699,8 @@ function renderSoftware3D(){
 function vehicle(v,type){
   const style=type==='player'?v.template.style:type==='cop'?(v.type==='heavy'?'armored':'sedan'):(v.shape||'sedan');
   const x=v.x,z=v.y,a=v.a,co=Math.cos(a),si=Math.sin(a),ground=softwareHeight(x,z);
-  const width=type==='player'?v.template.width*PLAYER_CAR_SCALE:style==='armored'?12:style==='hatch'?8.3:9.5;
-  const length=type==='player'?v.template.length*PLAYER_CAR_SCALE:style==='armored'?23:style==='hatch'?15:19;
+  const width=type==='player'?v.template.width*PLAYER_CAR_SCALE:(style==='armored'?12:style==='hatch'?8.3:9.5)*NPC_SCALE;
+  const length=type==='player'?v.template.length*PLAYER_CAR_SCALE:(style==='armored'?23:style==='hatch'?15:19)*NPC_SCALE;
   const body=type==='player'?v.color:type==='cop'?'#dceaf0':v.color;
   const low=style==='super'||style==='hyper',high=style==='armored'||style==='rally';
   const h=low?3.1:high?5.3:4.2,roof=low?4.9:high?8.1:6.5;
@@ -1744,7 +1749,7 @@ function renderHome(){
  mode='home';paused=false;$('hud').classList.remove('show');
  const selected=CARS.find(c=>c.id===save.selected)||CARS[0];
  showOverlay(`<section class="homeStage">
- <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V10.0 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
+ <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V10.1 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
  <div class="heroLine"></div>
  <div class="heroLogo"><span>ISLAND</span><strong>PURSUIT<span class="heroDot">.</span></strong><em>WILDLANDS</em></div>
  <p class="homeTagline">OUTRUN THE LAW. OWN THE MOUNTAINS.</p>
