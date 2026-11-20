@@ -3275,82 +3275,8 @@ function buildEpicObby(site,color,kind){
 }
 
 // Only six biome towers are built below; older sky courses are intentionally retired.
-// Five independent SKY PARKOUR games, no shared broken progress counter.
-// Start at the glowing landmark with F, then visit 10 platforms in order.
-let activeSkyTrial=null,skyInteractLatch=false,skyGameFrame=0;
-const skyGameHud=document.createElement("div");skyGameHud.id="skyGameHud";
-skyGameHud.style.cssText="display:none;position:fixed;right:11px;bottom:91px;z-index:8;pointer-events:none;background:#17112ce9;color:#fff;border:1px solid #d0a7ffaa;border-radius:13px;padding:10px 13px;width:min(273px,46vw);font:11px/1.5 Arial,sans-serif;box-shadow:0 7px 26px #0009";
-document.body.appendChild(skyGameHud);
-function beginSkyTrial(site){
- activeSkyTrial={site,stage:0,started:Date.now(),ends:Date.now()+105000};
- skyGameHud.style.display="block";
- trialNotification("SKY PARKOUR · "+site.name.toUpperCase()+
-   "\nReach platforms 1–10 in order within 105 seconds!");
-}
-function finishSkyTrial(active){
- const {site}=active,seconds=Math.max(0,Math.round((Date.now()-active.started)/1000));
- state.skyWins[site.id]=(state.skyWins[site.id]||0)+1;
- state.skyCooldowns[site.id]=Date.now()+12*60*1000;
- state.skyBest[site.id]=Math.min(seconds,state.skyBest[site.id]||10000);
- state.pendingLuck=Math.max(state.pendingLuck,2);
- parkourCompleted=true;
- activeSkyTrial=null;refreshLuck();save();updateHUD();
- $("parkourHud").textContent="SKY PARKOUR COMPLETE · ×2 LUCK NEXT ROLL";
- trialNotification("✦ SKY PARKOUR COMPLETE ✦\n"+site.name+" · "+seconds+
-    " seconds\n"+(state.skyBest[site.id]===seconds?"NEW PERSONAL BEST!\n":"")+
-    "+2× LUCK for your next roll!");
-}
-function updateSkyTrials(t){
- const now=Date.now(),p=player.position;
- const near=trialSites.map(s=>({site:s,d:Math.hypot(p.x-s.x,p.z-s.z)}))
-   .sort((a,b)=>a.d-b.d)[0];
- const pressed=!!keys.KeyF&&!skyInteractLatch;
- skyInteractLatch=!!keys.KeyF;
- if(activeSkyTrial&&now>=activeSkyTrial.ends){
-  trialNotification("SKY PARKOUR · Time expired. Return to the entrance to retry.");
-  activeSkyTrial=null;
- }
- if(activeSkyTrial){
-  const active=activeSkyTrial,stage=active.site.platforms[active.stage];
-  if(stage&&Math.abs(p.x-stage.x)<stage.w*.5+.6&&
-     Math.abs(p.z-stage.z)<stage.d*.5+.6&&
-     Math.abs(p.y-stage.top)<1.5&&!gliding){
-    active.stage++;
-    if(active.stage>=active.site.platforms.length)finishSkyTrial(active);
-  }
- }else if(pressed&&!gliding&&near.d<20&&!activeBiomeTrial){
-  const site=near.site,cooldown=state.skyCooldowns[site.id]||0;
-  if(now<cooldown)trialNotification(site.name+" course recharges in "+Math.ceil((cooldown-now)/60000)+" minutes.");
-  else beginSkyTrial(site);
- }
- // Animate current checkpoint rim only; most level decorations stay static.
- if(++skyGameFrame%4===0){
-  for(const site of trialSites)for(const stage of site.platforms){
-    if(!stage.rim)continue;
-    const current=activeSkyTrial?.site===site&&activeSkyTrial?.stage===stage.index;
-    stage.rim.material=trialMat;
-    stage.rim.scale.setScalar(current?1.12+.05*Math.sin(t*3.8):1);
-  }
- }
- if(activeSkyTrial){
-  const a=activeSkyTrial,remain=Math.max(0,Math.ceil((a.ends-now)/1000));
-  skyGameHud.style.display="block";
-  skyGameHud.textContent="✦ "+a.site.name+" SKY PARKOUR · "+remain+"s\n"+
-    "STEP "+(a.stage+1)+" OF 10 · Climb to the next glowing platform.\n"+
-    "Reward: ×2 luck on next roll · Personal best "+
-    (state.skyBest[a.site.id]||"—")+"s";
-  skyGameHud.style.whiteSpace="pre-line";
- }else if(near.d<32){
-  const cooldown=Math.max(0,(state.skyCooldowns[near.site.id]||0)-now);
-  skyGameHud.style.display="block";
-  skyGameHud.textContent="✦ "+near.site.name+" SKY PARKOUR\n"+
-    (cooldown?"Recharges in "+Math.ceil(cooldown/60000)+" min":
-      "Press F to start 10 glowing stages · 105 seconds")+"\n"+
-    "Reward: ×2 next roll · Best: "+(state.skyBest[near.site.id]||"—")+"s";
-  skyGameHud.style.whiteSpace="pre-line";
- }else skyGameHud.style.display="none";
-}
-
+// V19: the five retired timed sky arenas and their obsolete HUD are gone.
+// All active challenges use the same untimed checkpoint and retry system.
 // Giant volcano with a broad wooden ramp and a dangerous timed lava eruption.
 const volcano={x:318,z:-295,r:66,height:64,cycle:300000,eruption:25000};
 function volcanoPassable(x,z,y=0){
@@ -5325,7 +5251,7 @@ function animateCheckpointSignal(dt){
 // V16: interactive, untimed physical jumping challenges, including a real
 // stay-or-give-up choice on every failed run.
 function adventureGatePosition(site){
- const x=site.x,z=site.z+23;
+ const x=site.x,z=site.z+18;
  return [x,ground(x,z)+1.3,z];
 }
 function adventureTeleport(stage){
@@ -5336,7 +5262,7 @@ function adventureTeleport(stage){
 }
 function startAdventure(site){
  if(!site||activeAdventure)return;
- const cooldown=site.kind==="sky"?(state.skyCooldowns[site.id]||0):(state.trialCooldowns[site.id]||0);
+ const cooldown=state.trialCooldowns[site.id]||0;
  if(Date.now()<cooldown){
   trialNotification(site.name+" · ready in "+Math.ceil((cooldown-Date.now())/60000)+"m");return;
  }
@@ -5345,7 +5271,7 @@ function startAdventure(site){
  signalCheckpoint(site.platforms[0],site.color);
  adventureChoice.style.display="none";
  adventureHud.style.display="block";
- trialNotification("✦ "+site.name.toUpperCase()+" ✦\nJump between the REAL platforms! Checkpoints save progress. No timer.");
+ trialNotification("✦ "+site.name.toUpperCase()+" ONLY UP ✦\nClimb all "+site.platforms.length+" stages. Checkpoints save progress. No timer.");
 }
 function retryAdventure(){
  if(!activeAdventure)return;
@@ -5354,7 +5280,7 @@ function retryAdventure(){
  a.target=Math.min(a.site.platforms.length-1,a.checkpoint+1);
  a.paused=false;
  adventureChoice.style.display="none";
- trialNotification("CHECKPOINT "+(a.checkpoint+1)+" RESTORED · Keep jumping!");
+ trialNotification("CHECKPOINT "+(a.checkpoint+1)+" RESTORED · Keep climbing!");
 }
 function giveUpAdventure(){
  if(!activeAdventure)return;
@@ -5387,9 +5313,9 @@ function finishAdventure(){
  player.position.set(...adventureGatePosition(a.site));
  velocityY=0;onGround=false;
  signalCheckpoint(a.site.platforms[a.site.platforms.length-1],a.site.color,true);
- if(a.site.kind==="biome")finishBiomeTrial(a.site);
- else finishSkyTrial({site:a.site,started:a.started});
- trialNotification("✦ COURSE COMPLETE ✦\n"+a.site.name+" · reward earned! Come back to beat your time.");
+ // Keep the unique regional aura reward popup; do not overwrite it with
+ // a generic completion toast.
+ finishBiomeTrial(a.site);
 }
 function handleAdventureInteraction(t){
  const p=player.position;
@@ -5404,15 +5330,15 @@ function handleAdventureInteraction(t){
   const a=activeAdventure,stage=a.site.platforms[a.target];
   adventureHud.style.display="block";
   adventureHud.textContent="✦ "+a.site.name.toUpperCase()+"\n"+
-   "PLATFORM "+(a.target+1)+" / "+a.site.platforms.length+"\n"+
-   "Checkpoint "+(a.checkpoint+1)+" · Unlimited attempts\n"+
-   (a.paused?"FELL — Choose STAY or GIVE UP":"Jump to the next glowing platform!\nSPACE jump · SHIFT sprint");
+   "ONLY UP · STAGE "+(a.target+1)+" / "+a.site.platforms.length+"\n"+
+   "HEIGHT +"+Math.round(a.site.platforms[a.target].top-a.site.startTop)+"m · Saved at "+(a.checkpoint+1)+"\n"+
+   (a.paused?"FELL — STAY & RETRY or GIVE UP":"Climb to the next ledge!\nSPACE jump · SHIFT sprint");
  }else if(near.d<34&&!gliding){
   adventureHud.style.display="block";
   adventureHud.textContent="✦ "+near.site.name.toUpperCase()+"\n"+
-   "10 floating platforms · real obstacle course\n"+
-   "Press F to start · No countdown\n"+
-   (near.site.kind==="biome"?"Win a themed aura + ×5 luck":"Earn ×2 luck and a personal best");
+   near.site.platforms.length+" upward stages · "+Math.round(near.site.towerHeight)+"m tower\n"+
+   "Press F to climb · No time limit\n"+
+   "Finish for a themed aura + ×5 luck";
  }else adventureHud.style.display="none";
  if(++adventureFxFrame%3===0)for(const course of adventureCourses){
   const effect=course.spectacle;
@@ -5442,7 +5368,7 @@ function updateAdventureProgress(t){
  if(platformFootprint(p.x,p.z,target,.55)&&
     Math.abs(p.y-target.top)<1.2){
    const landed=a.target;
-   if(landed===3||landed===6||landed===8){
+   if(a.site.checkpoints.includes(landed)){
     a.checkpoint=landed;
     signalCheckpoint(target,a.site.color);
     trialNotification("✦ CHECKPOINT SAVED · PLATFORM "+(landed+1)+" ✦");
@@ -5457,7 +5383,7 @@ document.getElementById("adventureQuit").onclick=giveUpAdventure;
 function awardTrial(site){
  if(site.discovered)return;
  site.discovered=true;
- $("challengeStatus").textContent=site.name+" discovered! Complete a timed shrine challenge for rare auras and luck.";
+ $("challengeStatus").textContent=site.name+" discovered! Climb the Only Up tower for rare auras and luck.";
 }
 const keys = {},
     clock = new T.Clock();
