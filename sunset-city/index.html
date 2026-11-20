@@ -123,7 +123,7 @@ button{font:inherit;cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5
 <body>
 <canvas id="game" aria-label="3D third-person police chase driving game"></canvas><div id="tint"></div>
 <div id="hud">
-  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V10.2 THE WILDLANDS</small></div><div class="hudMid">
+  <div class="hudTop"><div class="brand">SUNSET <b>CITY</b><small>ISLAND PURSUIT // V10.3 VISUAL PASS</small></div><div class="hudMid">
    <div class="pill"><label>SURVIVAL</label><strong id="survive">00:00</strong></div><div class="pill cash"><label>RUN EARNINGS</label><strong id="earn">$0</strong></div><div class="pill heat"><label id="heatLabel">LEVEL 1 · 1 COP</label><strong id="stars">★☆☆☆☆</strong></div></div></div>
   <div id="hudLeft"><div class="meter"><div class="meterhead"><span>CAR INTEGRITY</span><span id="healthText">100%</span></div><div class="track"><div class="fill" id="healthbar"></div></div></div><div class="meter"><div class="meterhead"><span>NITRO</span><span id="boostText">100%</span></div><div class="track"><div class="fill boost" id="boostbar"></div></div></div><div class="tips"><b>W/S</b> accelerate / brake<br><b>A/D</b> steer &nbsp; <b>SHIFT</b> boost<br><b>SPACE</b> handbrake drift<br><b>ESC</b> pause<br><b>M</b> map · <b>C</b> camera · <b>R</b> recover · <b>V</b> sound<br><b>MOUNTAINS</b> earn ridge bonuses<br><b>OCEAN</b> ends your run</div></div>
   <button id="escapeBtn" type="button">Ⅱ PAUSE</button>
@@ -1992,7 +1992,7 @@ function renderHome(){
  mode='home';paused=false;$('hud').classList.remove('show');
  const selected=CARS.find(c=>c.id===save.selected)||CARS[0];
  showOverlay(`<section class="homeStage">
- <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V10.2 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
+ <div class="menuEyebrow"><span class="pulseLight"></span> SUNSET CITY · V10.3 <span class="menuSlash">/</span> MOUNTAIN COUNTRY</div>
  <div class="heroLine"></div>
  <div class="heroLogo"><span>ISLAND</span><strong>PURSUIT<span class="heroDot">.</span></strong><em>WILDLANDS</em></div>
  <p class="homeTagline">OUTRUN THE LAW. OWN THE MOUNTAINS.</p>
